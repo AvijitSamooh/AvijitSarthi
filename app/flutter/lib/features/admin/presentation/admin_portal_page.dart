@@ -55,20 +55,6 @@ class _AdminPortalPageState extends ConsumerState<AdminPortalPage> {
             const SizedBox(height: 8),
             Text(l10n.adminPortalDescription),
             const SizedBox(height: 24),
-            _AdminSectionCard(
-              icon: Icons.event_available_rounded,
-              title: l10n.adminActivities,
-              subtitle: l10n.adminActivitiesSubtitle,
-              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CityContentPage(kind: 'activities'))),
-            ),
-            const SizedBox(height: 12),
-            _AdminSectionCard(
-              icon: Icons.emoji_events_rounded,
-              title: l10n.adminAccomplishments,
-              subtitle: l10n.adminAccomplishmentsSubtitle,
-              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CityContentPage(kind: 'accomplishments'))),
-            ),
-            const SizedBox(height: 12),
             if (!isCityAdmin) ...[
             if (isSuperAdmin) ...[
               _AdminSectionCard(
@@ -170,6 +156,20 @@ class _AdminPortalPageState extends ConsumerState<AdminPortalPage> {
               ),
             ),
             ],
+            _AdminSectionCard(
+              icon: Icons.event_available_rounded,
+              title: l10n.adminActivities,
+              subtitle: l10n.adminActivitiesSubtitle,
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CityContentPage(kind: 'activities'))),
+            ),
+            const SizedBox(height: 12),
+            _AdminSectionCard(
+              icon: Icons.emoji_events_rounded,
+              title: l10n.adminAccomplishments,
+              subtitle: l10n.adminAccomplishmentsSubtitle,
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CityContentPage(kind: 'accomplishments'))),
+            ),
+            const SizedBox(height: 12),
             ],
           ),
         ),
