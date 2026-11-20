@@ -1,0 +1,99 @@
+name: Android Emulator E2E - Avijit Sarthi
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "app/flutter/**"
+      - ".github/workflows/android-emulator-e2e.yml"
+  push:
+    branches:
+      - master
+    paths:
+      - "app/flutter/**"
+      - ".github/workflows/android-emulator-e2e.yml"
+  schedule:
+    - cron: "30 20 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-emulator-e2e-avijit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-emulator:
+    name: Install, launch and test Android app
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: app/flutter
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Build debug APK
+        run: |
+          flutter build apk --debug \
+            --dart-define=E2E_TEST_MODE=true \
+            --dart-define=API_BASE_URL=http://10.0.2.2:9
+
+      - name: Run on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: |
+            set -euo pipefail
+            mkdir -p artifacts
+            adb install -r app/flutter/build/app/outputs/flutter-apk/app-debug.apk
+            adb shell monkey -p com.avijitsamooh.avijitsahyog 1
+            sleep 8
+            adb exec-out screencap -p > app/flutter/artifacts/installed-app-launch.png
+            flutter test integration_test -d emulator-5554 --reporter expanded \
+              --dart-define=E2E_TEST_MODE=true \
+              --dart-define=API_BASE_URL=http://10.0.2.2:9
+
+      - name: Capture emulator diagnostics
+        if: always()
+        working-directory: .
+        run: |
+          mkdir -p app/flutter/artifacts
+          adb logcat -d > app/flutter/artifacts/logcat.txt || true
+          adb shell screencap -p /sdcard/e2e-final.png >/dev/null 2>&1 || true
+          adb pull /sdcard/e2e-final.png app/flutter/artifacts/final-screen.png >/dev/null 2>&1 || true
+
+      - name: Upload emulator diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: avijit-sarthi-android-e2e-${{ github.run_id }}
+          path: app/flutter/artifacts/
+          if-no-files-found: warn
+          retention-days: 7
