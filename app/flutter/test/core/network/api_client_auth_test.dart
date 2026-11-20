@@ -79,6 +79,30 @@ void main() {
     api.dispose();
   });
 
+  test('city content publish and delete operations use the scoped admin routes', () async {
+    var calls = 0;
+    final client = MockClient((request) async {
+      expect(request.headers['authorization'], 'Bearer city-token');
+      calls++;
+      if (calls == 1) {
+        expect(request.method, 'PATCH');
+        expect(request.url.path, '/admin/accomplishments/accomp-1');
+        expect(request.body, '{"status":"PUBLISHED"}');
+        return http.Response('{"id":"accomp-1","status":"PUBLISHED"}', 200);
+      }
+      expect(request.method, 'DELETE');
+      expect(request.url.path, '/admin/accomplishments/accomp-1');
+      return http.Response('{"id":"accomp-1","deleted":true}', 200);
+    });
+    final api = ApiClient(client: client, baseUrl: 'https://api.example.com',
+      authTokenProvider: () async => 'city-token');
+    final result = await api.updateAdminCityContent('accomplishments', 'accomp-1', {'status': 'PUBLISHED'});
+    expect(result['status'], 'PUBLISHED');
+    await api.deleteAdminCityContent('accomplishments', 'accomp-1');
+    expect(calls, 2);
+    api.dispose();
+  });
+
   test('tracks every in-flight backend request and clears after completion', () async {
     final completer = Completer<http.Response>();
     final client = MockClient((request) => completer.future);

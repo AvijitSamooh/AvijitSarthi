@@ -447,6 +447,44 @@ class ApiClient {
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
+  Future<List<Map<String, dynamic>>> getAdminCityContent(String kind, {String? cityId}) async {
+    _validateCityContentKind(kind);
+    final uri = Uri.parse('$baseUrl/admin/$kind').replace(queryParameters: {
+      if (cityId != null && cityId.isNotEmpty) 'cityId': cityId,
+    });
+    final response = await _client.get(uri, headers: await _headers());
+    _ensureSuccess(response, 'Loading $kind');
+    return (jsonDecode(response.body) as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> createAdminCityContent(String kind, Map<String, dynamic> payload) async {
+    _validateCityContentKind(kind);
+    final response = await _client.post(Uri.parse('$baseUrl/admin/$kind'),
+      headers: await _headers(json: true), body: jsonEncode(payload));
+    _ensureSuccess(response, 'Creating $kind');
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> updateAdminCityContent(String kind, String id, Map<String, dynamic> payload) async {
+    _validateCityContentKind(kind);
+    final response = await _client.patch(Uri.parse('$baseUrl/admin/$kind/$id'),
+      headers: await _headers(json: true), body: jsonEncode(payload));
+    _ensureSuccess(response, 'Updating $kind');
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  Future<void> deleteAdminCityContent(String kind, String id) async {
+    _validateCityContentKind(kind);
+    final response = await _client.delete(Uri.parse('$baseUrl/admin/$kind/$id'), headers: await _headers());
+    _ensureSuccess(response, 'Deleting $kind');
+  }
+
+  void _validateCityContentKind(String kind) {
+    if (kind != 'activities' && kind != 'accomplishments') {
+      throw ArgumentError.value(kind, 'kind', 'Unsupported city content type');
+    }
+  }
+
   void _ensureSuccess(http.Response response, String operation) {
     if (response.statusCode < 200 || response.statusCode >= 300) {
       final body = response.body.trim();

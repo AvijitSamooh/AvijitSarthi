@@ -577,5 +577,6 @@
   "platformDowntimeMessage": "Downtime message",
   "platformDowntimeMessageHint": "Optional message shown to users",
   "platformDowntimeSave": "Save settings",
-  "platformDowntimeSaved": "Downtime settings saved."
+  "platformDowntimeSaved": "Downtime settings saved.",
+  "cityContentEdit": "Edit entry"
 }

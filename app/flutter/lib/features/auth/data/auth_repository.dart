@@ -133,6 +133,7 @@ class FirebaseAuthRepository implements AuthRepository {
     final role = switch (json['role']) {
       'SUPER_ADMIN' => UserRole.superAdmin,
       'ADMIN' => UserRole.admin,
+      'CITY_ADMIN' => UserRole.cityAdmin,
       _ => UserRole.user,
     };
 
@@ -142,6 +143,7 @@ class FirebaseAuthRepository implements AuthRepository {
       displayName: json['displayName'] as String?,
       photoUrl: json['photoUrl'] as String?,
       preferredLanguage: json['preferredLanguage'] as String?,
+      cityIds: (json['cityIds'] as List<dynamic>? ?? const []).cast<String>(),
       role: role,
     );
   }

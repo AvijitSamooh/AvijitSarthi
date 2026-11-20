@@ -15,6 +15,7 @@ export class AuthService {
       displayName: user.displayName,
       photoUrl: user.photoUrl,
       role: user.role,
+      cityIds: user.cityIds ?? [],
       preferredLanguage: user.preferredLanguage,
     };
   }

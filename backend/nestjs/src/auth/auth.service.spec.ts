@@ -12,7 +12,8 @@ describe('AuthService', () => {
       email: 'user@example.com',
       displayName: 'Test User',
       photoUrl: null,
-      role: 'USER',
+      role: 'CITY_ADMIN',
+      cityIds: ['pune'],
       preferredLanguage: null,
     });
 
@@ -25,7 +26,8 @@ describe('AuthService', () => {
       email: 'user@example.com',
       displayName: 'Test User',
       photoUrl: null,
-      role: 'USER',
+      role: 'CITY_ADMIN',
+      cityIds: ['pune'],
       preferredLanguage: null,
     });
 

@@ -8,8 +8,8 @@ export class AdminUsersQueryDto {
   search?: string;
 
   @Transform(({ value }) => value ?? 'ADMIN')
-  @IsIn(['USER', 'ADMIN', 'ALL'])
-  role: 'USER' | 'ADMIN' | 'ALL' = 'ADMIN';
+  @IsIn(['USER', 'ADMIN', 'CITY_ADMIN', 'ALL'])
+  role: 'USER' | 'ADMIN' | 'CITY_ADMIN' | 'ALL' = 'ADMIN';
 
   @Type(() => Number)
   @IsInt()

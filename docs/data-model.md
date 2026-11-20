@@ -240,3 +240,40 @@ Public Organisation and Beneficiary APIs now resolve attached Media records into
 - Gallery items are ordered by `displayOrder`.
 - Legacy `logoUrl` and `photoUrl` fields remain as fallbacks for backwards compatibility.
 - Storage keys are not exposed as public API URLs when `R2_PUBLIC_BASE_URL` is configured.
+
+
+## City content domain
+
+Activities and Accomplishments are separate Firestore collections and do not reuse Cause, Beneficiary or HelpApplication records.
+
+### Activity
+
+- `id` — server-generated UUID
+- `cityId` — immutable city ownership key
+- `title`, `description`
+- `startsAt`, optional `endsAt` — ISO-8601 instants; end cannot precede start
+- `organisationIds` — unique references to existing `organisations/{id}` records; these are affiliate Organisations
+- `status` — `DRAFT`, `PUBLISHED` or `ARCHIVED`
+- `createdBy`, `updatedBy`, `createdAt`, `updatedAt`
+
+### Accomplishment
+
+- `id` — server-generated UUID
+- `cityId` — immutable city ownership key
+- `title`, `description`
+- `achievedAt` — ISO-8601 instant
+- `organisationIds` — unique references to existing `organisations/{id}` records
+- `status` — `DRAFT`, `PUBLISHED` or `ARCHIVED`
+- `createdBy`, `updatedBy`, `createdAt`, `updatedAt`
+
+### City Admin assignment
+
+The existing `users` collection gains `role: CITY_ADMIN` and `cityIds: string[]`. The city list is assigned by Super Admin only. Legacy user records without this field are treated as having no assigned cities. The backend resolves role and assignments from Firestore on every protected request; client-supplied city IDs are never authorization evidence. City ownership cannot be changed by an update request.
+
+### Affiliate integrity and publication
+
+1. Affiliates reference existing Organisation documents; no duplicate Affiliate entity is created.
+2. Duplicate Organisation IDs and unknown references are rejected before writing content.
+3. Public endpoints return PUBLISHED records only; drafts and archived content are not readable publicly.
+4. City Admin list/detail/update/delete operations are restricted to assigned cities. ADMIN and SUPER_ADMIN retain platform-wide access.
+5. Donor allocations continue to target Causes only.

@@ -561,5 +561,6 @@
   "platformDowntimeMessage": "ડાઉનટાઇમ સંદેશ",
   "platformDowntimeMessageHint": "વપરાશકર્તાઓને બતાવવાનો વૈકલ્પિક સંદેશ",
   "platformDowntimeSave": "સેટિંગ સાચવો",
-  "platformDowntimeSaved": "ડાઉનટાઇમ સેટિંગ સાચવાઈ ગઈ."
+  "platformDowntimeSaved": "ડાઉનટાઇમ સેટિંગ સાચવાઈ ગઈ.",
+  "cityContentEdit": "નોંધ સંપાદિત કરો"
 }

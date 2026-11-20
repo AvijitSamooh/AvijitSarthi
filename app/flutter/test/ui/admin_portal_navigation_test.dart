@@ -12,14 +12,18 @@ import 'package:avijit_sahyog/l10n/app_localizations.dart';
 
 class _NavigationAuthController extends AuthController {
   _NavigationAuthController() : super(_NavigationAuthRepository()) {
-    state = const AuthState.authenticated(
-      AppUser(
-        id: 'admin-1',
-        email: 'admin@example.com',
-        displayName: 'Admin',
-        role: UserRole.admin,
-      ),
-    );
+    state = const AuthState.authenticated(AppUser(
+      id: 'admin-1', email: 'admin@example.com', displayName: 'Admin', role: UserRole.admin,
+    ));
+  }
+}
+
+class _CityAdminAuthController extends AuthController {
+  _CityAdminAuthController() : super(_NavigationAuthRepository()) {
+    state = const AuthState.authenticated(AppUser(
+      id: 'city-admin-1', email: 'city@example.com', displayName: 'City Admin',
+      role: UserRole.cityAdmin, cityIds: ['pune'],
+    ));
   }
 }
 
@@ -29,11 +33,8 @@ class _NavigationAuthRepository implements AuthRepository {
 
   @override
   Future<AppUser?> restoreSession() async => const AppUser(
-        id: 'admin-1',
-        email: 'admin@example.com',
-        displayName: 'Admin',
-        role: UserRole.admin,
-      );
+    id: 'admin-1', email: 'admin@example.com', displayName: 'Admin', role: UserRole.admin,
+  );
 
   @override
   Future<void> signOut() async {}
@@ -42,12 +43,9 @@ class _NavigationAuthRepository implements AuthRepository {
 void main() {
   testWidgets('admin portal keeps shared navigation and hides super-admin controls', (tester) async {
     final navigation = AppNavigationController();
-
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          authProvider.overrideWith((ref) => _NavigationAuthController()),
-        ],
+        overrides: [authProvider.overrideWith((ref) => _NavigationAuthController())],
         child: AppShellScope(
           onLocaleChanged: (_) {},
           navigation: navigation,
@@ -62,15 +60,40 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(find.text('Home'), findsOneWidget);
     expect(find.text('Applications'), findsOneWidget);
     expect(find.text('Impact'), findsOneWidget);
-
     expect(find.text('Interaction analytics'), findsNothing);
     expect(find.text('Advanced analytics'), findsNothing);
     expect(find.text('Platform health'), findsNothing);
+    expect(find.text('Manage administrators'), findsNothing);
+  });
+
+  testWidgets('city admin sees only city content modules, not global admin functions', (tester) async {
+    final navigation = AppNavigationController();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [authProvider.overrideWith((ref) => _CityAdminAuthController())],
+        child: AppShellScope(
+          onLocaleChanged: (_) {},
+          navigation: navigation,
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('en'),
+            theme: ThemeData(useMaterial3: true),
+            home: const AdminPortalPage(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Activities'), findsOneWidget);
+    expect(find.text('Accomplishments'), findsOneWidget);
+    expect(find.text('Manage causes'), findsNothing);
+    expect(find.text('Manage organisations'), findsNothing);
+    expect(find.text('Applications'), findsNothing);
     expect(find.text('Manage administrators'), findsNothing);
   });
 }
