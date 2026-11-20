@@ -19,7 +19,7 @@ class _NavigationAuthController extends AuthController {
 }
 
 class _CityAdminAuthController extends AuthController {
-  _CityAdminAuthController() : super(_NavigationAuthRepository()) {
+  _CityAdminAuthController() : super(_CityAdminAuthRepository()) {
     state = const AuthState.authenticated(AppUser(
       id: 'city-admin-1', email: 'city@example.com', displayName: 'City Admin',
       role: UserRole.cityAdmin, cityIds: ['pune'],
@@ -34,6 +34,20 @@ class _NavigationAuthRepository implements AuthRepository {
   @override
   Future<AppUser?> restoreSession() async => const AppUser(
     id: 'admin-1', email: 'admin@example.com', displayName: 'Admin', role: UserRole.admin,
+  );
+
+  @override
+  Future<void> signOut() async {}
+}
+
+class _CityAdminAuthRepository implements AuthRepository {
+  @override
+  Future<AppUser> signInWithGoogle() => throw UnimplementedError();
+
+  @override
+  Future<AppUser?> restoreSession() async => const AppUser(
+    id: 'city-admin-1', email: 'city@example.com', displayName: 'City Admin',
+    role: UserRole.cityAdmin, cityIds: ['pune'],
   );
 
   @override
@@ -93,7 +107,7 @@ void main() {
     expect(find.text('Accomplishments'), findsOneWidget);
     expect(find.text('Manage causes'), findsNothing);
     expect(find.text('Manage organisations'), findsNothing);
-    expect(find.text('Applications'), findsNothing);
+    expect(find.text('Admin dashboard'), findsNothing);
     expect(find.text('Manage administrators'), findsNothing);
   });
 }
