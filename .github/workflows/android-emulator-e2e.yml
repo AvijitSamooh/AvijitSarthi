@@ -57,9 +57,10 @@ jobs:
 
       - name: Build debug APK
         run: |
+          mkdir -p artifacts
           flutter build apk --debug \
             --dart-define=E2E_TEST_MODE=true \
-            --dart-define=API_BASE_URL=http://10.0.2.2:9
+            --dart-define=API_BASE_URL=http://10.0.2.2:9 2>&1 | tee artifacts/apk-build.log
 
       - name: Run on Android emulator
         uses: reactivecircus/android-emulator-runner@v2
@@ -73,22 +74,18 @@ jobs:
             set -euo pipefail
             cd app/flutter
             mkdir -p artifacts
+            cleanup() {
+              adb logcat -d > artifacts/logcat.txt || true
+              adb exec-out screencap -p > artifacts/final-screen.png || true
+            }
+            trap cleanup EXIT
             adb install -r build/app/outputs/flutter-apk/app-debug.apk
             adb shell monkey -p com.avijitsamooh.avijitsahyog 1
             sleep 8
             adb exec-out screencap -p > artifacts/installed-app-launch.png
             flutter test integration_test -d emulator-5554 --reporter expanded \
               --dart-define=E2E_TEST_MODE=true \
-              --dart-define=API_BASE_URL=http://10.0.2.2:9
-
-      - name: Capture emulator diagnostics
-        if: always()
-        working-directory: .
-        run: |
-          mkdir -p app/flutter/artifacts
-          adb logcat -d > app/flutter/artifacts/logcat.txt || true
-          adb shell screencap -p /sdcard/e2e-final.png >/dev/null 2>&1 || true
-          adb pull /sdcard/e2e-final.png app/flutter/artifacts/final-screen.png >/dev/null 2>&1 || true
+              --dart-define=API_BASE_URL=http://10.0.2.2:9 2>&1 | tee artifacts/integration-test.log
 
       - name: Upload emulator diagnostics
         if: always()
