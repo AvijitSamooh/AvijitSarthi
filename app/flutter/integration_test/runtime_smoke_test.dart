@@ -1,25 +1,25 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:avijit_sahyog/main.dart' as app;
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('Flutter integration runtime can render and persist native preferences', (tester) async {
-    final preferences = await SharedPreferences.getInstance();
-    await preferences.setString('integration_test_probe', 'ok');
+  testWidgets('real app starts and renders the home experience', (tester) async {
+    SharedPreferences.setMockInitialValues({});
 
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: Scaffold(
-          body: Center(child: Text('Avijit Sahyog integration smoke')),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
+    // Exercise the same startup path as the installed Android application.
+    // E2E_TEST_MODE disables production analytics/health telemetry, and the
+    // workflow points API_BASE_URL at an intentionally unavailable local port.
+    await app.main();
+    await tester.pumpAndSettle(const Duration(seconds: 12));
 
-    expect(find.text('Avijit Sahyog integration smoke'), findsOneWidget);
-    expect(preferences.getString('integration_test_probe'), 'ok');
+    expect(find.text('Avijit Sarthi'), findsWidgets);
+    expect(find.text('Our Purpose'), findsOneWidget);
+    expect(find.text('Education'), findsOneWidget);
+    expect(find.text('Cooperation'), findsOneWidget);
+    expect(find.text('Recognition'), findsOneWidget);
   });
 }
