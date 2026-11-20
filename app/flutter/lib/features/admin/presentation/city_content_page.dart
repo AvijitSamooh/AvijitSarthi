@@ -68,7 +68,7 @@ class _CityContentPageState extends ConsumerState<CityContentPage> {
                   TextFormField(controller: city, decoration: InputDecoration(labelText: l10n.cityContentCity), validator: (v) => v == null || v.trim().isEmpty ? l10n.fieldRequired(l10n.cityContentCity) : null),
                 if (existing == null && user?.isCityAdmin == true && user!.cityIds.length > 1)
                   DropdownButtonFormField<String>(
-                    value: null,
+                    initialValue: null,
                     decoration: InputDecoration(labelText: l10n.cityContentCity),
                     items: user.cityIds.map((id) => DropdownMenuItem(value: id, child: Text(id))).toList(),
                     onChanged: (value) => city.text = value ?? '',
