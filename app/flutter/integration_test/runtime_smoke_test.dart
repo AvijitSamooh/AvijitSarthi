@@ -14,7 +14,11 @@ void main() {
     // E2E_TEST_MODE disables production analytics/health telemetry, and the
     // workflow points API_BASE_URL at an intentionally unavailable local port.
     await app.main();
-    await tester.pumpAndSettle(const Duration(seconds: 12));
+    await tester.pumpAndSettle(
+      const Duration(milliseconds: 100),
+      EnginePhase.sendSemanticsUpdate,
+      const Duration(seconds: 15),
+    );
 
     expect(find.text('Avijit Sarthi'), findsWidgets);
     expect(find.text('Our Purpose'), findsOneWidget);
