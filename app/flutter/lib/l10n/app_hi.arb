@@ -562,5 +562,34 @@
   "platformDowntimeMessageHint": "उपयोगकर्ताओं को दिखाया जाने वाला वैकल्पिक संदेश",
   "platformDowntimeSave": "सेटिंग सहेजें",
   "platformDowntimeSaved": "डाउनटाइम सेटिंग सहेजी गई।",
-  "cityContentEdit": "प्रविष्टि संपादित करें"
+  "adminActivities": "गतिविधियाँ",
+  "adminActivitiesSubtitle": "शहर के कार्यक्रमों और सामुदायिक पहलों का प्रबंधन करें",
+  "adminAccomplishments": "उपलब्धियाँ",
+  "adminAccomplishmentsSubtitle": "उपलब्धियों और सामुदायिक प्रभाव को मान्यता दें",
+  "cityContentCreate": "नई प्रविष्टि बनाएँ",
+  "cityContentTitle": "शीर्षक",
+  "cityContentDescription": "विवरण",
+  "cityContentCity": "शहर ID",
+  "cityContentStartDate": "प्रारंभ दिनांक और समय (ISO 8601)",
+  "cityContentAchievedAt": "उपलब्धि दिनांक और समय (ISO 8601)",
+  "cityContentEndDate": "समाप्ति दिनांक और समय (वैकल्पिक)",
+  "cityContentAffiliates": "संबद्ध संस्था IDs",
+  "cityContentAffiliatesHint": "मौजूदा संस्था IDs को कॉमा से अलग करके दर्ज करें",
+  "cityContentSave": "ड्राफ्ट सहेजें",
+  "cityContentPublish": "प्रकाशित करें",
+  "cityContentEmpty": "अभी कोई प्रविष्टि नहीं है।",
+  "cityContentLoadError": "प्रविष्टियाँ लोड नहीं हो सकीं। पुनः प्रयास करें।",
+  "cityContentSaveFailed": "प्रविष्टि सहेजी नहीं जा सकी",
+  "cityContentSaved": "ड्राफ्ट सहेजा गया।",
+  "cityContentInvalidDate": "मान्य दिनांक और समय दर्ज करें, उदाहरण: 2026-12-01T10:00:00Z।",
+  "cityContentDeleteTitle": "प्रविष्टि हटाएँ?",
+  "cityContentDeleteConfirmation": "“{title}” को स्थायी रूप से हटाएँ?",
+  "cityContentEdit": "प्रविष्टि संपादित करें",
+  "@cityContentDeleteConfirmation": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -562,5 +562,34 @@
   "platformDowntimeMessageHint": "વપરાશકર્તાઓને બતાવવાનો વૈકલ્પિક સંદેશ",
   "platformDowntimeSave": "સેટિંગ સાચવો",
   "platformDowntimeSaved": "ડાઉનટાઇમ સેટિંગ સાચવાઈ ગઈ.",
-  "cityContentEdit": "નોંધ સંપાદિત કરો"
+  "adminActivities": "પ્રવૃત્તિઓ",
+  "adminActivitiesSubtitle": "શહેરના કાર્યક્રમો અને સામુદાયિક પહેલનું સંચાલન કરો",
+  "adminAccomplishments": "સિદ્ધિઓ",
+  "adminAccomplishmentsSubtitle": "સિદ્ધિઓ અને સામુદાયિક યોગદાનને માન્યતા આપો",
+  "cityContentCreate": "નવી નોંધ બનાવો",
+  "cityContentTitle": "શીર્ષક",
+  "cityContentDescription": "વર્ણન",
+  "cityContentCity": "શહેર ID",
+  "cityContentStartDate": "શરૂઆતની તારીખ અને સમય (ISO 8601)",
+  "cityContentAchievedAt": "સિદ્ધિની તારીખ અને સમય (ISO 8601)",
+  "cityContentEndDate": "સમાપ્તિ તારીખ અને સમય (વૈકલ્પિક)",
+  "cityContentAffiliates": "સંલગ્ન સંસ્થાઓના IDs",
+  "cityContentAffiliatesHint": "હાલની સંસ્થાઓના IDs અલ્પવિરામથી અલગ કરીને દાખલ કરો",
+  "cityContentSave": "ડ્રાફ્ટ સાચવો",
+  "cityContentPublish": "પ્રકાશિત કરો",
+  "cityContentEmpty": "હજુ કોઈ નોંધ નથી.",
+  "cityContentLoadError": "નોંધો લોડ થઈ શકી નથી. ફરી પ્રયાસ કરો.",
+  "cityContentSaveFailed": "નોંધ સાચવી શકાઈ નથી",
+  "cityContentSaved": "ડ્રાફ્ટ સાચવાયો.",
+  "cityContentInvalidDate": "માન્ય તારીખ અને સમય દાખલ કરો. ઉદાહરણ: 2026-12-01T10:00:00Z.",
+  "cityContentDeleteTitle": "નોંધ કાઢી નાખવી?",
+  "cityContentDeleteConfirmation": "“{title}” કાયમ માટે કાઢી નાખવી?",
+  "cityContentEdit": "નોંધ સંપાદિત કરો",
+  "@cityContentDeleteConfirmation": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -578,5 +578,34 @@
   "platformDowntimeMessageHint": "Optional message shown to users",
   "platformDowntimeSave": "Save settings",
   "platformDowntimeSaved": "Downtime settings saved.",
-  "cityContentEdit": "Edit entry"
+  "adminActivities": "Activities",
+  "adminActivitiesSubtitle": "Manage city events and community initiatives",
+  "adminAccomplishments": "Accomplishments",
+  "adminAccomplishmentsSubtitle": "Recognise achievements and community impact",
+  "cityContentCreate": "Create entry",
+  "cityContentTitle": "Title",
+  "cityContentDescription": "Description",
+  "cityContentCity": "City ID",
+  "cityContentStartDate": "Start date and time (ISO 8601)",
+  "cityContentAchievedAt": "Achievement date and time (ISO 8601)",
+  "cityContentEndDate": "End date and time (optional)",
+  "cityContentAffiliates": "Affiliate Organisation IDs",
+  "cityContentAffiliatesHint": "Enter existing Organisation IDs separated by commas",
+  "cityContentSave": "Save draft",
+  "cityContentPublish": "Publish",
+  "cityContentEmpty": "No entries yet.",
+  "cityContentLoadError": "Unable to load entries. Please retry.",
+  "cityContentSaveFailed": "Unable to save the entry",
+  "cityContentSaved": "Draft saved.",
+  "cityContentInvalidDate": "Enter a valid date and time, for example 2026-12-01T10:00:00Z.",
+  "cityContentDeleteTitle": "Delete entry?",
+  "cityContentDeleteConfirmation": "Delete “{title}” permanently?",
+  "cityContentEdit": "Edit entry",
+  "@cityContentDeleteConfirmation": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
 }

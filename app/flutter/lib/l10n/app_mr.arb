@@ -562,5 +562,34 @@
   "platformDowntimeMessageHint": "वापरकर्त्यांना दाखवला जाणारा पर्यायी संदेश",
   "platformDowntimeSave": "सेटिंग जतन करा",
   "platformDowntimeSaved": "डाउनटाइम सेटिंग जतन केली.",
-  "cityContentEdit": "नोंद संपादित करा"
+  "adminActivities": "उपक्रम",
+  "adminActivitiesSubtitle": "शहरातील कार्यक्रम आणि सामुदायिक उपक्रम व्यवस्थापित करा",
+  "adminAccomplishments": "यशोगाथा",
+  "adminAccomplishmentsSubtitle": "यश आणि सामुदायिक योगदानाची नोंद करा",
+  "cityContentCreate": "नवीन नोंद तयार करा",
+  "cityContentTitle": "शीर्षक",
+  "cityContentDescription": "वर्णन",
+  "cityContentCity": "शहर ID",
+  "cityContentStartDate": "प्रारंभ दिनांक आणि वेळ (ISO 8601)",
+  "cityContentAchievedAt": "यशाचा दिनांक आणि वेळ (ISO 8601)",
+  "cityContentEndDate": "समाप्ती दिनांक आणि वेळ (ऐच्छिक)",
+  "cityContentAffiliates": "संलग्न संस्थांचे IDs",
+  "cityContentAffiliatesHint": "विद्यमान संस्थांचे IDs स्वल्पविरामाने वेगळे करून द्या",
+  "cityContentSave": "मसुदा जतन करा",
+  "cityContentPublish": "प्रकाशित करा",
+  "cityContentEmpty": "अद्याप कोणतीही नोंद नाही.",
+  "cityContentLoadError": "नोंदी लोड करता आल्या नाहीत. पुन्हा प्रयत्न करा.",
+  "cityContentSaveFailed": "नोंद जतन करता आली नाही",
+  "cityContentSaved": "मसुदा जतन केला.",
+  "cityContentInvalidDate": "वैध दिनांक आणि वेळ द्या. उदाहरण: 2026-12-01T10:00:00Z.",
+  "cityContentDeleteTitle": "नोंद हटवायची?",
+  "cityContentDeleteConfirmation": "“{title}” कायमची हटवायची?",
+  "cityContentEdit": "नोंद संपादित करा",
+  "@cityContentDeleteConfirmation": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
 }
