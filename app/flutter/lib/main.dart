@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -17,12 +18,13 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // E2E mode is deliberately debug-only. It prevents emulator runs from
-  // emitting production analytics or client-health telemetry.
+  // E2E mode is deliberately debug-only. It keeps analytics and auth traffic
+  // on emulators and suppresses client-health telemetry from test devices.
   const requestedE2eMode = bool.fromEnvironment('E2E_TEST_MODE');
   final e2eTestMode = kDebugMode && requestedE2eMode;
   if (e2eTestMode) {
     await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(false);
+    await FirebaseAuth.instance.useAuthEmulator('10.0.2.2', 9099);
   }
 
   await BackendServiceAvailability.loadRemote(
