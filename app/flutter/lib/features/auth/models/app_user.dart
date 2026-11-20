@@ -1,4 +1,4 @@
-enum UserRole { user, admin, superAdmin }
+enum UserRole { user, admin, cityAdmin, superAdmin }
 
 class AppUser {
   const AppUser({
@@ -8,6 +8,7 @@ class AppUser {
     required this.role,
     this.photoUrl,
     this.preferredLanguage,
+    this.cityIds = const [],
   });
 
   final String id;
@@ -16,7 +17,9 @@ class AppUser {
   final String? photoUrl;
   final UserRole role;
   final String? preferredLanguage;
+  final List<String> cityIds;
 
-  bool get isAdmin => role == UserRole.admin || role == UserRole.superAdmin;
+  bool get isAdmin => role == UserRole.admin || role == UserRole.cityAdmin || role == UserRole.superAdmin;
+  bool get isCityAdmin => role == UserRole.cityAdmin;
   bool get isSuperAdmin => role == UserRole.superAdmin;
 }

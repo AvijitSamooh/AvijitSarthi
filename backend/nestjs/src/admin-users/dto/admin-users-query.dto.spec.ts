@@ -27,6 +27,8 @@ describe('AdminUsersQueryDto', () => {
     expect(await validate(dto)).toHaveLength(0);
   });
 
+  it('accepts CITY_ADMIN as a role filter', async () => { const dto = plainToInstance(AdminUsersQueryDto, { role: 'CITY_ADMIN' }); expect(dto.role).toBe('CITY_ADMIN'); expect(await validate(dto)).toHaveLength(0); });
+
   it('accepts ALL for cross-role search', async () => {
     const dto = plainToInstance(AdminUsersQueryDto, { role: 'ALL' });
     expect(dto.role).toBe('ALL');

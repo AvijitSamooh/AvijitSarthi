@@ -13,6 +13,8 @@ import { AdminUsersModule } from './admin-users/admin-users.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { PlatformHealthModule } from './platform-health/platform-health.module';
 import { HelpApplicationsModule } from './help-applications/help-applications.module';
+import { ActivitiesModule } from './activities/activities.module';
+import { AccomplishmentsModule } from './accomplishments/accomplishments.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { HelpApplicationsModule } from './help-applications/help-applications.mo
     AdminDashboardModule,
     MediaModule,
     AdminUsersModule,
+    ActivitiesModule,
+    AccomplishmentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

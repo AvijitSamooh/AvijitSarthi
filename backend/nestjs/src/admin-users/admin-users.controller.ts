@@ -34,7 +34,7 @@ export class AdminUsersController {
     @Body() body: ChangeAdminUserRoleDto,
     @Req() request: Request & AuthenticatedRequest,
   ) {
-    return this.service.changeRole(id, request.user.uid, body.role);
+    return this.service.changeRole(id, request.user.uid, body.role, body.cityIds ?? []);
   }
 
   @Get('audit-history')

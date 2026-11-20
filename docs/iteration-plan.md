@@ -4,6 +4,7 @@
 
 - [ ] PostgreSQL to Firestore migration — user identity, roles, admin authorization and role-audit history are now implemented on Firestore; remaining domain migrations and production cutover are pending.
 - [ ] Split Education into Education Assistance and Pratibha Samman — production migration recovery/deployment verification remains.
+- [ ] City Activities and Accomplishments — backend Firestore domain, public/admin APIs, city-scoped authorization, Super Admin City Admin assignment and basic Flutter City Admin create/edit/publish/delete screens. Public discovery screens, Super Admin city-assignment UI and localized city catalogue remain follow-up work.
 
 ## Recently Completed
 
@@ -600,3 +601,42 @@ real donation platform.
 - Shared top-right settings menu exposes language and login/profile actions across public flows.
 - Shared bottom navigation remains available on contribution flows and returns users to the existing main tab shell.
 - Locale changes remain available outside the home screen through the application shell.
+
+
+------------------------------------------------------------------------
+
+# Iteration 4.5 --- City Activities, Accomplishments & Scoped Administration
+
+## Goal
+
+Add a bounded community-impact layer without changing the giving and financial domain.
+
+### Backend capabilities
+
+- Separate Firestore collections and REST resources for Activities and Accomplishments.
+- Public endpoints expose published records only.
+- Protected city-scoped admin APIs support create, edit, publish/archive and delete.
+- Existing Organisation records are reused through unique affiliate Organisation IDs.
+- City Admin role has explicit assigned city IDs.
+- Super Admin alone can assign or change City Admin city scopes.
+- Role changes and city assignments are written with the existing audit record.
+
+### Security acceptance
+
+- A City Admin can only operate within assigned city IDs.
+- A query filter cannot widen the caller's city scope.
+- Guessing another city's record ID cannot enable read, update or delete.
+- City Admin cannot access global admin routes.
+- ADMIN and SUPER_ADMIN preserve existing platform-wide administration.
+- Public users cannot read drafts or archived content.
+
+### Test scenarios
+
+Cover publication visibility, affiliate reference integrity, duplicate affiliate IDs, invalid activity date ranges, missing records, city boundary enforcement on list/detail/update/delete, Super Admin cross-city access, role assignment validation and audit consistency.
+
+### Follow-up
+
+- Flutter public Activities and Accomplishments discovery pages.
+- Super Admin city-assignment UI.
+- Localized city catalogue and labels in English, Hindi, Marathi and Gujarati.
+- End-to-end Flutter/API tests for public and administrator client journeys.

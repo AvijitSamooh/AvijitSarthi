@@ -15,6 +15,7 @@ import 'admin_organisations_page.dart';
 import 'admin_users_page.dart';
 import 'platform_health_page.dart';
 import 'platform_downtime_page.dart';
+import 'city_content_page.dart';
 
 class AdminPortalPage extends ConsumerStatefulWidget {
   const AdminPortalPage({super.key});
@@ -36,7 +37,9 @@ class _AdminPortalPageState extends ConsumerState<AdminPortalPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final shell = AppShellScope.of(context);
-    final isSuperAdmin = ref.watch(authProvider).user?.isSuperAdmin == true;
+    final currentUser = ref.watch(authProvider).user;
+    final isSuperAdmin = currentUser?.isSuperAdmin == true;
+    final isCityAdmin = currentUser?.isCityAdmin == true;
 
     return AnimatedBuilder(
       animation: shell.navigation,
@@ -52,6 +55,7 @@ class _AdminPortalPageState extends ConsumerState<AdminPortalPage> {
             const SizedBox(height: 8),
             Text(l10n.adminPortalDescription),
             const SizedBox(height: 24),
+            if (!isCityAdmin) ...[
             if (isSuperAdmin) ...[
               _AdminSectionCard(
                 icon: Icons.insights_rounded,
@@ -151,6 +155,21 @@ class _AdminPortalPageState extends ConsumerState<AdminPortalPage> {
                 MaterialPageRoute(builder: (_) => const AdminBeneficiariesPage()),
               ),
             ),
+            ],
+            _AdminSectionCard(
+              icon: Icons.event_available_rounded,
+              title: l10n.adminActivities,
+              subtitle: l10n.adminActivitiesSubtitle,
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CityContentPage(kind: 'activities'))),
+            ),
+            const SizedBox(height: 12),
+            _AdminSectionCard(
+              icon: Icons.emoji_events_rounded,
+              title: l10n.adminAccomplishments,
+              subtitle: l10n.adminAccomplishmentsSubtitle,
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CityContentPage(kind: 'accomplishments'))),
+            ),
+            const SizedBox(height: 12),
             ],
           ),
         ),

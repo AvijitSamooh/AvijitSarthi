@@ -40,6 +40,7 @@ describe('FirestoreUsersService', () => {
       expect.objectContaining({
         firebaseUid: 'firebase-1',
         role: 'USER',
+        cityIds: [],
       }),
     );
   });
@@ -51,7 +52,8 @@ describe('FirestoreUsersService', () => {
       email: 'old@example.com',
       displayName: 'Old',
       photoUrl: null,
-      role: 'ADMIN',
+      role: 'CITY_ADMIN',
+      cityIds: ['pune'],
       preferredLanguage: null,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
@@ -78,7 +80,8 @@ describe('FirestoreUsersService', () => {
       displayName: 'New',
     });
 
-    expect(result.role).toBe('ADMIN');
+    expect(result.role).toBe('CITY_ADMIN');
+    expect(result.cityIds).toEqual(['pune']);
     expect(transaction.update).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({ email: 'new@example.com', displayName: 'New' }),

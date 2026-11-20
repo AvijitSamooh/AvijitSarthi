@@ -9,8 +9,8 @@ export class AdminUsersService {
     return this.users.listUsers(query);
   }
 
-  changeRole(targetUserId: string, actorFirebaseUid: string, requestedRole?: string) {
-    return this.users.changeRole(targetUserId, actorFirebaseUid, requestedRole);
+  changeRole(targetUserId: string, actorFirebaseUid: string, requestedRole?: string, cityIds: string[] = []) {
+    return this.users.changeRole(targetUserId, actorFirebaseUid, requestedRole, cityIds);
   }
 
   getAuditHistory() {

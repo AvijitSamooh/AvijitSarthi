@@ -25,7 +25,7 @@ describe('AdminUsersService', () => {
     await expect(service.changeRole('target-1', 'firebase-actor', 'ADMIN'))
       .resolves.toEqual({ id: 'target-1', role: 'ADMIN' });
 
-    expect(users.changeRole).toHaveBeenCalledWith('target-1', 'firebase-actor', 'ADMIN');
+    expect(users.changeRole).toHaveBeenCalledWith('target-1', 'firebase-actor', 'ADMIN', []);
   });
 
   it('delegates audit history to the Firestore user service', async () => {

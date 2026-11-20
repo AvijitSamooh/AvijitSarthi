@@ -134,3 +134,32 @@ For application rounds with hundreds of applicants, the administrator workflow i
 6. If an applicant edits or resubmits, their previous reviewer votes and decision metadata are cleared and the application re-enters the review queue.
 
 The Top 50 view does not automatically approve applicants; it is a review aid so the final decision remains an explicit administrator action.
+
+
+## 8. City Activities and Accomplishments
+
+### Public discovery
+
+- Activities and Accomplishments have distinct discovery and detail experiences.
+- Only PUBLISHED records are visible publicly; drafts and archived records remain private.
+- A city filter narrows discovery without changing source records.
+- Affiliate links open the existing Organisation detail experience. Duplicate affiliate profiles are never created.
+- Loading, empty and retryable error states are distinct.
+
+### City administrator workflow
+
+Sign in → Admin Portal → Activities / Accomplishments → Assigned city → Create/edit → Save draft → Publish
+
+- City Admin sees only records for assigned city IDs.
+- City ownership is immutable after creation.
+- City Admin cannot access global user management, donations, applications, platform settings or another city's records.
+- Super Admin assigns/changes city IDs and retains cross-city access.
+- A mutation is reported successful only after backend persistence completes.
+
+### Acceptance scenarios
+
+- Public list/detail expose PUBLISHED records only.
+- City Admin can manage assigned city records but cannot list, read, update or delete a record from another city, including by guessing its ID or supplying another city filter.
+- Super Admin can manage any city.
+- Unknown or duplicate affiliate Organisation IDs are rejected.
+- An activity end time before its start time is rejected.

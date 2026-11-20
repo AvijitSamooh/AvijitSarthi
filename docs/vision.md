@@ -6,13 +6,13 @@ Avijit Sahyog is an **independent donation and giving application**, being built
 
 It is a standalone product with its own product vision, architecture, data, operations and roadmap. It is **not part of the Jain Community Platform ecosystem** and must not acquire dependencies on that platform.
 
-Avijit Sahyog should remain focused exclusively on the **giving and financial domain** rather than becoming a general-purpose community platform.
+Avijit Sarthi remains a giving-first platform. It also supports a deliberately bounded community-impact layer: city-based Activities and Accomplishments that make local service, educational, cultural and recognition initiatives discoverable. This does not turn the product into a general-purpose social network or community-management suite.
 
 ## 2. Product Vision
 
 Build a trusted, multilingual donation platform that makes it simple for people to discover causes, understand where their money can be used, distribute a donation across causes, make payments through familiar UPI apps, and maintain a transparent history of their giving.
 
-The long-term product is a **donation platform**, not merely a donation app.
+The long-term product is a **giving and community-impact platform**, not merely a donation app. Giving remains the financial core; Activities and Accomplishments make the work and outcomes of the supported community discoverable.
 
 It should support:
 - Multiple causes / donation buckets
@@ -26,6 +26,10 @@ It should support:
 - Transparent administration and reconciliation
 - Expansion to additional organisations and causes without an app release
 - Privacy-conscious giving analytics and monitoring
+- City-scoped Activities for community initiatives and events
+- Accomplishments that recognise achievements and community impact
+- Existing Organisations reused as affiliate entities across causes, activities and accomplishments
+- City administrators restricted to explicitly assigned cities
 
 ## 3. Product Independence Boundary
 
@@ -42,7 +46,7 @@ If external integrations are introduced in the future, they must be explicit, op
 
 Avijit Sahyog owns the financial truth for its own donation domain, including donation intent, allocations, payment state, receipts, recurring commitments and financial audit records.
 
-## 4. Financial architecture
+## 4. Giving and community-impact architecture
 
 ```mermaid
 flowchart TB
@@ -52,12 +56,16 @@ flowchart TB
     Payments[Payment Provider Abstraction]
     Analytics[Usage & Giving Analytics]
     Audit[Financial Audit / Trust]
+    Community[City Activities & Accomplishments]
+    Organisations[Existing Organisations / Affiliates]
 
     User --> App
     App --> Giving
     Giving --> Payments
     Giving --> Analytics
     Giving --> Audit
+    App --> Community
+    Community --> Organisations
 ```
 
 The architecture is intentionally self-contained. Any future third-party service integration should be introduced behind a stable interface without creating a dependency on another product ecosystem.
@@ -163,6 +171,8 @@ Analytics must be privacy-conscious and must not become the source of truth for 
 - Donation domain model
 - Basic admin/content model
 - Beneficiary / impact explorer
+- Public Activities and Accomplishments discovery
+- City-scoped community content administration
 - Automated tests
 - CI/CD foundation
 
@@ -200,3 +210,36 @@ The product succeeds when donating becomes simple, transparent, multilingual and
 - UI tests covering primary journeys and important empty/error states
 
 CI must run analysis/build, automated tests and Prisma schema validation before merge.
+
+
+## 15. Activities and Accomplishments
+
+Activities and Accomplishments are separate first-class content domains, not aliases for Causes, Beneficiaries or Help Applications.
+
+- **Activity** describes a scheduled or completed community initiative, service camp, educational programme, cultural event or gathering. It has a city, title, description, start/end date, publication state and optional affiliate Organisations.
+- **Accomplishment** records a recognised achievement or impact outcome. It has a city, title, description, achievement date, publication state and optional affiliate Organisations.
+- **Affiliate** is not a new entity. It references existing Organisation records by ID, preserving the current Organisation contact and media source of truth.
+- Public users can read published records only. Draft and archived records remain private.
+- These modules do not create or alter donations, allocations, payment state or receipts.
+
+## 16. City administration and authorization
+
+The existing Firebase identity and Firestore user record remain the single identity source.
+
+Roles:
+- `USER` — normal signed-in user.
+- `ADMIN` — existing platform administrator with global admin access.
+- `CITY_ADMIN` — can manage Activities and Accomplishments only for assigned city IDs.
+- `SUPER_ADMIN` — platform-wide authority, including assigning City Admin roles and city IDs.
+
+A City Admin assignment stores an explicit `cityIds` allow-list on the Firestore user record. The backend resolves the role and city assignments from Firestore on every protected request; client-supplied city IDs are never authorization evidence. City ownership is immutable after creation. City Admin does not grant access to global user management, donations, applications, platform configuration or unrelated admin functions. Super Admin role assignment and city-scope changes are audited with the assigned city IDs.
+
+## 17. API and data ownership
+
+- `GET /activities`, `GET /activities/:id` — published public Activities.
+- `GET /accomplishments`, `GET /accomplishments/:id` — published public Accomplishments.
+- `/admin/activities` — protected city-scoped management.
+- `/admin/accomplishments` — protected city-scoped management.
+- `GET /admin/users` supports the City Admin role filter; `PATCH /admin/users/:id/role` accepts `CITY_ADMIN` with a non-empty list of city IDs and remains Super Admin only.
+
+City IDs are stable identifiers (for example, `pune` or `new-delhi`), not display labels. A localized city catalogue and self-service city administration are follow-up requirements; until then, Super Admin assigns canonical IDs.
