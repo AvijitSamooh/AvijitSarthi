@@ -5,7 +5,7 @@
 Flutter -> Firebase Authentication -> NestJS API -> Cloud Firestore
                                       -> Cloudflare R2
 
-Firebase Authentication already exists in the application. The persistence cutover is complete: Firestore is authoritative and PostgreSQL/Prisma is no longer a runtime dependency.
+Firebase Authentication already exists in the application. The **repository/runtime migration** is complete: NestJS uses Firestore as its application datastore and PostgreSQL/Prisma are no longer runtime dependencies. Production service deployment, historical-data reconciliation, backup/restore and retirement of any external database resources or secrets are separate operational checks; do not infer that they are complete from repository code alone. Track them in [the iteration plan](iteration-plan.md).
 
 ## Collection design
 
@@ -35,6 +35,6 @@ Relational join tables are represented as embedded fields, references, or subcol
 
 ## Migration history
 
-The historical PostgreSQL -> Firestore backfill was idempotent and reconciliation-gated. PostgreSQL data was retained during the transition so rollback/reconciliation was possible. After the Firestore cutover was verified, Prisma/PostgreSQL application code, migrations and CI dependencies were removed.
+The historical PostgreSQL -> Firestore backfill was designed to be idempotent and reconciliation-gated. PostgreSQL data was retained during the transition for rollback/reconciliation. The current repository contains Firestore runtime services and no active Prisma/PostgreSQL packages, schema, migrations or CI database service.
 
-The historical migration steps are retained in git history for auditability; they are not active runtime commands.
+Historical migration steps are retained in Git history for auditability; they are not active runtime commands. Production data reconciliation and retirement of any external database resource must be verified operationally before final infrastructure cleanup.
