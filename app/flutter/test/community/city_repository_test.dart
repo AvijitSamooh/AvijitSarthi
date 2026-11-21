@@ -38,5 +38,38 @@ void main() {
     expect(activities.single.id, 'activity-1');
     expect(activities.single.startsAt, DateTime.utc(2026, 12, 1, 10));
     api.dispose();
+
   });
+
+  test('loads public content detail and existing organisation affiliates for guests', () async {
+    final client = MockClient((request) async {
+      expect(request.headers.containsKey('authorization'), isFalse);
+      if (request.url.path == '/activities/activity-1') {
+        return http.Response(jsonEncode({
+          'id': 'activity-1',
+          'cityId': 'pune',
+          'title': 'Seva camp',
+          'description': 'Community service',
+          'startsAt': '2026-12-01T10:00:00.000Z',
+          'organisationIds': ['org-1', 'missing-org'],
+          'status': 'PUBLISHED',
+        }), 200);
+      }
+      expect(request.url.path, '/organisations');
+      expect(request.url.queryParameters['language'], 'hi');
+      return http.Response(jsonEncode([
+        {'id': 'org-1', 'slug': 'seva-trust', 'name': 'Seva Trust'},
+      ]), 200);
+    });
+    final api = ApiClient(client: client, baseUrl: 'https://api.example.com');
+    final repository = CityRepository(api);
+
+    final detail = await repository.getPublicContentDetail('activities', 'activity-1');
+    final organisations = await repository.getOrganisations('hi');
+
+    expect(detail.organisationIds, ['org-1', 'missing-org']);
+    expect(organisations.single.name, 'Seva Trust');
+    api.dispose();
+  });
+}  });
 }

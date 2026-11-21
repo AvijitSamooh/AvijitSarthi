@@ -146,6 +146,27 @@ void main() {
     api.dispose();
   });
 
+  test('public content details and organisation references remain guest-readable', () async {
+    var calls = 0;
+    final client = MockClient((request) async {
+      expect(request.headers.containsKey('authorization'), isFalse);
+      calls++;
+      if (request.url.path == '/accomplishments/award-1') {
+        return http.Response('{"id":"award-1","cityId":"pune","title":"Award","description":"Achievement","achievedAt":"2026-11-15T00:00:00Z","organisationIds":["org-1"]}', 200);
+      }
+      expect(request.url.path, '/organisations');
+      expect(request.url.queryParameters['language'], 'gu');
+      return http.Response('[{"id":"org-1","slug":"seva-trust","name":"Seva Trust"}]', 200);
+    });
+    final api = ApiClient(client: client, baseUrl: 'https://api.example.com');
+    final detail = await api.getPublicCityContentDetail('accomplishments', 'award-1');
+    final organisations = await api.getPublicOrganisations('gu');
+    expect(detail['organisationIds'], ['org-1']);
+    expect(organisations.single['name'], 'Seva Trust');
+    expect(calls, 2);
+    api.dispose();
+  });
+
   test('tracks every in-flight backend request and clears after completion', () async {
     final completer = Completer<http.Response>();
     final client = MockClient((request) => completer.future);

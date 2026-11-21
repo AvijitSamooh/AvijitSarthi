@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
+import 'package:avijit_sahyog/features/causes/models/organisation.dart';
 import 'package:avijit_sahyog/features/community/models/city.dart';
 import 'package:avijit_sahyog/features/community/models/city_content.dart';
 import 'package:avijit_sahyog/features/community/presentation/city_discovery_page.dart';
+import 'package:avijit_sahyog/features/community/presentation/city_content_detail_page.dart';
 import 'package:avijit_sahyog/features/community/providers/city_providers.dart';
 import 'package:avijit_sahyog/l10n/app_localizations.dart';
 
@@ -18,6 +20,21 @@ void main() {
         overrides: [
           cityCatalogueProvider('en').overrideWith(
             (ref) async => const [City(id: 'pune', name: 'Pune')],
+          ),
+          cityContentDetailProvider((kind: 'activities', id: 'pune-activity')).overrideWith(
+            (ref) async => CityContent(
+              id: 'pune-activity',
+              cityId: 'pune',
+              title: 'Pune community activity',
+              description: 'Filtered by canonical city ID.',
+              startsAt: DateTime.utc(2026, 12, 2),
+              organisationIds: const ['org-1'],
+            ),
+          ),
+          cityOrganisationsProvider('en').overrideWith(
+            (ref) async => const [
+              Organisation(id: 'org-1', slug: 'pune-seva', name: 'Pune Seva Trust'),
+            ],
           ),
           cityContentProvider((kind: 'activities', cityId: null)).overrideWith(
             (ref) async => [
@@ -73,6 +90,13 @@ void main() {
     await tester.tap(find.text('Pune').last);
     await tester.pumpAndSettle();
     expect(find.text('Pune community activity'), findsOneWidget);
+
+    await tester.tap(find.text('Pune community activity'));
+    await tester.pumpAndSettle();
+    expect(find.byType(CityContentDetailPage), findsOneWidget);
+    expect(find.text('Pune Seva Trust'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byType(Tab).at(1));
     await tester.pumpAndSettle();

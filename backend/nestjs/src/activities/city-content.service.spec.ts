@@ -54,6 +54,21 @@ describe('CityContentService business rules', () => {
     expect(docs.size).toBe(0);
   });
 
+  it('keeps draft and archived records out of public city lists and detail routes', async () => {
+    const { service } = makeHarness({
+      draft: { id: 'draft', cityId: 'pune', status: 'DRAFT', startsAt: '2026-12-01T10:00:00Z' },
+      archived: { id: 'archived', cityId: 'pune', status: 'ARCHIVED', startsAt: '2026-12-02T10:00:00Z' },
+      published: { id: 'published', cityId: 'pune', status: 'PUBLISHED', startsAt: '2026-12-03T10:00:00Z', organisationIds: ['org-1'] },
+      otherCity: { id: 'otherCity', cityId: 'mumbai', status: 'PUBLISHED', startsAt: '2026-12-04T10:00:00Z' },
+    });
+
+    expect((await service.list('activities')).map((item) => item.id)).toEqual(['otherCity', 'published']);
+    expect((await service.list('activities', undefined, 'pune')).map((item) => item.id)).toEqual(['published']);
+    expect((await service.get('activities', 'published')).organisationIds).toEqual(['org-1']);
+    await expect(service.get('activities', 'draft')).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.get('activities', 'archived')).rejects.toBeInstanceOf(NotFoundException);
+  });
+
   it('prevents a city admin creating or reading content outside assigned cities', async () => {
     const { service } = makeHarness({ 'outside-1': { id: 'outside-1', cityId: 'mumbai', status: 'PUBLISHED' } });
     await expect(service.create('activities', {
