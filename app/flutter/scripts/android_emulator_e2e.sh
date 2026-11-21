@@ -67,7 +67,7 @@ emulators_ready=false
 for attempt in $(seq 1 120); do
   auth_ready=false
   firestore_ready=false
-  if curl --silent --fail http://127.0.0.1:9099/ >/dev/null; then auth_ready=true; fi
+  if timeout 1s bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/9099' 2>/dev/null; then auth_ready=true; fi
   if timeout 1s bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/8080' 2>/dev/null; then firestore_ready=true; fi
   if [ "$auth_ready" = true ] && [ "$firestore_ready" = true ]; then
     emulators_ready=true
