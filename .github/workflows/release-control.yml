@@ -3,15 +3,16 @@ name: Release Control (Manual)
 on:
   workflow_dispatch:
     inputs:
-      target:
-        description: Choose what to run
+      release_android:
+        description: Build and publish Android to the existing Google Play Closed testing track (alpha)
         required: true
-        type: choice
-        default: backend
-        options:
-          - android
-          - backend
-          - both
+        type: boolean
+        default: true
+      release_backend:
+        description: Deploy the backend to the configured Render service
+        required: true
+        type: boolean
+        default: true
       validation:
         description: Android validation level (used when Android is selected)
         required: true
@@ -42,9 +43,26 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  validate_selection:
+    name: Validate release selection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require at least one release target
+        env:
+          RELEASE_ANDROID: ${{ inputs.release_android }}
+          RELEASE_BACKEND: ${{ inputs.release_backend }}
+        run: |
+          set -euo pipefail
+          if [[ "$RELEASE_ANDROID" != "true" && "$RELEASE_BACKEND" != "true" ]]; then
+            echo "::error::Select Android, Backend, or both. No release target was selected."
+            exit 1
+          fi
+          echo "Selected release targets: Android=$RELEASE_ANDROID Backend=$RELEASE_BACKEND"
+
   android_build:
+    needs: validate_selection
     name: Android - Validate and build signed artifacts
-    if: ${{ inputs.target == 'android' || inputs.target == 'both' }}
+    if: ${{ inputs.release_android }}
     uses: ./.github/workflows/android-release.yml
     with:
       validation: ${{ inputs.validation }}
@@ -52,8 +70,8 @@ jobs:
 
   android_publish:
     name: Android - Publish to Google Play
-    needs: android_build
-    if: ${{ (inputs.target == 'android' || inputs.target == 'both') && needs.android_build.result == 'success' }}
+    needs: [validate_selection, android_build]
+    if: ${{ inputs.release_android && needs.android_build.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -94,7 +112,8 @@ jobs:
 
   render_deploy:
     name: Backend - Deploy to Render
-    if: ${{ inputs.target == 'backend' || inputs.target == 'both' }}
+    needs: validate_selection
+    if: ${{ inputs.release_backend }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
