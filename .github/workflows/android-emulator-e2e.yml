@@ -90,9 +90,9 @@ jobs:
         run: |
           set -euo pipefail
           if [ -e /dev/kvm ]; then
-            echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-            sudo udevadm control --reload-rules
-            sudo udevadm trigger --name-match=kvm
+            echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules || true
+            sudo udevadm control --reload-rules || true
+            sudo udevadm trigger --name-match=kvm || true
           fi
           if [ -r /dev/kvm ] && [ -w /dev/kvm ]; then
             echo "KVM hardware acceleration is available."
@@ -114,7 +114,7 @@ jobs:
           emulator-boot-timeout: 900
           disable-animations: true
           script: |
-            set -euo pipefail
+            exec bash -euo pipefail <<'BASH'
             cd app/flutter
             mkdir -p artifacts
             adb wait-for-device
@@ -175,6 +175,7 @@ jobs:
             flutter test integration_test -d emulator-5554 --reporter expanded \
               --dart-define=E2E_TEST_MODE=true \
               --dart-define=API_BASE_URL=http://10.0.2.2:9 2>&1 | tee artifacts/integration-test.log
+            BASH
       - name: Upload emulator diagnostics
         if: always()
         uses: actions/upload-artifact@v4
