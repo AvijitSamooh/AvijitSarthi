@@ -75,17 +75,17 @@ Represents a processed image stored in object storage.
 
 The application stores object metadata in `media/{mediaId}` Firestore documents rather than exposing storage implementation details to domain entities.
 
-### OrganisationMedia
+### Organisation media association
 
-Explicit association between an Organisation and a Media record.
+An embedded entry in the Organisation document's `media` array that references a Media document.
 
 - `purpose` — `LOGO` or `GALLERY`
 - `displayOrder` — gallery ordering
 - `isPrimary` — identifies the preferred image
 
-### BeneficiaryMedia
+### Beneficiary media association
 
-Explicit association between a Beneficiary and a Media record.
+An embedded entry in the Beneficiary document's `media` array that references a Media document.
 
 - `purpose` — `PROFILE` or `GALLERY`
 - `displayOrder`
