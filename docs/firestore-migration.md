@@ -13,8 +13,11 @@ Firebase Authentication already exists in the application. The **repository/runt
 - causes/{causeId}
 - organisations/{organisationId}
 - beneficiaries/{beneficiaryId}
-- applications/{applicationId}
-- applications/{applicationId}/votes/{adminId}
+- helpApplications/{applicationId}
+- helpApplicationVotes/{voteId}
+- activities/{activityId}
+- accomplishments/{accomplishmentId}
+- platformSettings/downtime
 - applicationRules/{ruleId}
 - applicationWindows/{type}
 - donations/{donationId}
