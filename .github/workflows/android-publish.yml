@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       build_run_id:
-        description: GitHub Actions run ID of the successful Android build
+        description: GitHub Actions run ID (not run number or artifact ID) of the successful Android build
         required: true
         type: string
 
@@ -57,10 +57,13 @@ jobs:
             exit 1
           fi
 
-          ARTIFACTS=$(curl --fail --silent --show-error \
+          if ! ARTIFACTS=$(curl --fail --silent \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $GH_TOKEN" \
-            "$API/actions/runs/$BUILD_RUN_ID/artifacts")
+            "$API/actions/runs/$BUILD_RUN_ID/artifacts"); then
+            echo "::error::Unable to list artifacts for Android build run $BUILD_RUN_ID. Check GitHub Actions access and try again."
+            exit 1
+          fi
           AAB_COUNT=$(jq '[.artifacts[] | select(.expired == false and (.name | startswith("avijit-sahyog-release-aab-")))] | length' <<< "$ARTIFACTS")
           if [ "$AAB_COUNT" -ne 1 ]; then
             echo "::error::Expected exactly one unexpired Avijit Sarthi release AAB artifact in run $BUILD_RUN_ID; found $AAB_COUNT."
