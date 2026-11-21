@@ -428,11 +428,13 @@
   "adminFeatureAdoptionSubtitle": "Share of 30-day active users who viewed each tracked screen.",
   "adminAudienceSegmentation": "Audience segmentation",
   "adminAudienceSegmentationSubtitle": "Thirty-day active users by available city, language and device context.",
+  "adminCity": "City",
   "adminLanguage": "Language",
   "adminDevice": "Device",
   "adminBigQueryFoundation": "BigQuery-ready foundation",
   "adminBigQueryReady": "Event-level PostgreSQL data is shaped for a future BigQuery export.",
   "adminWarehouseNotConfigured": "Warehouse export is not configured.",
+  "adminCityPrivacy": "City is shown when the client supplies an analytics city context; the app does not infer precise location.",
   "adminCohort": "Cohort",
   "adminUsers": "Users",
   "adminDay1": "D1",
@@ -625,10 +627,22 @@
       "date": {}
     }
   },
+  "adminCityAssignments": "City administrator assignments",
+  "adminCityAssignmentsSubtitle": "Assign and update the cities managed by each City Admin.",
+  "adminAssignCityAdmin": "Assign City Admin",
+  "adminEditCityAssignments": "Edit city assignments",
+  "adminCityAdmin": "City Admin",
+  "adminCityAdminEmpty": "No City Admins have been assigned yet.",
+  "adminCityAssignmentFor": "Choose the cities {user} can manage.",
+  "@adminCityAssignmentFor": {
+    "placeholders": {
+      "user": {}
+    }
+  },
+  "adminCityAssignmentSave": "Save assignments",
+  "adminCityAssignmentSaved": "City assignments saved and recorded in audit history.",
   "communityDetailTitle": "Community impact",
   "communityAffiliatedOrganisations": "Organisations involved",
   "communityNoAffiliates": "No organisation details are available for this item.",
-  "communityAffiliateLoadError": "Organisation details could not be loaded.",
-  "adminCity": "City",
-  "adminCityPrivacy": "City is shown when the client supplies an analytics city context; the app does not infer precise location."
+  "communityAffiliateLoadError": "Organisation details could not be loaded."
 }
