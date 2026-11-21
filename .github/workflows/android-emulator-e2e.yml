@@ -7,12 +7,14 @@ on:
       - master
     paths:
       - "app/flutter/**"
+      - "backend/nestjs/**"
       - ".github/workflows/android-emulator-e2e.yml"
   push:
     branches:
       - master
     paths:
       - "app/flutter/**"
+      - "backend/nestjs/**"
       - ".github/workflows/android-emulator-e2e.yml"
   schedule:
     - cron: "30 20 * * *"
