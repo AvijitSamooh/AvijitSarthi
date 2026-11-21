@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       build_run_id:
-        description: Run ID of a successful Android Release Bundle from master (not run number or artifact ID)
+        description: Run ID of a successful Android Release Bundle built from the current master commit
         required: true
         type: string
 
@@ -48,6 +48,7 @@ jobs:
           CONCLUSION=$(jq -r '.conclusion // empty' <<< "$RUN_JSON")
           WORKFLOW_PATH=$(jq -r '.path // empty' <<< "$RUN_JSON")
           HEAD_BRANCH=$(jq -r '.head_branch // empty' <<< "$RUN_JSON")
+          HEAD_SHA=$(jq -r '.head_sha // empty' <<< "$RUN_JSON")
 
           if [ "$STATUS" != "completed" ] || [ "$CONCLUSION" != "success" ]; then
             echo "::error::Selected run $BUILD_RUN_ID is not a completed successful workflow run (status: ${STATUS:-missing}, conclusion: ${CONCLUSION:-missing})."
@@ -59,6 +60,19 @@ jobs:
           fi
           if [ "$HEAD_BRANCH" != "master" ]; then
             echo "::error::Selected Android Release Bundle run must come from master; run $BUILD_RUN_ID came from ${HEAD_BRANCH:-an unknown branch}."
+            exit 1
+          fi
+
+          if ! MASTER_COMMIT_JSON=$(curl --fail --silent \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            "$API/commits/master"); then
+            echo "::error::Unable to resolve the current master commit for release preflight. Check GitHub Actions access and try again."
+            exit 1
+          fi
+          MASTER_SHA=$(jq -r '.sha // empty' <<< "$MASTER_COMMIT_JSON")
+          if [ -z "$MASTER_SHA" ] || [ "$HEAD_SHA" != "$MASTER_SHA" ]; then
+            echo "::error::Selected AAB was not built from the current master commit. Run a fresh Android Release Bundle for master ($MASTER_SHA) and use that run ID."
             exit 1
           fi
 
