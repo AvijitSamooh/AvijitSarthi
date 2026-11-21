@@ -87,7 +87,7 @@ jobs:
       - name: Verify code
         if: ${{ env.RELEASE_VALIDATION == 'full' }}
         run: |
-          flutter analyze
+          flutter analyze --fatal-warnings --no-fatal-infos
           flutter test
 
       - name: Decode Android upload keystore
