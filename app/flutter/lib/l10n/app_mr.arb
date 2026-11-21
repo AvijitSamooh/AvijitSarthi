@@ -412,13 +412,11 @@
   "adminFeatureAdoptionSubtitle": "30 दिवसांत सक्रिय वापरकर्त्यांपैकी प्रत्येक ट्रॅक केलेली स्क्रीन पाहणाऱ्यांचा हिस्सा.",
   "adminAudienceSegmentation": "प्रेक्षक विभागणी",
   "adminAudienceSegmentationSubtitle": "शहर, भाषा आणि डिव्हाइस संदर्भानुसार 30 दिवसांतील सक्रिय वापरकर्ते.",
-  "adminCity": "शहर",
   "adminLanguage": "भाषा",
   "adminDevice": "डिव्हाइस",
   "adminBigQueryFoundation": "BigQuery-सज्ज पाया",
   "adminBigQueryReady": "इव्हेंट-स्तरीय PostgreSQL डेटा भविष्यातील BigQuery निर्यातीसाठी तयार आहे.",
   "adminWarehouseNotConfigured": "डेटा वेअरहाऊस निर्यात कॉन्फिगर केलेली नाही.",
-  "adminCityPrivacy": "शहर अॅपकडून अॅनालिटिक्स संदर्भ दिल्यासच दाखवले जाते; अॅप अचूक स्थानाचा अंदाज लावत नाही.",
   "adminCohort": "गट",
   "adminUsers": "वापरकर्ते",
   "adminDay1": "D1",
@@ -569,7 +567,7 @@
   "cityContentCreate": "नवीन नोंद तयार करा",
   "cityContentTitle": "शीर्षक",
   "cityContentDescription": "वर्णन",
-  "cityContentCity": "शहर ID",
+  "cityContentCity": "शहर",
   "cityContentStartDate": "प्रारंभ दिनांक आणि वेळ (ISO 8601)",
   "cityContentAchievedAt": "यशाचा दिनांक आणि वेळ (ISO 8601)",
   "cityContentEndDate": "समाप्ती दिनांक आणि वेळ (ऐच्छिक)",
@@ -591,5 +589,49 @@
         "type": "String"
       }
     }
-  }
+  },
+  "homeActivities": "उपक्रम",
+  "homeActivitiesSubtitle": "शहरातील सामुदायिक उपक्रम आणि कार्यक्रम पाहा.",
+  "homeAccomplishments": "यशोगाथा",
+  "homeAccomplishmentsSubtitle": "यश आणि सामुदायिक योगदानाचा गौरव करा.",
+  "communityDiscoveryTitle": "समुदायातील घडामोडी",
+  "communityActivitiesTab": "उपक्रम",
+  "communityAccomplishmentsTab": "यशोगाथा",
+  "communityFilterCity": "शहरानुसार निवडा",
+  "communityAllCities": "सर्व शहरे",
+  "communityCityCatalogueError": "शहरांची यादी लोड करता आली नाही.",
+  "communityContentLoadError": "सामुदायिक माहिती लोड करता आली नाही.",
+  "communityNoActivities": "या शहरासाठी अद्याप प्रकाशित उपक्रम नाहीत.",
+  "communityNoAccomplishments": "या शहरासाठी अद्याप प्रकाशित यशोगाथा नाहीत.",
+  "communityActivityUntil": "अखेरची तारीख: {date}",
+  "@communityActivityUntil": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "@adminCityAssignmentFor": {
+    "placeholders": {
+      "user": {}
+    }
+  },
+  "@adminBeneficiaryCreatedImageUploadFailed": {
+    "description": "Error detail returned by the save workflow.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@adminBeneficiaryUnableSave": {
+    "description": "Error detail returned by the save workflow.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "communityDetailTitle": "समुदायाचा प्रभाव",
+  "communityAffiliatedOrganisations": "संबंधित संस्था",
+  "communityNoAffiliates": "या माहितीसाठी संस्थेचे तपशील उपलब्ध नाहीत.",
+  "communityAffiliateLoadError": "संस्थेचे तपशील लोड करता आले नाहीत."
 }

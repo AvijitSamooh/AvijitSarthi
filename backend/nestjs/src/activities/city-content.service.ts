@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import { isCityId } from '../cities/city-catalogue';
 import { FirebaseService } from '../firebase/firebase.service';
 import type { FirestoreUser } from '../users/firestore-users.service';
 
@@ -40,6 +41,7 @@ export class CityContentService {
   async create(kind: ContentKind, input: CityContentInput, actor: FirestoreUser) {
     const cityId = input.cityId?.trim();
     if (!cityId) throw new BadRequestException('A city is required.');
+    if (!isCityId(cityId)) throw new BadRequestException('Select a city from the supported city catalogue.');
     this.assertCityAccess(actor, cityId);
     await this.validateOrganisations(input.organisationIds ?? []);
     this.validateDates(kind, input);

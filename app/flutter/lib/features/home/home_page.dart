@@ -11,6 +11,7 @@ import '../../features/applications/presentation/applications_page.dart';
 import '../../features/auth/presentation/profile_page.dart';
 import '../../features/causes/presentation/causes_page.dart';
 import '../../features/impact/presentation/impact_page.dart';
+import '../../features/community/presentation/city_discovery_page.dart';
 import '../../features/settings/settings_page.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -92,6 +93,12 @@ class _HomePageState extends ConsumerState<HomePage> {
               onEducation: () => _selectNavigation(1),
               onCooperation: () => _selectNavigation(2),
               onRecognition: () => _selectNavigation(1),
+              onActivities: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const CityDiscoveryPage(initialTab: 0)),
+              ),
+              onAccomplishments: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const CityDiscoveryPage(initialTab: 1)),
+              ),
             ),
             const ApplicationsPage(showAppBar: false),
             const ImpactPage(),
@@ -117,12 +124,16 @@ class _HomeContent extends StatelessWidget {
     required this.onEducation,
     required this.onCooperation,
     required this.onRecognition,
+    required this.onActivities,
+    required this.onAccomplishments,
   });
 
   final VoidCallback onService;
   final VoidCallback onEducation;
   final VoidCallback onCooperation;
   final VoidCallback onRecognition;
+  final VoidCallback onActivities;
+  final VoidCallback onAccomplishments;
 
   @override
   Widget build(BuildContext context) {
@@ -203,6 +214,32 @@ class _HomeContent extends StatelessWidget {
                   title: l10n.homeRecognition,
                   subtitle: l10n.brandTagline,
                   onTap: onRecognition,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _ServiceCard(
+                  icon: Icons.event_available_rounded,
+                  iconColor: const Color(0xFF1686C7),
+                  background: const Color(0xFFEAF5FD),
+                  title: l10n.homeActivities,
+                  subtitle: l10n.homeActivitiesSubtitle,
+                  onTap: onActivities,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _ServiceCard(
+                  icon: Icons.emoji_events_rounded,
+                  iconColor: const Color(0xFFE09A1A),
+                  background: const Color(0xFFF4ECFB),
+                  title: l10n.homeAccomplishments,
+                  subtitle: l10n.homeAccomplishmentsSubtitle,
+                  onTap: onAccomplishments,
                 ),
               ),
             ],

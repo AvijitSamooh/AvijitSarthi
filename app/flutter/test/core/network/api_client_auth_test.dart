@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -99,6 +100,27 @@ void main() {
     final result = await api.updateAdminCityContent('accomplishments', 'accomp-1', {'status': 'PUBLISHED'});
     expect(result['status'], 'PUBLISHED');
     await api.deleteAdminCityContent('accomplishments', 'accomp-1');
+    expect(calls, 2);
+    api.dispose();
+  });
+
+  test('public city catalogue and city discovery use localized, scoped API requests', () async {
+    var calls = 0;
+    final client = MockClient((request) async {
+      calls++;
+      if (request.url.path == '/cities') {
+        expect(request.url.queryParameters['language'], 'mr');
+        return http.Response.bytes(utf8.encode('[{"id":"pune","name":"पुणे"}]'), 200, headers: {'content-type': 'application/json; charset=utf-8'});
+      }
+      expect(request.url.path, '/activities');
+      expect(request.url.queryParameters['cityId'], 'pune');
+      return http.Response('[{"id":"a1","cityId":"pune","title":"Camp","description":"Service","startsAt":"2026-12-01T10:00:00Z"}]', 200);
+    });
+    final api = ApiClient(client: client, baseUrl: 'https://api.example.com');
+    final cities = await api.getCities('mr');
+    final activities = await api.getPublicCityContent('activities', cityId: 'pune');
+    expect(cities.single['name'], 'पुणे');
+    expect(activities.single['id'], 'a1');
     expect(calls, 2);
     api.dispose();
   });
