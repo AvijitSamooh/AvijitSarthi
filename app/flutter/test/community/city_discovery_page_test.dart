@@ -190,7 +190,7 @@ void main() {
     );
 
     await tester.pumpAndSettle();
-    expect(find.text('Unable to load community content right now.'), findsOneWidget);
+    expect(find.text('Unable to load community updates.'), findsOneWidget);
     shouldFail = false;
     await tester.tap(find.text('Retry').first);
     await tester.pumpAndSettle();
