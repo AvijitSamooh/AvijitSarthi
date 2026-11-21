@@ -28,7 +28,7 @@ jobs:
   android-emulator:
     name: Install, launch and test Android app
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     defaults:
       run:
         working-directory: app/flutter
@@ -85,11 +85,16 @@ jobs:
 
       - name: Run on Android emulator with Firebase Auth Emulator
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          # GitHub-hosted Linux VMs may not expose nested KVM. The emulator
+          # otherwise exits immediately when acceleration is unavailable.
+          ANDROID_I_WANT_MY_TCG: "yes"
         with:
-          api-level: 35
+          api-level: 34
           target: google_apis
           arch: x86_64
           profile: pixel_2
+          emulator-boot-timeout: 900
           disable-animations: true
           script: |
             set -euo pipefail
