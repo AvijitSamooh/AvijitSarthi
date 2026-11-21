@@ -36,7 +36,6 @@ UI tests should cover primary journeys plus important loading, empty and error s
 
 - Dynamically managed organisation logos and beneficiary profile/gallery images delivered from the public API
 
-
 ## Firebase authentication
 
 Firebase must be configured before running the authentication flow:
@@ -48,9 +47,24 @@ Firebase must be configured before running the authentication flow:
 
 The Flutter app initializes Firebase at startup, restores an existing Firebase session, exchanges the Firebase ID token with the backend through `GET /auth/me`, and uses the resolved backend role to unlock protected admin operations.
 
+## Android emulator E2E
+
+The dedicated **Android Emulator E2E - Avijit Sarthi** workflow builds and installs a debug APK on an Android emulator, launches the installed application, and runs the Flutter integration test against the real application startup path.
+
+Run it manually from GitHub Actions with **workflow_dispatch**, or let it run for pull requests targeting `master`, pushes to `master`, and the nightly schedule.
+
+The workflow uses:
+
+- A debug-only `E2E_TEST_MODE=true` define. Release builds cannot activate this mode.
+- A deliberately unavailable emulator-local API endpoint, so tests do not write to the production backend.
+- Disabled Firebase Analytics collection and suppressed client-health telemetry in E2E mode.
+- Empty SharedPreferences test state and no sign-in, donation, payment, or production Firestore writes.
+- Uploaded emulator screenshots, logcat and integration-test output for triage.
+
+The current Android journey is a startup/home-screen smoke test. Authenticated, backend-persisted journeys require isolated Firebase Auth/Firestore and API fixtures; those must be added before treating this workflow as full business-flow coverage.
 
 ## UX and integration coverage
 
-Detailed application journeys are covered by the unit/widget suites; the integration_test/ suite validates the real Linux runtime and native plugin boundary. CI runs these integration tests on Linux with an X virtual framebuffer.
+Detailed application journeys are covered by the unit/widget suites. The `integration_test/` suite exercises the Android runtime and native plugin boundary.
 
-See ../../docs/user-experience.md for the user journey specification and ../../docs/test-and-ux-matrix.md for traceability.
+See ../../docs/user-experience.md and ../../docs/test-and-ux-matrix.md for journey specifications and traceability.

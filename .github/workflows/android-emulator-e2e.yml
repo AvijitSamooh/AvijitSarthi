@@ -1,0 +1,107 @@
+name: Android Emulator E2E - Avijit Sarthi
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "app/flutter/**"
+      - ".github/workflows/android-emulator-e2e.yml"
+  push:
+    branches:
+      - master
+    paths:
+      - "app/flutter/**"
+      - ".github/workflows/android-emulator-e2e.yml"
+  schedule:
+    - cron: "30 20 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-emulator-e2e-avijit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-emulator:
+    name: Install, launch and test Android app
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: app/flutter
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Node.js for Firebase Auth Emulator
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Configure and validate Firebase for Android
+        env:
+          GOOGLE_SERVICES_JSON: ${{ vars.GOOGLE_SERVICES_JSON }}
+        run: |
+          set -euo pipefail
+          if [ -z "$GOOGLE_SERVICES_JSON" ]; then
+            echo "::error::Missing required repository variable GOOGLE_SERVICES_JSON."
+            exit 1
+          fi
+          printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          jq empty android/app/google-services.json
+          PROJECT_ID=$(jq -r '.project_info.project_id // empty' android/app/google-services.json)
+          PACKAGE_NAME=$(jq -r '.client[0].client_info.android_client_info.package_name // empty' android/app/google-services.json)
+          test "$PROJECT_ID" = "avijitsahyog-firebase"
+          test "$PACKAGE_NAME" = "com.avijitsamooh.avijitsahyog"
+
+      - name: Build debug APK
+        run: |
+          mkdir -p artifacts
+          flutter build apk --debug \
+            --dart-define=E2E_TEST_MODE=true \
+            --dart-define=API_BASE_URL=http://10.0.2.2:9 2>&1 | tee artifacts/apk-build.log
+
+      - name: Run on Android emulator with Firebase Auth Emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          ANDROID_I_WANT_MY_TCG: "yes"
+        with:
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          api-level: 34
+          target: default
+          arch: x86_64
+          profile: pixel_2
+          emulator-boot-timeout: 900
+          disable-animations: true
+          script: >-
+            bash -euo pipefail -c 'cd app/flutter; mkdir -p artifacts; echo eyJlbXVsYXRvcnMiOnsiYXV0aCI6eyJwb3J0Ijo5MDk5fSwidWkiOnsiZW5hYmxlZCI6ZmFsc2V9fX0= | base64 -d > /tmp/firebase-e2e.json; npx --yes firebase-tools@14 emulators:start --only auth --project avijitsahyog-firebase --config /tmp/firebase-e2e.json > artifacts/firebase-auth-emulator.log 2>&1 & firebase_pid=$!; cleanup(){ adb logcat -d > artifacts/logcat.txt || true; adb exec-out screencap -p > artifacts/final-screen.png || true; kill "$firebase_pid" 2>/dev/null || true; }; trap cleanup EXIT; ready=false; for attempt in $(seq 1 60); do if curl --silent --output /dev/null http://127.0.0.1:9099/; then ready=true; break; fi; if ! kill -0 "$firebase_pid" 2>/dev/null; then cat artifacts/firebase-auth-emulator.log; exit 1; fi; sleep 2; done; if [ "$ready" != true ]; then cat artifacts/firebase-auth-emulator.log; echo "Firebase Auth Emulator did not become ready."; exit 1; fi; adb install -r build/app/outputs/flutter-apk/app-debug.apk; adb shell monkey -p com.avijitsamooh.avijitsahyog 1; sleep 8; adb exec-out screencap -p > artifacts/installed-app-launch.png; flutter test integration_test -d emulator-5554 --reporter expanded --dart-define=E2E_TEST_MODE=true --dart-define=API_BASE_URL=http://10.0.2.2:9 2>&1 | tee artifacts/integration-test.log'
+      - name: Upload emulator diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: avijit-sarthi-android-e2e-${{ github.run_id }}
+          path: app/flutter/artifacts/
+          if-no-files-found: warn
+          retention-days: 7
