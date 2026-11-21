@@ -7,12 +7,14 @@ on:
       - master
     paths:
       - "app/flutter/**"
+      - "backend/nestjs/**"
       - ".github/workflows/android-emulator-e2e.yml"
   push:
     branches:
       - master
     paths:
       - "app/flutter/**"
+      - "backend/nestjs/**"
       - ".github/workflows/android-emulator-e2e.yml"
   schedule:
     - cron: "30 20 * * *"
@@ -43,16 +45,24 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Set up Node.js for Firebase Auth Emulator
+      - name: Set up Node.js for Firebase Auth and Firestore Emulators
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: npm
+          cache-dependency-path: backend/nestjs/package-lock.json
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
+
+      - name: Install and build isolated NestJS E2E API
+        working-directory: backend/nestjs
+        run: |
+          npm ci
+          npm run build
 
       - name: Install Flutter dependencies
         run: flutter pub get
@@ -82,7 +92,7 @@ jobs:
           mkdir -p artifacts
           flutter build apk --debug \
             --dart-define=E2E_TEST_MODE=true \
-            --dart-define=API_BASE_URL=http://10.0.2.2:9 2>&1 | tee artifacts/apk-build.log
+            --dart-define=API_BASE_URL=http://10.0.2.2:3000 2>&1 | tee artifacts/apk-build.log
           test -s build/app/outputs/flutter-apk/app-debug.apk
 
       - name: Configure Android emulator acceleration

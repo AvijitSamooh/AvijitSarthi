@@ -56,12 +56,16 @@ Run it manually from GitHub Actions with **workflow_dispatch**, or let it run fo
 The workflow uses:
 
 - A debug-only `E2E_TEST_MODE=true` define. Release builds cannot activate this mode.
-- A deliberately unavailable emulator-local API endpoint, so tests do not write to the production backend.
+- Isolated Firebase Auth and Firestore emulators with a disposable project identity and ephemeral Admin SDK key.
+- A locally built NestJS API connected only to the Firestore emulator.
+- Deterministic published Pune/Mumbai Activities and Accomplishments plus a draft Activity. The seed script refuses to run unless the local Firestore emulator and the Avijit E2E project ID are selected.
+- A real Android guest-discovery journey that loads content through the API, verifies drafts are hidden, filters by city, and switches between Activities and Accomplishments.
+- The Android emulator host bridge to reach the local API; cleartext HTTP is enabled only in the debug manifest.
 - Disabled Firebase Analytics collection and suppressed client-health telemetry in E2E mode.
-- Empty SharedPreferences test state and no sign-in, donation, payment, or production Firestore writes.
-- Uploaded emulator screenshots, logcat and integration-test output for triage.
+- No production API, Firestore, customer records, sign-in account, donation, payment or real payment rail writes.
+- Uploaded emulator screenshots, logcat, Firebase emulator/API logs and integration-test output for triage.
 
-The current Android journey is a startup/home-screen smoke test. Authenticated, backend-persisted journeys require isolated Firebase Auth/Firestore and API fixtures; those must be added before treating this workflow as full business-flow coverage.
+The Android suite includes the installed-app startup smoke test, UI-level city/admin flows, and a real guest read journey against isolated Firestore-backed API fixtures. The cross-repository issue also covers JCP and FnOPlayer; this workflow validates only Avijit Sarthi and does not claim those other repositories are covered.
 
 ## UX and integration coverage
 

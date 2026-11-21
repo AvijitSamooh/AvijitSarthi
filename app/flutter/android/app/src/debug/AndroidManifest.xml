@@ -4,4 +4,7 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Only debug builds may use cleartext HTTP to reach the local E2E API
+         through the Android emulator host bridge. Release manifests are unchanged. -->
+    <application android:usesCleartextTraffic="true" />
 </manifest>
