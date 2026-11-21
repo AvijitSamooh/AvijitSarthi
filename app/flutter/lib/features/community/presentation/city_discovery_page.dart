@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import '../models/city_content.dart';
 import '../providers/city_providers.dart';
+import 'city_content_detail_page.dart';
 
 class CityDiscoveryPage extends ConsumerStatefulWidget {
   const CityDiscoveryPage({super.key, this.initialTab = 0});
@@ -103,6 +104,7 @@ class _CityDiscoveryPageState extends ConsumerState<CityDiscoveryPage> {
             ),
           ],
         ),
+        ),
       ),
     );
   }
@@ -172,6 +174,7 @@ class _CityContentList extends ConsumerWidget {
                 itemCount: items.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (context, index) => _CityContentCard(
+                  kind: kind,
                   item: items[index],
                   cityName: cityNames[items[index].cityId] ?? items[index].cityId,
                 ),
@@ -182,8 +185,13 @@ class _CityContentList extends ConsumerWidget {
 }
 
 class _CityContentCard extends StatelessWidget {
-  const _CityContentCard({required this.item, required this.cityName});
+  const _CityContentCard({
+    required this.kind,
+    required this.item,
+    required this.cityName,
+  });
 
+  final String kind;
   final CityContent item;
   final String cityName;
 
@@ -196,7 +204,18 @@ class _CityContentCard extends StatelessWidget {
         : MaterialLocalizations.of(context).formatMediumDate(date.toLocal());
 
     return Card(
-      child: Padding(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => CityContentDetailPage(
+              kind: kind,
+              contentId: item.id,
+              cityName: cityName,
+            ),
+          ),
+        ),
+        child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -7,6 +7,7 @@ class CityContent {
     this.startsAt,
     this.endsAt,
     this.achievedAt,
+    this.organisationIds = const [],
   });
 
   final String id;
@@ -16,6 +17,7 @@ class CityContent {
   final DateTime? startsAt;
   final DateTime? endsAt;
   final DateTime? achievedAt;
+  final List<String> organisationIds;
 
   DateTime? get displayDate => startsAt ?? achievedAt;
 
@@ -27,6 +29,9 @@ class CityContent {
         startsAt: _parseDate(json['startsAt']),
         endsAt: _parseDate(json['endsAt']),
         achievedAt: _parseDate(json['achievedAt']),
+        organisationIds: (json['organisationIds'] as List<dynamic>? ?? const [])
+            .whereType<String>()
+            .toList(growable: false),
       );
 
   static DateTime? _parseDate(dynamic value) {

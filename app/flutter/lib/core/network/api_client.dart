@@ -130,6 +130,22 @@ class ApiClient {
     return (jsonDecode(response.body) as List<dynamic>).cast<Map<String, dynamic>>();
   }
 
+  Future<Map<String, dynamic>> getPublicCityContentDetail(String kind, String id) async {
+    _validateCityContentKind(kind);
+    final response = await _client.get(Uri.parse('$baseUrl/$kind/${Uri.encodeComponent(id)}'));
+    _ensureSuccess(response, 'Loading $kind item');
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  Future<List<Map<String, dynamic>>> getPublicOrganisations(String languageCode) async {
+    final uri = Uri.parse('$baseUrl/organisations').replace(queryParameters: {
+      'language': languageCode,
+    });
+    final response = await _client.get(uri);
+    _ensureSuccess(response, 'Loading organisations');
+    return (jsonDecode(response.body) as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
   Future<Map<String, dynamic>> createDonation(Map<String, dynamic> payload) async {
     final response = await _client.post(
       Uri.parse('$baseUrl/donations'),
