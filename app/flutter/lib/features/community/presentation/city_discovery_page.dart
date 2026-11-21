@@ -104,7 +104,6 @@ class _CityDiscoveryPageState extends ConsumerState<CityDiscoveryPage> {
             ),
           ],
         ),
-        ),
       ),
     );
   }
