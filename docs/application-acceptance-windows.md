@@ -34,11 +34,11 @@ Starting a window after a previous close clears the old close timestamp and crea
 
 ## Time handling
 
-Window timestamps are persisted as instants in PostgreSQL. Flutter converts administrator-selected local date/time values to UTC before sending them to the API and converts stored timestamps back to local device time for display. This keeps the stored event boundary unambiguous while giving users and administrators locally meaningful times.
+Window timestamps are persisted as Firestore `Timestamp` values in `applicationWindows/{type}` documents. Flutter converts administrator-selected local date/time values to UTC before sending them to the API and converts stored timestamps back to local device time for display. This keeps the stored event boundary unambiguous while giving users and administrators locally meaningful times.
 
 ## Relationship to the nightly backend service window
 
-The nightly backend service window (9:00 PM–8:00 AM by default) is separate. During that period the Flutter client intentionally blocks backend traffic. Application acceptance windows are business-level controls and remain stored in PostgreSQL.
+The nightly backend service window (9:00 PM–8:00 AM by default) is separate. During that period the Flutter client intentionally blocks backend traffic. Application acceptance windows are business-level controls and remain stored in Firestore.
 
 Both layers are enforced:
 
