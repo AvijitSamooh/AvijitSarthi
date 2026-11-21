@@ -37,10 +37,13 @@ jobs:
         run: |
           set -euo pipefail
           API="https://api.github.com/repos/$GH_REPOSITORY"
-          RUN_JSON=$(curl --fail --silent --show-error \
+          if ! RUN_JSON=$(curl --fail --silent \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $GH_TOKEN" \
-            "$API/actions/runs/$BUILD_RUN_ID")
+            "$API/actions/runs/$BUILD_RUN_ID"); then
+            echo "::error::GitHub Actions run ID $BUILD_RUN_ID was not found or is not accessible. Use the run ID from a successful Android Release Bundle run, not an artifact ID, version code, or workflow run number."
+            exit 1
+          fi
           STATUS=$(jq -r '.status // empty' <<< "$RUN_JSON")
           CONCLUSION=$(jq -r '.conclusion // empty' <<< "$RUN_JSON")
           WORKFLOW_PATH=$(jq -r '.path // empty' <<< "$RUN_JSON")
