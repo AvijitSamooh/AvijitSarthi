@@ -114,8 +114,14 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Nikita Manoriya'));
     await tester.pumpAndSettle();
+    expect(find.text('Choose the cities Nikita Manoriya can manage.'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('city_assignment_pune')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('city_assignment_mumbai')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<CheckboxListTile>(find.byKey(const ValueKey('city_assignment_pune'))).value, isTrue);
+    expect(tester.widget<CheckboxListTile>(find.byKey(const ValueKey('city_assignment_mumbai'))).value, isTrue);
+    await tester.ensureVisible(find.text('Save assignments'));
     await tester.tap(find.text('Save assignments'));
     await tester.pumpAndSettle();
 
@@ -166,7 +172,9 @@ void main() {
     expect(find.text('Admin Four'), findsNothing);
     expect(find.text('1 / 2'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.chevron_right).first);
+    final nextPage = find.byIcon(Icons.chevron_right).first;
+    await tester.ensureVisible(nextPage);
+    await tester.tap(nextPage);
     await tester.pumpAndSettle();
 
     expect(find.text('Admin One'), findsNothing);

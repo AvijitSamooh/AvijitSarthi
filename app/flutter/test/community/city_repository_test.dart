@@ -12,9 +12,9 @@ void main() {
     final client = MockClient((request) async {
       if (request.url.path == '/cities') {
         expect(request.url.queryParameters['language'], 'gu');
-        return http.Response(jsonEncode([
+        return http.Response.bytes(utf8.encode(jsonEncode([
           {'id': 'pune', 'name': 'પુણે'},
-        ]), 200);
+        ])), 200, headers: {'content-type': 'application/json; charset=utf-8'});
       }
       expect(request.url.path, '/activities');
       expect(request.url.queryParameters['cityId'], 'pune');

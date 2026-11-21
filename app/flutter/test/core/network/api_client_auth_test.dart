@@ -110,7 +110,7 @@ void main() {
       calls++;
       if (request.url.path == '/cities') {
         expect(request.url.queryParameters['language'], 'mr');
-        return http.Response('[{"id":"pune","name":"पुणे"}]', 200);
+        return http.Response.bytes(utf8.encode('[{"id":"pune","name":"पुणे"}]'), 200, headers: {'content-type': 'application/json; charset=utf-8'});
       }
       expect(request.url.path, '/activities');
       expect(request.url.queryParameters['cityId'], 'pune');

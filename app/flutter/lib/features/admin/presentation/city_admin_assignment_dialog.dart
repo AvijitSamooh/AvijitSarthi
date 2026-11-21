@@ -28,6 +28,11 @@ class _CityAdminAssignmentDialogState
     final l10n = AppLocalizations.of(context)!;
     final languageCode = Localizations.localeOf(context).languageCode;
     final cities = ref.watch(cityCatalogueProvider(languageCode));
+    final availableCityIds = cities.maybeWhen(
+      data: (items) => items.map((city) => city.id).toSet(),
+      orElse: () => <String>{},
+    );
+    final selectedCityIds = _selectedCityIds.intersection(availableCityIds).toList()..sort();
 
     return AlertDialog(
       title: Text(l10n.adminAssignCityAdmin),
@@ -74,18 +79,9 @@ class _CityAdminAssignmentDialogState
           child: Text(l10n.cancel),
         ),
         FilledButton(
-          onPressed: cities.maybeWhen(
-            data: (items) {
-              final validCityIds = _selectedCityIds
-                  .where((id) => items.any((city) => city.id == id))
-                  .toList()
-                ..sort();
-              return validCityIds.isEmpty
-                  ? null
-                  : () => Navigator.of(context).pop(validCityIds);
-            },
-            orElse: () => null,
-          ),
+          onPressed: selectedCityIds.isEmpty
+              ? null
+              : () => Navigator.of(context).pop(selectedCityIds),
           child: Text(l10n.adminCityAssignmentSave),
         ),
       ],
