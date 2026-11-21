@@ -78,10 +78,12 @@ jobs:
 
       - name: Build debug APK
         run: |
+          set -euo pipefail
           mkdir -p artifacts
           flutter build apk --debug \
             --dart-define=E2E_TEST_MODE=true \
             --dart-define=API_BASE_URL=http://10.0.2.2:9 2>&1 | tee artifacts/apk-build.log
+          test -s build/app/outputs/flutter-apk/app-debug.apk
 
       - name: Run on Android emulator with Firebase Auth Emulator
         uses: reactivecircus/android-emulator-runner@v2
