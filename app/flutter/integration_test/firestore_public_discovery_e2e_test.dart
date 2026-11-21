@@ -27,7 +27,6 @@ void main() {
 
       await tester.pumpAndSettle(
         const Duration(milliseconds: 100),
-        timeout: const Duration(seconds: 30),
       );
 
       // These records are seeded into the local Firestore emulator. The app
@@ -43,7 +42,6 @@ void main() {
       await tester.tap(find.text('Pune').last);
       await tester.pumpAndSettle(
         const Duration(milliseconds: 100),
-        timeout: const Duration(seconds: 30),
       );
 
       expect(find.text('E2E Pune published activity'), findsOneWidget);
@@ -52,7 +50,6 @@ void main() {
       await tester.tap(find.byType(Tab).at(1));
       await tester.pumpAndSettle(
         const Duration(milliseconds: 100),
-        timeout: const Duration(seconds: 30),
       );
 
       expect(find.text('E2E Pune published accomplishment'), findsOneWidget);
