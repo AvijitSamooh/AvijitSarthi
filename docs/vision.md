@@ -209,7 +209,7 @@ The product succeeds when donating becomes simple, transparent, multilingual and
 - 90%+ for critical financial, allocation and payment logic
 - UI tests covering primary journeys and important empty/error states
 
-CI must run analysis/build, automated tests and Prisma schema validation before merge.
+CI must run backend build/tests, Flutter analysis/tests, and isolated Firestore-backed integration tests before merge. Do not reintroduce PostgreSQL/Prisma as runtime dependencies.
 
 
 ## 15. Activities and Accomplishments
