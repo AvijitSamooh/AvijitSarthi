@@ -126,7 +126,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repository.roleChanges, [('nikita-user', 'CITY_ADMIN')]);
-    expect(repository.cityAssignmentChanges, [('nikita-user', ['mumbai', 'pune'])]);
+    expect(repository.cityAssignmentChanges.single.$1, 'nikita-user');
+    expect(repository.cityAssignmentChanges.single.$2, ['mumbai', 'pune']);
     expect(repository.users['nikita-user']!.role, 'CITY_ADMIN');
   });
 

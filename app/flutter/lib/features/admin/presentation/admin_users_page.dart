@@ -143,69 +143,6 @@ class _AdminUsersPageState extends ConsumerState<AdminUsersPage> {
             const SizedBox(height: 8),
             Text(l10n.adminUsersSubtitle),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(l10n.adminCityAssignments, style: Theme.of(context).textTheme.titleLarge),
-                        const SizedBox(height: 4),
-                        Text(l10n.adminCityAssignmentsSubtitle),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  FilledButton.icon(
-                    onPressed: _savingCityAssignments ? null : _assignCityAdmin,
-                    icon: const Icon(Icons.add_location_alt_rounded),
-                    label: Text(l10n.adminAssignCityAdmin),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              cityAdmins.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, _) => _ErrorCard(message: error.toString()),
-                data: (result) {
-                  final cityNames = cities.maybeWhen(
-                    data: (items) => {for (final city in items) city.id: city.name},
-                    orElse: () => const <String, String>{},
-                  );
-                  if (result.items.isEmpty) {
-                    return Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(l10n.adminCityAdminEmpty),
-                      ),
-                    );
-                  }
-                  return Card(
-                    child: Column(
-                      children: [
-                        for (var i = 0; i < result.items.length; i++) ...[
-                          ListTile(
-                            leading: const Icon(Icons.location_city_rounded),
-                            title: Text(result.items[i].label),
-                            subtitle: Text(
-                              '${result.items[i].email ?? l10n.adminNoEmail}\n${result.items[i].cityIds.map((id) => cityNames[id] ?? id).join(', ')}',
-                            ),
-                            isThreeLine: true,
-                            trailing: IconButton(
-                              tooltip: l10n.adminEditCityAssignments,
-                              icon: const Icon(Icons.edit_location_alt_rounded),
-                              onPressed: () => _editCityAssignments(result.items[i]),
-                            ),
-                          ),
-                          if (i < result.items.length - 1) const Divider(height: 1),
-                        ],
-                      ],
-                    ),
-                  );
-                },
-              ),
-            const SizedBox(height: 24),
-            const SizedBox(height: 16),
             TextField(
               controller: _searchController,
               onChanged: _onSearchChanged,
@@ -240,6 +177,71 @@ class _AdminUsersPageState extends ConsumerState<AdminUsersPage> {
                 onNext: result.hasNextPage ? () => setState(() => _page++) : null,
                 isSearchResult: _search.isNotEmpty,
               ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.adminCityAssignments,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(l10n.adminCityAssignmentsSubtitle),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                FilledButton.icon(
+                  onPressed: _savingCityAssignments ? null : _assignCityAdmin,
+                  icon: const Icon(Icons.add_location_alt_rounded),
+                  label: Text(l10n.adminAssignCityAdmin),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            cityAdmins.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, _) => _ErrorCard(message: error.toString()),
+              data: (result) {
+                final cityNames = cities.maybeWhen(
+                  data: (items) => {for (final city in items) city.id: city.name},
+                  orElse: () => const <String, String>{},
+                );
+                if (result.items.isEmpty) {
+                  return Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(l10n.adminCityAdminEmpty),
+                    ),
+                  );
+                }
+                return Card(
+                  child: Column(
+                    children: [
+                      for (var i = 0; i < result.items.length; i++) ...[
+                        ListTile(
+                          leading: const Icon(Icons.location_city_rounded),
+                          title: Text(result.items[i].label),
+                          subtitle: Text(
+                            '${result.items[i].email ?? l10n.adminNoEmail}\n${result.items[i].cityIds.map((id) => cityNames[id] ?? id).join(', ')}',
+                          ),
+                          isThreeLine: true,
+                          trailing: IconButton(
+                            tooltip: l10n.adminEditCityAssignments,
+                            icon: const Icon(Icons.edit_location_alt_rounded),
+                            onPressed: () => _editCityAssignments(result.items[i]),
+                          ),
+                        ),
+                        if (i < result.items.length - 1) const Divider(height: 1),
+                      ],
+                    ],
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 28),
             Text(l10n.adminAuditHistory, style: Theme.of(context).textTheme.titleLarge),
