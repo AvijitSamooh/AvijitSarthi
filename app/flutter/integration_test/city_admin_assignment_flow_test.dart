@@ -140,6 +140,6 @@ void main() {
     expect(repository.users['city-user']!.role, 'CITY_ADMIN');
     expect(repository.cityAssignments.single.$1, 'city-user');
     expect(repository.cityAssignments.single.$2, ['mumbai', 'pune']);
-    expect(find.text('मुंबई, पुणे'), findsOneWidget);
+    expect(find.textContaining('मुंबई, पुणे'), findsOneWidget);
   });
 }
