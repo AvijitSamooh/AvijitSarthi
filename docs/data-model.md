@@ -37,15 +37,15 @@ Represents a donation bucket/cause.
 - `isActive` — public availability
 - `displayOrder` — UI ordering
 
-Names and descriptions are stored in `CauseTranslation`.
+Names and descriptions are stored in the Firestore document's `translations` map, keyed by language code.
 
 ### Organisation
 
 Represents an affiliated organisation associated with one or more causes.
 
-Operational/contact fields include logo URL compatibility, website, phone, dedicated mobile number, email, address, location, active state and display order. Mobile numbers are normalized to Indian E.164 format and are exposed to the public cause response for contact actions. Names and descriptions are stored in `OrganisationTranslation`.
+Operational/contact fields include logo URL compatibility, website, phone, dedicated mobile number, email, address, location, active state and display order. Mobile numbers are normalized to Indian E.164 format and are exposed to the public cause response for contact actions. Names and descriptions are stored in the Firestore document's `translations` map, keyed by language code.
 
-Managed images are represented through `OrganisationMedia`.
+Managed images are represented by an embedded `media` association array on the Organisation document; each entry references a separate `media/{mediaId}` document.
 
 ### Beneficiary
 
@@ -61,7 +61,7 @@ Represents a person or initiative whose support can be transparently explored.
 - `isActive`
 - `displayOrder`
 
-Managed images are represented through `BeneficiaryMedia`.
+Managed images are represented by an embedded `media` association array on the Beneficiary document; each entry references a separate `media/{mediaId}` document.
 
 ### Media
 
@@ -73,7 +73,7 @@ Represents a processed image stored in object storage.
 - `width` / `height` — processed image dimensions
 - timestamps
 
-The application stores object metadata in PostgreSQL rather than exposing storage implementation details to domain entities.
+The application stores object metadata in `media/{mediaId}` Firestore documents rather than exposing storage implementation details to domain entities.
 
 ### OrganisationMedia
 
@@ -106,7 +106,7 @@ Convert to WebP
     ↓
 Cloudflare R2
     ↓
-Persist Media metadata in PostgreSQL
+Persist Media metadata in Firestore
     ↓
 Attach Media to Organisation or Beneficiary
 ```
@@ -118,9 +118,9 @@ Current upload constraints:
 - Maximum processed dimension: 1920 px
 - Output format: WebP (quality 82)
 
-If database persistence fails after object upload, the backend attempts to remove the uploaded R2 object to avoid orphaned files.
+If Firestore metadata persistence fails after object upload, the backend attempts to remove the uploaded R2 object to avoid orphaned files.
 
-The current `logoUrl` and `photoUrl` fields remain temporarily for backward compatibility. New gallery functionality should use the Media relations.
+The current `logoUrl` and `photoUrl` fields remain temporarily for backward compatibility. New gallery functionality should use the embedded media associations and referenced Media documents.
 
 ## Translation strategy
 
@@ -139,9 +139,9 @@ English remains the mandatory fallback language as defined by `docs/vision.md`.
 1. Stable IDs are UUIDs.
 2. Slugs are unique and intended for API/UI routing.
 3. Content can be activated/deactivated without deleting historical references.
-4. Translation records are separate from core entities.
-5. Organisation-to-cause is an explicit relation because it has its own lifecycle and ordering.
-6. Media uses explicit entity relations rather than polymorphic `entityType/entityId` references, preserving database foreign-key integrity.
+4. Translations are stored in language-keyed maps on Firestore documents.
+5. Organisation documents store stable `causeIds` references; the backend resolves the referenced active Cause documents for public responses.
+6. Organisation and Beneficiary documents embed explicit media association entries that reference shared Media documents. Services validate those references because Firestore does not enforce SQL foreign keys.
 7. Object storage keys, rather than storage-provider URLs, are persisted as the canonical media identity.
 8. Existing URL fields remain temporarily to avoid breaking existing clients.
 9. Video is intentionally outside the current media foundation scope.
@@ -154,7 +154,7 @@ Education is represented as two separate causes with distinct purposes:
 - **Education Assistance** (`education-assistance`) — child cause for need-based support for students who need help continuing their education.
 - **Pratibha Samman** (`pratibha-samman`) — recognition of exceptional achievements in education, profession, sports, arts, culture and community service.
 
-The existing `education` cause is renamed to `education-assistance` by migration so existing donations, allocations, beneficiaries and organisation associations keep their foreign-key relationships. Existing education beneficiaries and organisation associations therefore continue under Education Assistance. Pratibha Samman is a separate category and does not reuse the assistance beneficiary workflow as an implicit award model.
+The existing `education` cause is migrated to `education-assistance`. During production reconciliation, verify that historical donation allocations, Beneficiary `causeId` values and Organisation `causeIds` references point to the canonical Education Assistance ID. Firestore stores these as document-ID references rather than SQL foreign keys. Pratibha Samman is a separate category and does not reuse the assistance beneficiary workflow as an implicit award model.
 
 ## Current API additions
 
@@ -227,7 +227,7 @@ Supported purposes are `PROFILE` and `GALLERY`.
 2. The same Media record cannot be attached to the same entity twice.
 3. `displayOrder` controls gallery ordering.
 4. Setting `isPrimary=true` clears any existing primary image for the same entity and purpose.
-5. Removing an association does not delete the underlying Media database record or Cloudflare R2 object. Orphan cleanup is intentionally a separate lifecycle concern.
+5. Removing an association does not delete the underlying Media Firestore document or Cloudflare R2 object. Orphan cleanup is intentionally a separate lifecycle concern.
 6. A Media record may be reused by different entities, so attachment deletion is deliberately non-destructive.
 
 
