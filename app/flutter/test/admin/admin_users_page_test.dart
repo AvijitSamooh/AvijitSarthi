@@ -11,12 +11,13 @@ import 'package:avijit_sahyog/features/community/models/city.dart';
 import 'package:avijit_sahyog/features/community/providers/city_providers.dart';
 import 'package:avijit_sahyog/l10n/app_localizations.dart';
 
-AdminUser _user(String id, String name, {String role = 'ADMIN'}) => AdminUser(
+AdminUser _user(String id, String name, {String role = 'ADMIN', List<String> cityIds = const []}) => AdminUser(
       id: id,
       displayName: name,
       email: '$id@example.com',
       photoUrl: null,
       role: role,
+      cityIds: cityIds,
       createdAt: DateTime.utc(2026, 9, 14),
     );
 
@@ -88,6 +89,64 @@ Widget _buildPage(_FakeAdminUsersRepository repository) {
 }
 
 void main() {
+  testWidgets('editing a City Admin saves only changed canonical city assignments', (tester) async {
+    final repository = _FakeAdminUsersRepository();
+    repository.users['city-admin'] = _user(
+      'city-admin',
+      'City Administrator',
+      role: 'CITY_ADMIN',
+      cityIds: const ['pune'],
+    );
+    await tester.pumpWidget(_buildPage(repository));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.edit_location_alt_rounded));
+    await tester.pumpAndSettle();
+    expect(tester.widget<CheckboxListTile>(find.byKey(const ValueKey('city_assignment_pune'))).value, isTrue);
+    expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Save assignments')).onPressed, isNull);
+
+    await tester.tap(find.byKey(const ValueKey('city_assignment_mumbai')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Save assignments'));
+    await tester.pumpAndSettle();
+
+    expect(repository.roleChanges, [('city-admin', 'CITY_ADMIN')]);
+    expect(repository.cityAssignmentChanges.single.$2, ['mumbai', 'pune']);
+  });
+
+  testWidgets('city assignment catalogue errors can be retried', (tester) async {
+    var shouldFail = true;
+    final repository = _FakeAdminUsersRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          adminUsersRepositoryProvider.overrideWithValue(repository),
+          cityCatalogueProvider('en').overrideWith((ref) async {
+            if (shouldFail) throw StateError('offline');
+            return const [City(id: 'pune', name: 'Pune')];
+          }),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('en'),
+          home: const AdminUsersPage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Assign City Admin'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Nikita Manoriya'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Unable to load the city list.'), findsOneWidget);
+    shouldFail = false;
+    await tester.tap(find.text('Retry').last);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('city_assignment_pune')), findsOneWidget);
+  });
+
   testWidgets('Super Admin can assign a user to multiple localized city scopes', (tester) async {
     final repository = _FakeAdminUsersRepository();
     await tester.pumpWidget(

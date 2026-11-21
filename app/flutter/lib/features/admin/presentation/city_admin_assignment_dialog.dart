@@ -33,6 +33,8 @@ class _CityAdminAssignmentDialogState
       orElse: () => <String>{},
     );
     final selectedCityIds = _selectedCityIds.intersection(availableCityIds).toList()..sort();
+    final initialCityIds = widget.initialCityIds.toSet().intersection(availableCityIds).toList()..sort();
+    final hasChanges = selectedCityIds.join('|') != initialCityIds.join('|');
 
     return AlertDialog(
       title: Text(l10n.adminAssignCityAdmin),
@@ -48,7 +50,16 @@ class _CityAdminAssignmentDialogState
               child: cities.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (_, _) => Center(
-                  child: Text(l10n.communityCityCatalogueError),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(l10n.communityCityCatalogueError),
+                      TextButton(
+                        onPressed: () => ref.invalidate(cityCatalogueProvider(languageCode)),
+                        child: Text(l10n.retry),
+                      ),
+                    ],
+                  ),
                 ),
                 data: (items) => ListView(
                   children: [
@@ -79,7 +90,7 @@ class _CityAdminAssignmentDialogState
           child: Text(l10n.cancel),
         ),
         FilledButton(
-          onPressed: selectedCityIds.isEmpty
+          onPressed: selectedCityIds.isEmpty || !hasChanges
               ? null
               : () => Navigator.of(context).pop(selectedCityIds),
           child: Text(l10n.adminCityAssignmentSave),
