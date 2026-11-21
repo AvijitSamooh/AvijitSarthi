@@ -7,14 +7,17 @@ import 'package:avijit_sahyog/features/admin/models/admin_user.dart';
 import 'package:avijit_sahyog/features/admin/models/paginated_admin_users.dart';
 import 'package:avijit_sahyog/features/admin/presentation/admin_users_page.dart';
 import 'package:avijit_sahyog/features/admin/providers/admin_users_providers.dart';
+import 'package:avijit_sahyog/features/community/models/city.dart';
+import 'package:avijit_sahyog/features/community/providers/city_providers.dart';
 import 'package:avijit_sahyog/l10n/app_localizations.dart';
 
-AdminUser _user(String id, String name, {String role = 'ADMIN'}) => AdminUser(
+AdminUser _user(String id, String name, {String role = 'ADMIN', List<String> cityIds = const []}) => AdminUser(
       id: id,
       displayName: name,
       email: '$id@example.com',
       photoUrl: null,
       role: role,
+      cityIds: cityIds,
       createdAt: DateTime.utc(2026, 9, 14),
     );
 
@@ -27,6 +30,7 @@ class _FakeAdminUsersRepository extends AdminUsersRepository {
     'nikita-admin': _user('nikita-admin', 'Nikita Sharma', role: 'ADMIN'),
   };
   final List<(String userId, String role)> roleChanges = [];
+  final List<(String userId, List<String> cityIds)> cityAssignmentChanges = [];
 
   @override
   Future<PaginatedAdminUsers> getUsers({
@@ -56,13 +60,14 @@ class _FakeAdminUsersRepository extends AdminUsersRepository {
   }
 
   @override
-  Future<AdminUser> changeRole(String userId, String role) async {
+  Future<AdminUser> changeRole(String userId, String role, {List<String> cityIds = const []}) async {
     roleChanges.add((userId, role));
+    if (role == 'CITY_ADMIN') cityAssignmentChanges.add((userId, cityIds));
     if (failRoleChange) {
       throw Exception('role change failed');
     }
     final user = users[userId]!;
-    final updated = _user(user.id, user.label, role: role);
+    final updated = AdminUser(id: user.id, displayName: user.displayName, email: user.email, photoUrl: user.photoUrl, role: role, cityIds: cityIds, createdAt: user.createdAt);
     users[userId] = updated;
     return updated;
   }
@@ -72,6 +77,7 @@ Widget _buildPage(_FakeAdminUsersRepository repository) {
   return ProviderScope(
     overrides: [
       adminUsersRepositoryProvider.overrideWithValue(repository),
+      cityCatalogueProvider('en').overrideWith((ref) async => const [City(id: 'pune', name: 'Pune'), City(id: 'mumbai', name: 'Mumbai')]),
     ],
     child: MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -83,6 +89,107 @@ Widget _buildPage(_FakeAdminUsersRepository repository) {
 }
 
 void main() {
+  testWidgets('editing a City Admin saves only changed canonical city assignments', (tester) async {
+    final repository = _FakeAdminUsersRepository();
+    repository.users['city-admin'] = _user(
+      'city-admin',
+      'City Administrator',
+      role: 'CITY_ADMIN',
+      cityIds: const ['pune'],
+    );
+    await tester.pumpWidget(_buildPage(repository));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.edit_location_alt_rounded));
+    await tester.pumpAndSettle();
+    expect(tester.widget<CheckboxListTile>(find.byKey(const ValueKey('city_assignment_pune'))).value, isTrue);
+    expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Save assignments')).onPressed, isNull);
+
+    await tester.tap(find.byKey(const ValueKey('city_assignment_mumbai')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Save assignments'));
+    await tester.pumpAndSettle();
+
+    expect(repository.roleChanges, [('city-admin', 'CITY_ADMIN')]);
+    expect(repository.cityAssignmentChanges.single.$2, ['mumbai', 'pune']);
+  });
+
+  testWidgets('city assignment catalogue errors can be retried', (tester) async {
+    var shouldFail = true;
+    final repository = _FakeAdminUsersRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          adminUsersRepositoryProvider.overrideWithValue(repository),
+          cityCatalogueProvider('en').overrideWith((ref) async {
+            if (shouldFail) throw StateError('offline');
+            return const [City(id: 'pune', name: 'Pune')];
+          }),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('en'),
+          home: const AdminUsersPage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Assign City Admin'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Nikita Manoriya'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Unable to load the city list.'), findsOneWidget);
+    shouldFail = false;
+    await tester.tap(find.text('Retry').last);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('city_assignment_pune')), findsOneWidget);
+  });
+
+  testWidgets('Super Admin can assign a user to multiple localized city scopes', (tester) async {
+    final repository = _FakeAdminUsersRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          adminUsersRepositoryProvider.overrideWithValue(repository),
+          adminUsersProvider.overrideWith((ref, query) async => const PaginatedAdminUsers(items: [], page: 1, pageSize: 3, total: 0)),
+          adminAuditHistoryProvider.overrideWith((ref) async => const []),
+          cityAdminsProvider.overrideWith((ref) async => const PaginatedAdminUsers(items: [], page: 1, pageSize: 20, total: 0)),
+          cityCatalogueProvider('en').overrideWith((ref) async => const [City(id: 'pune', name: 'Pune'), City(id: 'mumbai', name: 'Mumbai')]),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('en'),
+          home: const AdminUsersPage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Assign City Admin'));
+    await tester.tap(find.text('Assign City Admin'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Nikita Manoriya'));
+    await tester.pumpAndSettle();
+    expect(find.text('Choose the cities Nikita Manoriya can manage.'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('city_assignment_pune')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('city_assignment_mumbai')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<CheckboxListTile>(find.byKey(const ValueKey('city_assignment_pune'))).value, isTrue);
+    expect(tester.widget<CheckboxListTile>(find.byKey(const ValueKey('city_assignment_mumbai'))).value, isTrue);
+    await tester.ensureVisible(find.text('Save assignments'));
+    await tester.tap(find.text('Save assignments'));
+    await tester.pumpAndSettle();
+
+    expect(repository.roleChanges, [('nikita-user', 'CITY_ADMIN')]);
+    expect(repository.cityAssignmentChanges.single.$1, 'nikita-user');
+    expect(repository.cityAssignmentChanges.single.$2, ['mumbai', 'pune']);
+    expect(repository.users['nikita-user']!.role, 'CITY_ADMIN');
+  });
+
   testWidgets('shows only the current server page of administrators', (tester) async {
     final pageOne = PaginatedAdminUsers(
       items: [_user('one', 'Admin One'), _user('two', 'Admin Two'), _user('three', 'Admin Three')],
@@ -105,6 +212,8 @@ void main() {
             return pageOne;
           }),
           adminAuditHistoryProvider.overrideWith((ref) async => const []),
+          cityAdminsProvider.overrideWith((ref) async => const PaginatedAdminUsers(items: [], page: 1, pageSize: 20, total: 0)),
+          cityCatalogueProvider('en').overrideWith((ref) async => const [City(id: 'pune', name: 'Pune')]),
         ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -123,7 +232,9 @@ void main() {
     expect(find.text('Admin Four'), findsNothing);
     expect(find.text('1 / 2'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.chevron_right).first);
+    final nextPage = find.byIcon(Icons.chevron_right).first;
+    await tester.ensureVisible(nextPage);
+    await tester.tap(nextPage);
     await tester.pumpAndSettle();
 
     expect(find.text('Admin One'), findsNothing);
@@ -212,7 +323,7 @@ void main() {
     expect(find.text('nikita-admin@example.com'), findsOneWidget);
     expect(find.text('User'), findsOneWidget);
     expect(find.text('Admin'), findsOneWidget);
-    final promoteButtons = find.byType(FilledButton);
+    final promoteButtons = find.widgetWithText(FilledButton, 'Make admin');
     expect(promoteButtons, findsOneWidget);
 
     await tester.tap(promoteButtons);
