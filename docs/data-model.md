@@ -125,12 +125,11 @@ The current `logoUrl` and `photoUrl` fields remain temporarily for backward comp
 ## Translation strategy
 
 ```text
-Cause
-  └── CauseTranslation ── Language
-
-Organisation
-  └── OrganisationTranslation ── Language
+Cause.translations[languageCode]
+Organisation.translations[languageCode]
 ```
+
+Translations are embedded in each Firestore document and keyed by the supported language code; English is the fallback.
 
 English remains the mandatory fallback language as defined by `docs/vision.md`.
 
