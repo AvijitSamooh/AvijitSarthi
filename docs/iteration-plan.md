@@ -638,6 +638,6 @@ Cover publication visibility, affiliate reference integrity, duplicate affiliate
 ### Completed follow-up
 
 - [x] Flutter public Activities and Accomplishments discovery pages with all-city and city-specific filters, backed only by published public APIs.
-- [x] Super Admin city-assignment UI to assign and update City Admin scopes, with the existing backend audit record.
+- [ ] Super Admin city-assignment UI to assign and update City Admin scopes, with the existing backend audit record (separate follow-up; not included in this public-discovery slice).
 - [x] Localized city catalogue and labels in English, Hindi, Marathi and Gujarati.
 - [x] Backend contract, Flutter API/model/widget coverage, and city-scope validation.
