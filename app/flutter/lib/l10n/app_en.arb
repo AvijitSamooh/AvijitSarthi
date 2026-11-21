@@ -585,7 +585,7 @@
   "cityContentCreate": "Create entry",
   "cityContentTitle": "Title",
   "cityContentDescription": "Description",
-  "cityContentCity": "City ID",
+  "cityContentCity": "City",
   "cityContentStartDate": "Start date and time (ISO 8601)",
   "cityContentAchievedAt": "Achievement date and time (ISO 8601)",
   "cityContentEndDate": "End date and time (optional)",
@@ -607,5 +607,42 @@
         "type": "String"
       }
     }
-  }
+  },
+  "homeActivities": "Activities",
+  "homeActivitiesSubtitle": "Explore local community initiatives and events.",
+  "homeAccomplishments": "Accomplishments",
+  "homeAccomplishmentsSubtitle": "Celebrate achievements and community impact.",
+  "communityDiscoveryTitle": "Community in action",
+  "communityActivitiesTab": "Activities",
+  "communityAccomplishmentsTab": "Accomplishments",
+  "communityFilterCity": "Filter by city",
+  "communityAllCities": "All cities",
+  "communityCityCatalogueError": "Unable to load the city list.",
+  "communityContentLoadError": "Unable to load community updates.",
+  "communityNoActivities": "No published activities for this city yet.",
+  "communityNoAccomplishments": "No published accomplishments for this city yet.",
+  "communityActivityUntil": "Until {date}",
+  "@communityActivityUntil": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "adminCityAssignments": "City administrator assignments",
+  "adminCityAssignmentsSubtitle": "Assign and update the cities managed by each City Admin.",
+  "adminAssignCityAdmin": "Assign City Admin",
+  "adminEditCityAssignments": "Edit city assignments",
+  "adminCityAdmin": "City Admin",
+  "adminCityAdminEmpty": "No City Admins have been assigned yet.",
+  "adminCityAssignmentFor": "Choose the cities {user} can manage.",
+  "@adminCityAssignmentFor": {
+    "placeholders": {
+      "user": {}
+    }
+  },
+  "adminCityAssignmentSave": "Save assignments",
+  "adminCityAssignmentSaved": "City assignments saved and recorded in audit history.",
+  "communityDetailTitle": "Community impact",
+  "communityAffiliatedOrganisations": "Organisations involved",
+  "communityNoAffiliates": "No organisation details are available for this item.",
+  "communityAffiliateLoadError": "Organisation details could not be loaded."
 }

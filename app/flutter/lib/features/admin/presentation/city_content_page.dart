@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/widgets/app_settings_menu.dart';
 import '../../../features/auth/providers/auth_providers.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../features/community/providers/city_providers.dart';
+import '../../../features/community/models/city.dart';
 import '../providers/admin_causes_providers.dart';
 
 class CityContentPage extends ConsumerStatefulWidget {
@@ -44,6 +46,24 @@ class _CityContentPageState extends ConsumerState<CityContentPage> {
 
   Future<void> _create([Map<String, dynamic>? existing]) async {
     final user = ref.read(authProvider).user;
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final l10n = AppLocalizations.of(context)!;
+    final List<City> catalogue;
+    try {
+      catalogue = existing == null
+          ? await ref.read(cityCatalogueProvider(languageCode).future)
+          : const <City>[];
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.communityCityCatalogueError}: $error')),
+        );
+      }
+      return;
+    }
+    final availableCities = user?.isCityAdmin == true
+        ? catalogue.where((city) => user!.cityIds.contains(city.id)).toList()
+        : catalogue;
     final title = TextEditingController(text: existing?['title'] as String? ?? '');
     final description = TextEditingController(text: existing?['description'] as String? ?? '');
     final city = TextEditingController(text: existing?['cityId'] as String? ?? (user?.isCityAdmin == true && user!.cityIds.length == 1 ? user.cityIds.single : ''));
@@ -51,7 +71,6 @@ class _CityContentPageState extends ConsumerState<CityContentPage> {
     final endDate = TextEditingController(text: existing?['endsAt'] as String? ?? '');
     final affiliates = TextEditingController(text: ((existing?['organisationIds'] as List<dynamic>?) ?? const []).join(', '));
     final formKey = GlobalKey<FormState>();
-    final l10n = AppLocalizations.of(context)!;
     final payload = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -64,15 +83,19 @@ class _CityContentPageState extends ConsumerState<CityContentPage> {
               child: Column(mainAxisSize: MainAxisSize.min, children: [
                 TextFormField(controller: title, decoration: InputDecoration(labelText: l10n.cityContentTitle), validator: (v) => v == null || v.trim().isEmpty ? l10n.fieldRequired(l10n.cityContentTitle) : null),
                 TextFormField(controller: description, minLines: 2, maxLines: 5, decoration: InputDecoration(labelText: l10n.cityContentDescription), validator: (v) => v == null || v.trim().isEmpty ? l10n.fieldRequired(l10n.cityContentDescription) : null),
-                if (existing == null && user?.isCityAdmin != true)
-                  TextFormField(controller: city, decoration: InputDecoration(labelText: l10n.cityContentCity), validator: (v) => v == null || v.trim().isEmpty ? l10n.fieldRequired(l10n.cityContentCity) : null),
-                if (existing == null && user?.isCityAdmin == true && user!.cityIds.length > 1)
+                if (existing == null)
                   DropdownButtonFormField<String>(
-                    initialValue: null,
+                    initialValue: availableCities.any((item) => item.id == city.text)
+                        ? city.text
+                        : null,
                     decoration: InputDecoration(labelText: l10n.cityContentCity),
-                    items: user.cityIds.map((id) => DropdownMenuItem(value: id, child: Text(id))).toList(),
+                    items: availableCities
+                        .map((item) => DropdownMenuItem(value: item.id, child: Text(item.name)))
+                        .toList(),
                     onChanged: (value) => city.text = value ?? '',
-                    validator: (value) => city.text.isEmpty && value == null ? l10n.fieldRequired(l10n.cityContentCity) : null,
+                    validator: (value) => value == null || value.isEmpty
+                        ? l10n.fieldRequired(l10n.cityContentCity)
+                        : null,
                   ),
                 TextFormField(controller: date, decoration: InputDecoration(labelText: _isActivity ? l10n.cityContentStartDate : l10n.cityContentAchievedAt), validator: (v) => DateTime.tryParse(v ?? '') == null ? l10n.cityContentInvalidDate : null),
                 if (_isActivity)
@@ -156,6 +179,8 @@ class _CityContentPageState extends ConsumerState<CityContentPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final title = _isActivity ? l10n.adminActivities : l10n.adminAccomplishments;
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final cities = ref.watch(cityCatalogueProvider(languageCode));
     return AppPageScaffold(
       title: Text(title),
       floatingActionButton: FloatingActionButton.extended(
@@ -182,10 +207,15 @@ class _CityContentPageState extends ConsumerState<CityContentPage> {
                         itemBuilder: (context, index) {
                           final item = _items[index];
                           final status = item['status'] as String? ?? 'DRAFT';
+                          final cityId = item['cityId'] as String? ?? '';
+                          final cityLabel = cities.maybeWhen(
+                            data: (items) => items.fold<String>(cityId, (label, city) => city.id == cityId ? city.name : label),
+                            orElse: () => cityId,
+                          );
                           return Card(
                             child: ListTile(
                               title: Text(item['title'] as String? ?? ''),
-                              subtitle: Text('${item['cityId']} · $status\n${item['description']}'),
+                              subtitle: Text('$cityLabel · $status\n${item['description']}'),
                               isThreeLine: true,
                               onTap: () => _create(item),
                               trailing: PopupMenuButton<String>(

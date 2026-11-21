@@ -12,12 +12,17 @@ void main() {
   testWidgets(
     'real app starts and renders the home experience',
     (tester) async {
-      SharedPreferences.setMockInitialValues({});
+      // Keep this smoke test independent of the locale selected by earlier
+      // integration tests or the hosted emulator's system language.
+      SharedPreferences.setMockInitialValues({'selected_locale': 'en'});
 
       // Exercise the same startup path as the installed Android application.
       // E2E_TEST_MODE disables production analytics/health telemetry and
       // routes Auth to the Firebase Auth Emulator.
       await app.main();
+      // Mount the splash screen before advancing fake time so its timer is
+      // scheduled first; otherwise the first timed pump can precede initState.
+      await tester.pump();
       // The splash screen and home shell can keep frame callbacks active.
       // Advance the splash timer explicitly instead of waiting for global
       // pumpAndSettle, which can stall on app-owned animations.

@@ -20,3 +20,11 @@ final adminUsersProvider = FutureProvider.autoDispose.family<PaginatedAdminUsers
 final adminAuditHistoryProvider = FutureProvider.autoDispose<List<AdminAuditEntry>>((ref) {
   return ref.watch(adminUsersRepositoryProvider).getAuditHistory();
 });
+
+final cityAdminsProvider = FutureProvider.autoDispose<PaginatedAdminUsers>((ref) {
+  return ref.watch(adminUsersRepositoryProvider).getUsers(
+        role: 'CITY_ADMIN',
+        page: 1,
+        pageSize: 20,
+      );
+});

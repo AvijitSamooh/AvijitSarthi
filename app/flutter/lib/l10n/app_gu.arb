@@ -569,7 +569,7 @@
   "cityContentCreate": "નવી નોંધ બનાવો",
   "cityContentTitle": "શીર્ષક",
   "cityContentDescription": "વર્ણન",
-  "cityContentCity": "શહેર ID",
+  "cityContentCity": "શહેર",
   "cityContentStartDate": "શરૂઆતની તારીખ અને સમય (ISO 8601)",
   "cityContentAchievedAt": "સિદ્ધિની તારીખ અને સમય (ISO 8601)",
   "cityContentEndDate": "સમાપ્તિ તારીખ અને સમય (વૈકલ્પિક)",
@@ -591,5 +591,58 @@
         "type": "String"
       }
     }
-  }
+  },
+  "homeActivities": "પ્રવૃત્તિઓ",
+  "homeActivitiesSubtitle": "શહેરની સામુદાયિક પહેલ અને કાર્યક્રમો જુઓ.",
+  "homeAccomplishments": "સિદ્ધિઓ",
+  "homeAccomplishmentsSubtitle": "સિદ્ધિઓ અને સામુદાયિક પ્રભાવની ઉજવણી કરો.",
+  "communityDiscoveryTitle": "સમુદાયની પ્રવૃત્તિઓ",
+  "communityActivitiesTab": "પ્રવૃત્તિઓ",
+  "communityAccomplishmentsTab": "સિદ્ધિઓ",
+  "communityFilterCity": "શહેર પ્રમાણે ફિલ્ટર કરો",
+  "communityAllCities": "બધા શહેરો",
+  "communityCityCatalogueError": "શહેરોની યાદી લોડ થઈ શકી નથી.",
+  "communityContentLoadError": "સામુદાયિક માહિતી લોડ થઈ શકી નથી.",
+  "communityNoActivities": "આ શહેર માટે હજી કોઈ પ્રકાશિત પ્રવૃત્તિ નથી.",
+  "communityNoAccomplishments": "આ શહેર માટે હજી કોઈ પ્રકાશિત સિદ્ધિ નથી.",
+  "communityActivityUntil": "અંતિમ તારીખ: {date}",
+  "@communityActivityUntil": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "adminCityAssignments": "શહેર સંચાલકની નિમણૂકો",
+  "adminCityAssignmentsSubtitle": "દરેક City Admin સંભાળે તેવા શહેરો ફાળવો અને અપડેટ કરો.",
+  "adminAssignCityAdmin": "City Admin નિયુક્ત કરો",
+  "adminEditCityAssignments": "શહેરની ફાળવણી સંપાદિત કરો",
+  "adminCityAdmin": "શહેર સંચાલક",
+  "adminCityAdminEmpty": "હજી સુધી કોઈ City Admin નિયુક્ત નથી.",
+  "adminCityAssignmentFor": "{user} કયા શહેરો સંભાળી શકે તે પસંદ કરો.",
+  "@adminCityAssignmentFor": {
+    "placeholders": {
+      "user": {}
+    }
+  },
+  "adminCityAssignmentSave": "ફાળવણી સાચવો",
+  "adminCityAssignmentSaved": "શહેરની ફાળવણી સાચવાઈ અને ઓડિટ ઇતિહાસમાં નોંધાઈ.",
+  "@adminBeneficiaryCreatedImageUploadFailed": {
+    "description": "Error detail returned by the save workflow.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@adminBeneficiaryUnableSave": {
+    "description": "Error detail returned by the save workflow.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "communityDetailTitle": "સમુદાય પર અસર",
+  "communityAffiliatedOrganisations": "સંલગ્ન સંસ્થાઓ",
+  "communityNoAffiliates": "આ માહિતી માટે સંસ્થાની વિગતો ઉપલબ્ધ નથી.",
+  "communityAffiliateLoadError": "સંસ્થાની વિગતો લોડ થઈ શકી નથી."
 }

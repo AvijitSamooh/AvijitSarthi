@@ -85,10 +85,26 @@ jobs:
             --dart-define=API_BASE_URL=http://10.0.2.2:9 2>&1 | tee artifacts/apk-build.log
           test -s build/app/outputs/flutter-apk/app-debug.apk
 
+      - name: Configure Android emulator acceleration
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -e /dev/kvm ]; then
+            echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules || true
+            sudo udevadm control --reload-rules || true
+            sudo udevadm trigger --name-match=kvm || true
+          fi
+          if [ -r /dev/kvm ] && [ -w /dev/kvm ]; then
+            echo "KVM hardware acceleration is available."
+          else
+            echo "::warning::KVM is not accessible to this runner; using TCG software emulation with an Android system-service readiness check."
+            id
+            ls -l /dev/kvm || true
+            echo "ANDROID_I_WANT_MY_TCG=yes" >> "$GITHUB_ENV"
+          fi
+
       - name: Run on Android emulator with Firebase Auth Emulator
         uses: reactivecircus/android-emulator-runner@v2
-        env:
-          ANDROID_I_WANT_MY_TCG: "yes"
         with:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           api-level: 34
@@ -97,8 +113,7 @@ jobs:
           profile: pixel_2
           emulator-boot-timeout: 900
           disable-animations: true
-          script: >-
-            bash -euo pipefail -c 'cd app/flutter; mkdir -p artifacts; echo eyJlbXVsYXRvcnMiOnsiYXV0aCI6eyJwb3J0Ijo5MDk5fSwidWkiOnsiZW5hYmxlZCI6ZmFsc2V9fX0= | base64 -d > /tmp/firebase-e2e.json; npx --yes firebase-tools@14 emulators:start --only auth --project avijitsahyog-firebase --config /tmp/firebase-e2e.json > artifacts/firebase-auth-emulator.log 2>&1 & firebase_pid=$!; cleanup(){ adb logcat -d > artifacts/logcat.txt || true; adb exec-out screencap -p > artifacts/final-screen.png || true; kill "$firebase_pid" 2>/dev/null || true; }; trap cleanup EXIT; ready=false; for attempt in $(seq 1 60); do if curl --silent --output /dev/null http://127.0.0.1:9099/; then ready=true; break; fi; if ! kill -0 "$firebase_pid" 2>/dev/null; then cat artifacts/firebase-auth-emulator.log; exit 1; fi; sleep 2; done; if [ "$ready" != true ]; then cat artifacts/firebase-auth-emulator.log; echo "Firebase Auth Emulator did not become ready."; exit 1; fi; adb install -r build/app/outputs/flutter-apk/app-debug.apk; adb shell monkey -p com.avijitsamooh.avijitsahyog 1; sleep 8; adb exec-out screencap -p > artifacts/installed-app-launch.png; flutter test integration_test -d emulator-5554 --reporter expanded --dart-define=E2E_TEST_MODE=true --dart-define=API_BASE_URL=http://10.0.2.2:9 2>&1 | tee artifacts/integration-test.log'
+          script: bash app/flutter/scripts/android_emulator_e2e.sh
       - name: Upload emulator diagnostics
         if: always()
         uses: actions/upload-artifact@v4
