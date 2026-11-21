@@ -412,11 +412,13 @@
   "adminFeatureAdoptionSubtitle": "30 दिनों में सक्रिय उपयोगकर्ताओं में से प्रत्येक ट्रैक की गई स्क्रीन देखने वालों का हिस्सा।",
   "adminAudienceSegmentation": "दर्शक वर्गीकरण",
   "adminAudienceSegmentationSubtitle": "शहर, भाषा और डिवाइस संदर्भ के अनुसार 30 दिनों के सक्रिय उपयोगकर्ता।",
+  "adminCity": "शहर",
   "adminLanguage": "भाषा",
   "adminDevice": "डिवाइस",
   "adminBigQueryFoundation": "BigQuery के लिए तैयार आधार",
   "adminBigQueryReady": "इवेंट-स्तरीय PostgreSQL डेटा भविष्य के BigQuery निर्यात के लिए तैयार है।",
   "adminWarehouseNotConfigured": "डेटा वेयरहाउस निर्यात कॉन्फ़िगर नहीं है।",
+  "adminCityPrivacy": "शहर तभी दिखाया जाता है जब ऐप एनालिटिक्स संदर्भ देता है; ऐप सटीक स्थान का अनुमान नहीं लगाता।",
   "adminCohort": "समूह",
   "adminUsers": "उपयोगकर्ता",
   "adminDay1": "D1",
@@ -609,6 +611,20 @@
       "date": {}
     }
   },
+  "adminCityAssignments": "शहर प्रशासक आवंटन",
+  "adminCityAssignmentsSubtitle": "प्रत्येक City Admin द्वारा प्रबंधित शहरों को निर्धारित और अपडेट करें।",
+  "adminAssignCityAdmin": "City Admin नियुक्त करें",
+  "adminEditCityAssignments": "शहर आवंटन संपादित करें",
+  "adminCityAdmin": "शहर प्रशासक",
+  "adminCityAdminEmpty": "अभी तक कोई City Admin नियुक्त नहीं किया गया है।",
+  "adminCityAssignmentFor": "{user} किन शहरों का प्रबंधन कर सकते हैं, चुनें।",
+  "@adminCityAssignmentFor": {
+    "placeholders": {
+      "user": {}
+    }
+  },
+  "adminCityAssignmentSave": "आवंटन सहेजें",
+  "adminCityAssignmentSaved": "शहर आवंटन सहेजा गया और ऑडिट इतिहास में दर्ज किया गया।",
   "@adminBeneficiaryCreatedImageUploadFailed": {
     "description": "Error detail returned by the save workflow.",
     "placeholders": {
@@ -628,7 +644,5 @@
   "communityDetailTitle": "समुदाय का प्रभाव",
   "communityAffiliatedOrganisations": "संबद्ध संस्थाएँ",
   "communityNoAffiliates": "इस जानकारी के लिए कोई संस्था विवरण उपलब्ध नहीं है।",
-  "communityAffiliateLoadError": "संस्था विवरण लोड नहीं हो सका।",
-  "adminCity": "शहर",
-  "adminCityPrivacy": "शहर तभी दिखाया जाता है जब ऐप एनालिटिक्स संदर्भ देता है; ऐप सटीक स्थान का अनुमान नहीं लगाता।"
+  "communityAffiliateLoadError": "संस्था विवरण लोड नहीं हो सका।"
 }
