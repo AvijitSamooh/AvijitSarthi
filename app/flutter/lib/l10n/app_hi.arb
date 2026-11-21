@@ -609,11 +609,6 @@
       "date": {}
     }
   },
-  "@adminCityAssignmentFor": {
-    "placeholders": {
-      "user": {}
-    }
-  },
   "@adminBeneficiaryCreatedImageUploadFailed": {
     "description": "Error detail returned by the save workflow.",
     "placeholders": {
@@ -633,5 +628,7 @@
   "communityDetailTitle": "समुदाय का प्रभाव",
   "communityAffiliatedOrganisations": "संबद्ध संस्थाएँ",
   "communityNoAffiliates": "इस जानकारी के लिए कोई संस्था विवरण उपलब्ध नहीं है।",
-  "communityAffiliateLoadError": "संस्था विवरण लोड नहीं हो सका।"
+  "communityAffiliateLoadError": "संस्था विवरण लोड नहीं हो सका।",
+  "adminCity": "शहर",
+  "adminCityPrivacy": "शहर तभी दिखाया जाता है जब ऐप एनालिटिक्स संदर्भ देता है; ऐप सटीक स्थान का अनुमान नहीं लगाता।"
 }

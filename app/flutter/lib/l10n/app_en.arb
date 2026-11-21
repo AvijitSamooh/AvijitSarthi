@@ -625,13 +625,10 @@
       "date": {}
     }
   },
-  "@adminCityAssignmentFor": {
-    "placeholders": {
-      "user": {}
-    }
-  },
   "communityDetailTitle": "Community impact",
   "communityAffiliatedOrganisations": "Organisations involved",
   "communityNoAffiliates": "No organisation details are available for this item.",
-  "communityAffiliateLoadError": "Organisation details could not be loaded."
+  "communityAffiliateLoadError": "Organisation details could not be loaded.",
+  "adminCity": "City",
+  "adminCityPrivacy": "City is shown when the client supplies an analytics city context; the app does not infer precise location."
 }

@@ -609,11 +609,6 @@
       "date": {}
     }
   },
-  "@adminCityAssignmentFor": {
-    "placeholders": {
-      "user": {}
-    }
-  },
   "@adminBeneficiaryCreatedImageUploadFailed": {
     "description": "Error detail returned by the save workflow.",
     "placeholders": {
@@ -633,5 +628,7 @@
   "communityDetailTitle": "સમુદાય પર અસર",
   "communityAffiliatedOrganisations": "સંલગ્ન સંસ્થાઓ",
   "communityNoAffiliates": "આ માહિતી માટે સંસ્થાની વિગતો ઉપલબ્ધ નથી.",
-  "communityAffiliateLoadError": "સંસ્થાની વિગતો લોડ થઈ શકી નથી."
+  "communityAffiliateLoadError": "સંસ્થાની વિગતો લોડ થઈ શકી નથી.",
+  "adminCity": "શહેર",
+  "adminCityPrivacy": "શહેર ત્યારે જ બતાવવામાં આવે છે જ્યારે એપ એનાલિટિક્સ સંદર્ભ આપે; એપ ચોક્કસ સ્થાનનો અંદાજ લગાવતી નથી."
 }
