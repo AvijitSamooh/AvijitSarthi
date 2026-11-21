@@ -196,4 +196,49 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Recovered activity'), findsOneWidget);
   });
+
+  testWidgets('shows a retryable fallback when organisation references cannot be loaded', (tester) async {
+    var shouldFail = true;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          cityContentDetailProvider((kind: 'activities', id: 'activity-2')).overrideWith(
+            (ref) async => CityContent(
+              id: 'activity-2',
+              cityId: 'pune',
+              title: 'Community meal',
+              description: 'Shared meal for families',
+              startsAt: DateTime.utc(2026, 12, 3),
+              organisationIds: const ['org-1'],
+            ),
+          ),
+          cityOrganisationsProvider('en').overrideWith((ref) async {
+            if (shouldFail) throw StateError('offline');
+            return const [
+              Organisation(id: 'org-1', slug: 'seva-trust', name: 'Seva Trust'),
+            ];
+          }),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('en'),
+          home: const CityContentDetailPage(
+            kind: 'activities',
+            contentId: 'activity-2',
+            cityName: 'Pune',
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    expect(find.text('Organisation details could not be loaded.'), findsOneWidget);
+    shouldFail = false;
+    await tester.tap(find.text('Retry'));
+    await tester.pumpAndSettle();
+    expect(find.text('Seva Trust'), findsOneWidget);
+  });
+
+
 }
