@@ -640,5 +640,9 @@
         "type": "String"
       }
     }
-  }
+  },
+  "communityDetailTitle": "समुदायाचा प्रभाव",
+  "communityAffiliatedOrganisations": "संबंधित संस्था",
+  "communityNoAffiliates": "या माहितीसाठी संस्थेचे तपशील उपलब्ध नाहीत.",
+  "communityAffiliateLoadError": "संस्थेचे तपशील लोड करता आले नाहीत."
 }

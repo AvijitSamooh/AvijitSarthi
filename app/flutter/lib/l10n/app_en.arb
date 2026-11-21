@@ -640,5 +640,9 @@
     }
   },
   "adminCityAssignmentSave": "Save assignments",
-  "adminCityAssignmentSaved": "City assignments saved and recorded in audit history."
+  "adminCityAssignmentSaved": "City assignments saved and recorded in audit history.",
+  "communityDetailTitle": "Community impact",
+  "communityAffiliatedOrganisations": "Organisations involved",
+  "communityNoAffiliates": "No organisation details are available for this item.",
+  "communityAffiliateLoadError": "Organisation details could not be loaded."
 }
