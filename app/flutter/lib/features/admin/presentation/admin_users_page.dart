@@ -65,6 +65,7 @@ class _AdminUsersPageState extends ConsumerState<AdminUsersPage> {
   }
 
   Future<void> _editCityAssignments(AdminUser user) async {
+    final l10n = AppLocalizations.of(context)!;
     final selectedCityIds = await showDialog<List<String>>(
       context: context,
       builder: (_) => CityAdminAssignmentDialog(
@@ -86,7 +87,7 @@ class _AdminUsersPageState extends ConsumerState<AdminUsersPage> {
       ref.invalidate(adminAuditHistoryProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10nCityAdminSaved(context))),
+          SnackBar(content: Text(l10n.adminCityAssignmentSaved)),
         );
       }
     } catch (error) {
@@ -143,7 +144,7 @@ class _AdminUsersPageState extends ConsumerState<AdminUsersPage> {
             Text(l10n.adminUsersSubtitle),
             const SizedBox(height: 16),
             Row(
-                children: [
+              children: [
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,7 +301,6 @@ Future<void> _showPromotionDialog(
   }
 }
 
-
 Future<void> _editCityAssignmentsForUser(
   BuildContext context,
   WidgetRef ref,
@@ -336,16 +336,13 @@ Future<void> _editCityAssignmentsForUser(
   }
 }
 
-String l10nCityAdminSaved(BuildContext context) =>
-    AppLocalizations.of(context)!.adminCityAssignmentSaved;
 
 class _PromotionDialog extends StatefulWidget {
-  const _PromotionDialog({this.initialSearch, required this.repository, required this.title, this.role = 'USER'});
+  const _PromotionDialog({this.initialSearch, required this.repository, required this.title});
 
   final String? initialSearch;
   final AdminUsersRepository repository;
   final String title;
-  final String role;
 
   @override
   State<_PromotionDialog> createState() => _PromotionDialogState();
@@ -385,7 +382,7 @@ class _PromotionDialogState extends State<_PromotionDialog> {
     try {
       final result = await widget.repository.getUsers(
         search: _search.isEmpty ? null : _search,
-        role: widget.role,
+        role: 'USER',
         page: _page,
         pageSize: _pageSize,
       );

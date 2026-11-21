@@ -624,5 +624,21 @@
     }
   },
   "adminCityAssignmentSave": "ફાળવણી સાચવો",
-  "adminCityAssignmentSaved": "શહેરની ફાળવણી સાચવાઈ અને ઓડિટ ઇતિહાસમાં નોંધાઈ."
+  "adminCityAssignmentSaved": "શહેરની ફાળવણી સાચવાઈ અને ઓડિટ ઇતિહાસમાં નોંધાઈ.",
+  "@adminBeneficiaryCreatedImageUploadFailed": {
+    "description": "Error detail returned by the save workflow.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@adminBeneficiaryUnableSave": {
+    "description": "Error detail returned by the save workflow.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

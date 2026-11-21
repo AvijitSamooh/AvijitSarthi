@@ -5,7 +5,6 @@
 - [ ] PostgreSQL to Firestore migration — user identity, roles, admin authorization and role-audit history are now implemented on Firestore; remaining domain migrations and production cutover are pending.
 - [ ] Split Education into Education Assistance and Pratibha Samman — production migration recovery/deployment verification remains.
 
-
 ## Recently Completed
 
 - [x] Firestore user/authorization slice — Firebase-authenticated user records, admin/super-admin guards, admin user management, role audit history, and idempotent PostgreSQL-to-Firestore backfill.

@@ -74,11 +74,18 @@ class _CityAdminAssignmentDialogState
           child: Text(l10n.cancel),
         ),
         FilledButton(
-          onPressed: _selectedCityIds.isEmpty
-              ? null
-              : () => Navigator.of(context).pop(
-                    _selectedCityIds.toList()..sort(),
-                  ),
+          onPressed: cities.maybeWhen(
+            data: (items) {
+              final validCityIds = _selectedCityIds
+                  .where((id) => items.any((city) => city.id == id))
+                  .toList()
+                ..sort();
+              return validCityIds.isEmpty
+                  ? null
+                  : () => Navigator.of(context).pop(validCityIds);
+            },
+            orElse: () => null,
+          ),
           child: Text(l10n.adminCityAssignmentSave),
         ),
       ],

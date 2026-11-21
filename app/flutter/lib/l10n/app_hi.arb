@@ -624,5 +624,21 @@
     }
   },
   "adminCityAssignmentSave": "आवंटन सहेजें",
-  "adminCityAssignmentSaved": "शहर आवंटन सहेजा गया और ऑडिट इतिहास में दर्ज किया गया।"
+  "adminCityAssignmentSaved": "शहर आवंटन सहेजा गया और ऑडिट इतिहास में दर्ज किया गया।",
+  "@adminBeneficiaryCreatedImageUploadFailed": {
+    "description": "Error detail returned by the save workflow.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@adminBeneficiaryUnableSave": {
+    "description": "Error detail returned by the save workflow.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }
