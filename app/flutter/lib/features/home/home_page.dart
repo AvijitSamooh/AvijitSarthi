@@ -434,6 +434,8 @@ class _ServiceCard extends StatelessWidget {
                 const Spacer(),
                 Text(
                   title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppTheme.textPrimary,
                     fontSize: 20,
