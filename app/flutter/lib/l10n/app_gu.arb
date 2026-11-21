@@ -412,11 +412,13 @@
   "adminFeatureAdoptionSubtitle": "30 દિવસના સક્રિય વપરાશકર્તાઓમાં દરેક ટ્રૅક કરેલી સ્ક્રીન જોનારાઓનો હિસ્સો.",
   "adminAudienceSegmentation": "ઓડિયન્સ સેગમેન્ટેશન",
   "adminAudienceSegmentationSubtitle": "શહેર, ભાષા અને ડિવાઇસ સંદર્ભ મુજબ 30 દિવસના સક્રિય વપરાશકર્તાઓ.",
+  "adminCity": "શહેર",
   "adminLanguage": "ભાષા",
   "adminDevice": "ડિવાઇસ",
   "adminBigQueryFoundation": "BigQuery માટે તૈયાર આધાર",
   "adminBigQueryReady": "ઇવેન્ટ-સ્તરનું PostgreSQL ડેટા ભવિષ્યના BigQuery નિકાસ માટે તૈયાર છે.",
   "adminWarehouseNotConfigured": "ડેટા વેરહાઉસ નિકાસ ગોઠવાયેલ નથી.",
+  "adminCityPrivacy": "શહેર ત્યારે જ બતાવવામાં આવે છે જ્યારે એપ એનાલિટિક્સ સંદર્ભ આપે; એપ ચોક્કસ સ્થાનનો અંદાજ લગાવતી નથી.",
   "adminCohort": "જૂથ",
   "adminUsers": "વપરાશકર્તાઓ",
   "adminDay1": "D1",
@@ -609,6 +611,20 @@
       "date": {}
     }
   },
+  "adminCityAssignments": "શહેર સંચાલકની નિમણૂકો",
+  "adminCityAssignmentsSubtitle": "દરેક City Admin સંભાળે તેવા શહેરો ફાળવો અને અપડેટ કરો.",
+  "adminAssignCityAdmin": "City Admin નિયુક્ત કરો",
+  "adminEditCityAssignments": "શહેરની ફાળવણી સંપાદિત કરો",
+  "adminCityAdmin": "શહેર સંચાલક",
+  "adminCityAdminEmpty": "હજી સુધી કોઈ City Admin નિયુક્ત નથી.",
+  "adminCityAssignmentFor": "{user} કયા શહેરો સંભાળી શકે તે પસંદ કરો.",
+  "@adminCityAssignmentFor": {
+    "placeholders": {
+      "user": {}
+    }
+  },
+  "adminCityAssignmentSave": "ફાળવણી સાચવો",
+  "adminCityAssignmentSaved": "શહેરની ફાળવણી સાચવાઈ અને ઓડિટ ઇતિહાસમાં નોંધાઈ.",
   "@adminBeneficiaryCreatedImageUploadFailed": {
     "description": "Error detail returned by the save workflow.",
     "placeholders": {
@@ -628,7 +644,5 @@
   "communityDetailTitle": "સમુદાય પર અસર",
   "communityAffiliatedOrganisations": "સંલગ્ન સંસ્થાઓ",
   "communityNoAffiliates": "આ માહિતી માટે સંસ્થાની વિગતો ઉપલબ્ધ નથી.",
-  "communityAffiliateLoadError": "સંસ્થાની વિગતો લોડ થઈ શકી નથી.",
-  "adminCity": "શહેર",
-  "adminCityPrivacy": "શહેર ત્યારે જ બતાવવામાં આવે છે જ્યારે એપ એનાલિટિક્સ સંદર્ભ આપે; એપ ચોક્કસ સ્થાનનો અંદાજ લગાવતી નથી."
+  "communityAffiliateLoadError": "સંસ્થાની વિગતો લોડ થઈ શકી નથી."
 }

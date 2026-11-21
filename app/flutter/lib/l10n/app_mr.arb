@@ -412,11 +412,13 @@
   "adminFeatureAdoptionSubtitle": "30 दिवसांत सक्रिय वापरकर्त्यांपैकी प्रत्येक ट्रॅक केलेली स्क्रीन पाहणाऱ्यांचा हिस्सा.",
   "adminAudienceSegmentation": "प्रेक्षक विभागणी",
   "adminAudienceSegmentationSubtitle": "शहर, भाषा आणि डिव्हाइस संदर्भानुसार 30 दिवसांतील सक्रिय वापरकर्ते.",
+  "adminCity": "शहर",
   "adminLanguage": "भाषा",
   "adminDevice": "डिव्हाइस",
   "adminBigQueryFoundation": "BigQuery-सज्ज पाया",
   "adminBigQueryReady": "इव्हेंट-स्तरीय PostgreSQL डेटा भविष्यातील BigQuery निर्यातीसाठी तयार आहे.",
   "adminWarehouseNotConfigured": "डेटा वेअरहाऊस निर्यात कॉन्फिगर केलेली नाही.",
+  "adminCityPrivacy": "शहर अॅपकडून अॅनालिटिक्स संदर्भ दिल्यासच दाखवले जाते; अॅप अचूक स्थानाचा अंदाज लावत नाही.",
   "adminCohort": "गट",
   "adminUsers": "वापरकर्ते",
   "adminDay1": "D1",
@@ -609,6 +611,20 @@
       "date": {}
     }
   },
+  "adminCityAssignments": "शहर प्रशासक नेमणुका",
+  "adminCityAssignmentsSubtitle": "प्रत्येक City Admin कडे असलेली शहरे नेमून अद्ययावत करा.",
+  "adminAssignCityAdmin": "City Admin नेमा",
+  "adminEditCityAssignments": "शहर नेमणुका संपादित करा",
+  "adminCityAdmin": "शहर प्रशासक",
+  "adminCityAdminEmpty": "अद्याप कोणताही City Admin नेमलेला नाही.",
+  "adminCityAssignmentFor": "{user} कोणती शहरे व्यवस्थापित करू शकतात ते निवडा.",
+  "@adminCityAssignmentFor": {
+    "placeholders": {
+      "user": {}
+    }
+  },
+  "adminCityAssignmentSave": "नेमणुका जतन करा",
+  "adminCityAssignmentSaved": "शहर नेमणुका जतन करून ऑडिट इतिहासात नोंदवल्या.",
   "@adminBeneficiaryCreatedImageUploadFailed": {
     "description": "Error detail returned by the save workflow.",
     "placeholders": {
@@ -628,7 +644,5 @@
   "communityDetailTitle": "समुदायाचा प्रभाव",
   "communityAffiliatedOrganisations": "संबंधित संस्था",
   "communityNoAffiliates": "या माहितीसाठी संस्थेचे तपशील उपलब्ध नाहीत.",
-  "communityAffiliateLoadError": "संस्थेचे तपशील लोड करता आले नाहीत.",
-  "adminCity": "शहर",
-  "adminCityPrivacy": "शहर अॅपकडून अॅनालिटिक्स संदर्भ दिल्यासच दाखवले जाते; अॅप अचूक स्थानाचा अंदाज लावत नाही."
+  "communityAffiliateLoadError": "संस्थेचे तपशील लोड करता आले नाहीत."
 }

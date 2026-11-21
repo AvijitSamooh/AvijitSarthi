@@ -4,12 +4,11 @@
 
 - [ ] PostgreSQL to Firestore migration — user identity, roles, admin authorization and role-audit history are now implemented on Firestore; remaining domain migrations and production cutover are pending.
 - [ ] Split Education into Education Assistance and Pratibha Samman — production migration recovery/deployment verification remains.
-- [ ] Super Admin City Admin assignment UI — localized assignment controls and audited city-scope updates; follow up after public discovery stabilizes.
 
 ## Recently Completed
 
 - [x] Firestore user/authorization slice — Firebase-authenticated user records, admin/super-admin guards, admin user management, role audit history, and idempotent PostgreSQL-to-Firestore backfill.
-- [x] Public city Activities and Accomplishments discovery — published-only guest APIs, city filtering, localized catalogue, detail views, Organisation affiliates, and Flutter/API/backend coverage.
+- [x] City Activities and Accomplishments — published-only public discovery, city filtering, localized city catalogue, Super Admin City Admin assignment UI, canonical city validation, and Flutter/API/backend coverage.
 
 # Iteration 0 --- Foundation
 

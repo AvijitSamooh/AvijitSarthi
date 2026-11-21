@@ -3,6 +3,7 @@ import { Timestamp, type DocumentSnapshot, type Query } from 'firebase-admin/fir
 import { randomUUID } from 'node:crypto';
 import { FirebaseService } from '../firebase/firebase.service';
 import { FirebaseIdentity } from '../auth/auth.types';
+import { isCityId } from '../cities/city-catalogue';
 
 export type UserRole = 'USER' | 'ADMIN' | 'CITY_ADMIN' | 'SUPER_ADMIN';
 
@@ -153,6 +154,10 @@ export class FirestoreUsersService {
     const cityIds = [...new Set(requestedCityIds.map((id) => id.trim()).filter(Boolean))];
     if (requestedRole === 'CITY_ADMIN' && cityIds.length === 0) {
       throw new BadRequestException('At least one city must be assigned to a City Admin.');
+    }
+    const unsupportedCityIds = cityIds.filter((cityId) => !isCityId(cityId));
+    if (unsupportedCityIds.length) {
+      throw new BadRequestException(`Unsupported city IDs: ${unsupportedCityIds.join(', ')}.`);
     }
     if (requestedRole !== 'CITY_ADMIN' && requestedCityIds.length > 0) {
       throw new BadRequestException('City assignments are only valid for CITY_ADMIN.');
