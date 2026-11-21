@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       build_run_id:
-        description: GitHub Actions run ID (not run number or artifact ID) of the successful Android build
+        description: Run ID of a successful Android Release Bundle from master (not run number or artifact ID)
         required: true
         type: string
 
@@ -47,6 +47,7 @@ jobs:
           STATUS=$(jq -r '.status // empty' <<< "$RUN_JSON")
           CONCLUSION=$(jq -r '.conclusion // empty' <<< "$RUN_JSON")
           WORKFLOW_PATH=$(jq -r '.path // empty' <<< "$RUN_JSON")
+          HEAD_BRANCH=$(jq -r '.head_branch // empty' <<< "$RUN_JSON")
 
           if [ "$STATUS" != "completed" ] || [ "$CONCLUSION" != "success" ]; then
             echo "::error::Selected run $BUILD_RUN_ID is not a completed successful workflow run (status: ${STATUS:-missing}, conclusion: ${CONCLUSION:-missing})."
@@ -54,6 +55,10 @@ jobs:
           fi
           if [ "$WORKFLOW_PATH" != ".github/workflows/android-release.yml" ]; then
             echo "::error::Selected run $BUILD_RUN_ID is not an Android Release Bundle run. Choose a successful run from Android Release Bundle."
+            exit 1
+          fi
+          if [ "$HEAD_BRANCH" != "master" ]; then
+            echo "::error::Selected Android Release Bundle run must come from master; run $BUILD_RUN_ID came from ${HEAD_BRANCH:-an unknown branch}."
             exit 1
           fi
 
