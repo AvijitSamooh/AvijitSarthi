@@ -1,14 +1,19 @@
 # Active / Pending Work
 
+> **Current runtime architecture:** NestJS uses Firebase Authentication, Cloud Firestore and Cloudflare R2. PostgreSQL/Prisma are retired from the application runtime. Numbered iterations below retain historical planning context; their initial PostgreSQL milestones are not current implementation instructions. See [Firestore architecture](firestore-migration.md).
+
 ## In Progress
 
-- [ ] PostgreSQL to Firestore migration — user identity, roles, admin authorization and role-audit history are now implemented on Firestore; remaining domain migrations and production cutover are pending.
-- [ ] Split Education into Education Assistance and Pratibha Samman — production migration recovery/deployment verification remains.
+- [ ] Production Firestore cutover verification — Firestore domain services, user/role authorization, audit history and Prisma retirement are implemented in the repository. Verify the deployed Avijit Sarthi service, production Firestore configuration, historical-data reconciliation, backup/restore and retirement of obsolete database infrastructure/secrets before declaring the operational cutover complete.
+- [ ] Education Assistance / Pratibha Samman production recovery — separate application types, Firestore application records, rules/windows and admin/client flows are implemented. Verify historical application migration/recovery and production deployment; code-level tests do not establish production data completeness.
 
 ## Recently Completed
 
-- [x] Firestore user/authorization slice — Firebase-authenticated user records, admin/super-admin guards, admin user management, role audit history, and idempotent PostgreSQL-to-Firestore backfill.
+- [x] Firestore-only backend runtime — active NestJS persistence services use Firestore, media objects use Cloudflare R2, and PostgreSQL/Prisma runtime packages/schema/CI dependencies are retired.
+- [x] Firestore user/authorization slice — Firebase-authenticated user records, admin/super-admin guards, admin user management and role-audit history.
+- [x] Education Assistance / Pratibha Samman application split — separate types, Firestore rules/windows and administration/client workflows; production data recovery remains in progress.
 - [x] City Activities and Accomplishments — published-only public discovery, city filtering, localized city catalogue, Super Admin City Admin assignment UI, canonical city validation, and Flutter/API/backend coverage.
+- [x] Android Firestore-backed guest discovery E2E — isolated Auth/Firestore emulators, local NestJS API, published-versus-draft visibility and city filtering.
 
 # Iteration 0 --- Foundation
 

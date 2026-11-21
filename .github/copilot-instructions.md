@@ -57,12 +57,12 @@ For new backend functionality:
 - Keep controllers thin.
 - Put business logic in services.
 - Validate request input with DTOs and validation decorators.
-- Use Prisma through the established data-access pattern.
-- Define explicit response/error behaviour.
-- Avoid leaking database implementation details unnecessarily.
+- Use the existing Firestore persistence services and Firebase Admin SDK through `FirebaseService`.
+- Define Firestore collection/document shapes, stable IDs, query/index requirements, transaction boundaries and explicit response/error behaviour.
+- Keep controllers thin and avoid leaking storage implementation details into API contracts.
 - Add pagination/filtering/sorting where collection growth makes it appropriate.
-- Update Prisma schema, migrations and seed data together when changing persistent models.
-- Production database changes must use committed Prisma migrations; do not depend on `db push`.
+- When changing persistent models, update Firestore service logic, emulator fixtures/seeds, validation and relevant tests together.
+- Do not reintroduce Prisma/PostgreSQL or `DATABASE_URL` as runtime dependencies without an explicit architecture decision.
 
 ## 5. API Contract Rules
 
@@ -172,7 +172,7 @@ npm run build
 npm test
 ```
 
-Also validate affected Prisma schema/migrations.
+For persistence changes, validate Firestore document/query behavior against the local Firestore Emulator and update required indexes/configuration. Do not add Prisma schema or migrations.
 
 CI failures must be fixed by reading the actual failing job logs. Do not repeatedly change tests based on assumptions.
 
@@ -203,7 +203,7 @@ Before opening a PR, verify:
 - [ ] Flutter integration tests cover the important user journey where applicable
 - [ ] Existing tests still pass
 - [ ] Static analysis passes
-- [ ] Database migrations/seeds are updated if needed
+- [ ] Firestore document compatibility, emulator fixtures/seeds and index configuration are updated if needed
 - [ ] Documentation impact has been explicitly reviewed
 - [ ] Existing automated tests affected by the change have been updated
 - [ ] New or changed behaviour has appropriate regression coverage
