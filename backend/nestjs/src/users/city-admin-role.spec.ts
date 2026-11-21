@@ -46,6 +46,7 @@ describe('FirestoreUsersService city administrator assignments', () => {
     const { service } = setup();
     await expect(service.changeRole('target', 'root-uid', 'CITY_ADMIN', [])).rejects.toBeInstanceOf(BadRequestException);
     await expect(service.changeRole('target', 'root-uid', 'ADMIN', ['pune'])).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.changeRole('target', 'root-uid', 'CITY_ADMIN', ['unknown-city'])).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('allows updating assignments for an existing City Admin and rejects an identical assignment', async () => {
