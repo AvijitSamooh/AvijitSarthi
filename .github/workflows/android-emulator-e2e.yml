@@ -134,7 +134,7 @@ jobs:
               exit 1
             fi
 
-            echo eyJlbXVsYXRvcnMiOnsiYXV0aCIeyJwb3J0Ijo5MDk5fSwidWkiOnsiZW5hYmxlZCI6ZmFsc2V9fX0= | base64 -d > /tmp/firebase-e2e.json
+            echo eyJlbXVsYXRvcnMiOnsiYXV0aCI6eyJwb3J0Ijo5MDk5fSwidWkiOnsiZW5hYmxlZCI6ZmFsc2V9fX0= | base64 -d > /tmp/firebase-e2e.json
             npx --yes firebase-tools@14 emulators:start --only auth --project avijitsahyog-firebase --config /tmp/firebase-e2e.json > artifacts/firebase-auth-emulator.log 2>&1 &
             firebase_pid=$!
             cleanup() {
