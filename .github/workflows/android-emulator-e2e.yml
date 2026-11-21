@@ -120,11 +120,17 @@ jobs:
             adb wait-for-device
 
             system_services_ready=false
+            ready_streak=0
             for attempt in $(seq 1 45); do
               if timeout 5s adb shell cmd package list packages >/dev/null 2>&1 \
                 && timeout 5s adb shell cmd activity get-config >/dev/null 2>&1; then
-                system_services_ready=true
-                break
+                ready_streak=$((ready_streak + 1))
+                if [ "$ready_streak" -ge 3 ]; then
+                  system_services_ready=true
+                  break
+                fi
+              else
+                ready_streak=0
               fi
               sleep 2
             done
