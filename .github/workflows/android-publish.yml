@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       build_run_id:
-        description: GitHub Actions run ID of the successful Android build
+        description: Run ID of a successful Android Release Bundle built from the current master commit
         required: true
         type: string
 
@@ -47,6 +47,8 @@ jobs:
           STATUS=$(jq -r '.status // empty' <<< "$RUN_JSON")
           CONCLUSION=$(jq -r '.conclusion // empty' <<< "$RUN_JSON")
           WORKFLOW_PATH=$(jq -r '.path // empty' <<< "$RUN_JSON")
+          HEAD_BRANCH=$(jq -r '.head_branch // empty' <<< "$RUN_JSON")
+          HEAD_SHA=$(jq -r '.head_sha // empty' <<< "$RUN_JSON")
 
           if [ "$STATUS" != "completed" ] || [ "$CONCLUSION" != "success" ]; then
             echo "::error::Selected run $BUILD_RUN_ID is not a completed successful workflow run (status: ${STATUS:-missing}, conclusion: ${CONCLUSION:-missing})."
@@ -56,11 +58,31 @@ jobs:
             echo "::error::Selected run $BUILD_RUN_ID is not an Android Release Bundle run. Choose a successful run from Android Release Bundle."
             exit 1
           fi
+          if [ "$HEAD_BRANCH" != "master" ]; then
+            echo "::error::Selected Android Release Bundle run must come from master; run $BUILD_RUN_ID came from ${HEAD_BRANCH:-an unknown branch}."
+            exit 1
+          fi
 
-          ARTIFACTS=$(curl --fail --silent --show-error \
+          if ! MASTER_COMMIT_JSON=$(curl --fail --silent \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $GH_TOKEN" \
-            "$API/actions/runs/$BUILD_RUN_ID/artifacts")
+            "$API/commits/master"); then
+            echo "::error::Unable to resolve the current master commit for release preflight. Check GitHub Actions access and try again."
+            exit 1
+          fi
+          MASTER_SHA=$(jq -r '.sha // empty' <<< "$MASTER_COMMIT_JSON")
+          if [ -z "$MASTER_SHA" ] || [ "$HEAD_SHA" != "$MASTER_SHA" ]; then
+            echo "::error::Selected AAB was not built from the current master commit. Run a fresh Android Release Bundle for master ($MASTER_SHA) and use that run ID."
+            exit 1
+          fi
+
+          if ! ARTIFACTS=$(curl --fail --silent \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            "$API/actions/runs/$BUILD_RUN_ID/artifacts"); then
+            echo "::error::Unable to list artifacts for Android build run $BUILD_RUN_ID. Check GitHub Actions access and try again."
+            exit 1
+          fi
           AAB_COUNT=$(jq '[.artifacts[] | select(.expired == false and (.name | startswith("avijit-sahyog-release-aab-")))] | length' <<< "$ARTIFACTS")
           if [ "$AAB_COUNT" -ne 1 ]; then
             echo "::error::Expected exactly one unexpired Avijit Sarthi release AAB artifact in run $BUILD_RUN_ID; found $AAB_COUNT."
@@ -97,11 +119,11 @@ jobs:
           set -euo pipefail
           test -n "$PLAY_SERVICE_ACCOUNT" || { echo "::error::Missing Actions secret PLAY_STORE_SERVICE_ACCOUNT_JSON."; exit 1; }
 
-      - name: Publish to Google Play internal and closed testing
+      - name: Publish to Google Play Closed testing only
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
           packageName: com.avijitsamooh.avijitsahyog
           releaseFiles: publish/app-release.aab
-          tracks: internal,alpha
+          tracks: alpha
           status: completed
