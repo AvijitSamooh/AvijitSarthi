@@ -12,7 +12,9 @@ void main() {
   testWidgets(
     'real app starts and renders the home experience',
     (tester) async {
-      SharedPreferences.setMockInitialValues({});
+      // Keep this smoke test independent of the locale selected by earlier
+      // integration tests or the hosted emulator's system language.
+      SharedPreferences.setMockInitialValues({'selected_locale': 'en'});
 
       // Exercise the same startup path as the installed Android application.
       // E2E_TEST_MODE disables production analytics/health telemetry and
