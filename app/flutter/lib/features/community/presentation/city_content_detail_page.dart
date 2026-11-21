@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../features/causes/models/organisation.dart';
 import '../../../features/causes/presentation/organisation_detail_page.dart';
 import '../../../l10n/app_localizations.dart';
-import '../models/city_content.dart';
 import '../providers/city_providers.dart';
 
 class CityContentDetailPage extends ConsumerWidget {

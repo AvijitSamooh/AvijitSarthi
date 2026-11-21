@@ -196,5 +196,4 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Recovered activity'), findsOneWidget);
   });
-}  });
 }

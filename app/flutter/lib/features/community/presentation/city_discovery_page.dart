@@ -251,6 +251,7 @@ class _CityContentCard extends StatelessWidget {
             ],
           ],
         ),
+        ),
       ),
     );
   }

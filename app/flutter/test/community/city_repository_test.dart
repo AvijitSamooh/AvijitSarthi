@@ -71,5 +71,4 @@ void main() {
     expect(organisations.single.name, 'Seva Trust');
     api.dispose();
   });
-}  });
 }
