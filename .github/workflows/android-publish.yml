@@ -29,6 +29,42 @@ jobs:
           set -euo pipefail
           [[ "$BUILD_RUN_ID" =~ ^[0-9]+$ ]] || { echo "::error::build_run_id must be a numeric GitHub Actions run ID."; exit 1; }
 
+      - name: Verify selected Android build run and AAB artifact
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILD_RUN_ID: ${{ inputs.build_run_id }}
+          GH_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          API="https://api.github.com/repos/$GH_REPOSITORY"
+          RUN_JSON=$(curl --fail --silent --show-error \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            "$API/actions/runs/$BUILD_RUN_ID")
+          STATUS=$(jq -r '.status // empty' <<< "$RUN_JSON")
+          CONCLUSION=$(jq -r '.conclusion // empty' <<< "$RUN_JSON")
+          WORKFLOW_PATH=$(jq -r '.path // empty' <<< "$RUN_JSON")
+
+          if [ "$STATUS" != "completed" ] || [ "$CONCLUSION" != "success" ]; then
+            echo "::error::Selected run $BUILD_RUN_ID is not a completed successful workflow run (status: ${STATUS:-missing}, conclusion: ${CONCLUSION:-missing})."
+            exit 1
+          fi
+          if [ "$WORKFLOW_PATH" != ".github/workflows/android-release.yml" ]; then
+            echo "::error::Selected run $BUILD_RUN_ID is not an Android Release Bundle run. Choose a successful run from Android Release Bundle."
+            exit 1
+          fi
+
+          ARTIFACTS=$(curl --fail --silent --show-error \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            "$API/actions/runs/$BUILD_RUN_ID/artifacts")
+          AAB_COUNT=$(jq '[.artifacts[] | select(.expired == false and (.name | startswith("avijit-sahyog-release-aab-")))] | length' <<< "$ARTIFACTS")
+          if [ "$AAB_COUNT" -ne 1 ]; then
+            echo "::error::Expected exactly one unexpired Avijit Sarthi release AAB artifact in run $BUILD_RUN_ID; found $AAB_COUNT."
+            exit 1
+          fi
+          echo "Selected run is a successful Android Release Bundle with one available AAB artifact."
+
       - name: Download artifact from selected build run
         uses: actions/download-artifact@v4
         with:
