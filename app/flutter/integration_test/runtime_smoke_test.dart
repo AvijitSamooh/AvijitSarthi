@@ -18,11 +18,12 @@ void main() {
       // E2E_TEST_MODE disables production analytics/health telemetry and
       // routes Auth to the Firebase Auth Emulator.
       await app.main();
-      await tester.pumpAndSettle(
-        const Duration(milliseconds: 100),
-        EnginePhase.sendSemanticsUpdate,
-        const Duration(seconds: 15),
-      );
+      // The splash screen and home shell can keep frame callbacks active.
+      // Advance the splash timer explicitly instead of waiting for global
+      // pumpAndSettle, which can stall on app-owned animations.
+      await tester.pump(const Duration(seconds: 6));
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
 
       expect(find.text('Avijit Sarthi'), findsWidgets);
       expect(find.text('Our Purpose'), findsOneWidget);
