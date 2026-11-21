@@ -86,8 +86,6 @@ jobs:
       - name: Run on Android emulator with Firebase Auth Emulator
         uses: reactivecircus/android-emulator-runner@v2
         env:
-          # GitHub-hosted Linux VMs may not expose nested KVM. The emulator
-          # otherwise exits immediately when acceleration is unavailable.
           ANDROID_I_WANT_MY_TCG: "yes"
         with:
           api-level: 34
@@ -100,14 +98,7 @@ jobs:
             set -euo pipefail
             cd app/flutter
             mkdir -p artifacts
-            cat > /tmp/firebase-e2e.json <<'JSON'
-            {
-              "emulators": {
-                "auth": { "port": 9099 },
-                "ui": { "enabled": false }
-              }
-            }
-            JSON
+            printf '%s\n' '{"emulators":{"auth":{"port":9099},"ui":{"enabled":false}}}' > /tmp/firebase-e2e.json
             npx --yes firebase-tools@14 emulators:start --only auth --project avijitsahyog-firebase --config /tmp/firebase-e2e.json > artifacts/firebase-auth-emulator.log 2>&1 &
             firebase_pid=$!
             cleanup() {
@@ -128,11 +119,11 @@ jobs:
               fi
               sleep 2
             done
-            test "$ready" = true || {
+            if [ "$ready" != true ]; then
               cat artifacts/firebase-auth-emulator.log
               echo "Firebase Auth Emulator did not become ready."
               exit 1
-            }
+            fi
             adb install -r build/app/outputs/flutter-apk/app-debug.apk
             adb shell monkey -p com.avijitsamooh.avijitsahyog 1
             sleep 8
