@@ -15,6 +15,7 @@ import { PlatformHealthModule } from './platform-health/platform-health.module';
 import { HelpApplicationsModule } from './help-applications/help-applications.module';
 import { ActivitiesModule } from './activities/activities.module';
 import { AccomplishmentsModule } from './accomplishments/accomplishments.module';
+import { CitiesModule } from './cities/cities.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { AccomplishmentsModule } from './accomplishments/accomplishments.module'
     AdminUsersModule,
     ActivitiesModule,
     AccomplishmentsModule,
+    CitiesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

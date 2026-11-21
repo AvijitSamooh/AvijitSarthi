@@ -30,9 +30,9 @@ class AdminUsersRepository {
     );
   }
 
-  Future<AdminUser> changeRole(String userId, String role) async {
+  Future<AdminUser> changeRole(String userId, String role, {List<String> cityIds = const []}) async {
     return AdminUser.fromJson(
-      await _apiClient.makeAdmin(userId, role: role),
+      await _apiClient.makeAdmin(userId, role: role, cityIds: cityIds),
     );
   }
 

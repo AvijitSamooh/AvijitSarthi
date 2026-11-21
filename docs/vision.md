@@ -232,14 +232,15 @@ Roles:
 - `CITY_ADMIN` — can manage Activities and Accomplishments only for assigned city IDs.
 - `SUPER_ADMIN` — platform-wide authority, including assigning City Admin roles and city IDs.
 
-A City Admin assignment stores an explicit `cityIds` allow-list on the Firestore user record. The backend resolves the role and city assignments from Firestore on every protected request; client-supplied city IDs are never authorization evidence. City ownership is immutable after creation. City Admin does not grant access to global user management, donations, applications, platform configuration or unrelated admin functions. Super Admin role assignment and city-scope changes are audited with the assigned city IDs.
+A City Admin assignment stores an explicit `cityIds` allow-list on the Firestore user record. Only IDs present in the supported city catalogue are accepted for assignments and new content. The backend resolves the role and city assignments from Firestore on every protected request; client-supplied city IDs are never authorization evidence. City ownership is immutable after creation. City Admin does not grant access to global user management, donations, applications, platform configuration or unrelated admin functions. Super Admin role assignment and city-scope changes are audited with the assigned city IDs.
 
 ## 17. API and data ownership
 
 - `GET /activities`, `GET /activities/:id` — published public Activities.
 - `GET /accomplishments`, `GET /accomplishments/:id` — published public Accomplishments.
+- `GET /cities?language=en|hi|mr|gu` — canonical city IDs with localized labels and English fallback.
 - `/admin/activities` — protected city-scoped management.
 - `/admin/accomplishments` — protected city-scoped management.
 - `GET /admin/users` supports the City Admin role filter; `PATCH /admin/users/:id/role` accepts `CITY_ADMIN` with a non-empty list of city IDs and remains Super Admin only.
 
-City IDs are stable identifiers (for example, `pune` or `new-delhi`), not display labels. A localized city catalogue and self-service city administration are follow-up requirements; until then, Super Admin assigns canonical IDs.
+City IDs are stable identifiers (for example, `pune` or `new-delhi`), not display labels. `GET /cities?language=en|hi|mr|gu` returns the supported catalogue with localized labels and English fallback. Content creation and Super Admin assignments accept only canonical IDs from this catalogue; display labels are never persisted.

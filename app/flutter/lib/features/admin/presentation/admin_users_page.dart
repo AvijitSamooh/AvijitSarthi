@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../features/community/providers/city_providers.dart';
+import 'city_admin_assignment_dialog.dart';
 import '../data/admin_users_repository.dart';
 import '../models/admin_audit_entry.dart';
 import '../models/admin_user.dart';
@@ -21,6 +23,7 @@ class _AdminUsersPageState extends ConsumerState<AdminUsersPage> {
   Timer? _searchDebounce;
   String _search = '';
   int _page = 1;
+  bool _savingCityAssignments = false;
 
   @override
   void dispose() {
@@ -48,6 +51,55 @@ class _AdminUsersPageState extends ConsumerState<AdminUsersPage> {
     });
   }
 
+  Future<void> _assignCityAdmin() async {
+    final l10n = AppLocalizations.of(context)!;
+    final selected = await showDialog<AdminUser>(
+      context: context,
+      builder: (_) => _PromotionDialog(
+        repository: ref.read(adminUsersRepositoryProvider),
+        title: l10n.adminAssignCityAdmin,
+      ),
+    );
+    if (selected == null || !mounted) return;
+    await _editCityAssignments(selected);
+  }
+
+  Future<void> _editCityAssignments(AdminUser user) async {
+    final selectedCityIds = await showDialog<List<String>>(
+      context: context,
+      builder: (_) => CityAdminAssignmentDialog(
+        userLabel: user.label,
+        initialCityIds: user.cityIds,
+      ),
+    );
+    if (selectedCityIds == null || !mounted) return;
+
+    setState(() => _savingCityAssignments = true);
+    try {
+      await ref.read(adminUsersRepositoryProvider).changeRole(
+            user.id,
+            'CITY_ADMIN',
+            cityIds: selectedCityIds,
+          );
+      ref.invalidate(cityAdminsProvider);
+      ref.invalidate(adminUsersProvider);
+      ref.invalidate(adminAuditHistoryProvider);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10nCityAdminSaved(context))),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error.toString())),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _savingCityAssignments = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -57,6 +109,9 @@ class _AdminUsersPageState extends ConsumerState<AdminUsersPage> {
       role: _search.isEmpty ? 'ADMIN' : 'ALL',
     )));
     final audit = ref.watch(adminAuditHistoryProvider);
+    final cityAdmins = ref.watch(cityAdminsProvider);
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final cities = ref.watch(cityCatalogueProvider(languageCode));
 
     return Scaffold(
       appBar: AppBar(
@@ -72,6 +127,7 @@ class _AdminUsersPageState extends ConsumerState<AdminUsersPage> {
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(adminUsersProvider);
+          ref.invalidate(cityAdminsProvider);
           ref.invalidate(adminAuditHistoryProvider);
           await ref.read(adminUsersProvider((
             search: _search.isEmpty ? null : _search,
@@ -85,6 +141,69 @@ class _AdminUsersPageState extends ConsumerState<AdminUsersPage> {
             Text(l10n.adminUsersTitle, style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
             Text(l10n.adminUsersSubtitle),
+            const SizedBox(height: 16),
+            Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(l10n.adminCityAssignments, style: Theme.of(context).textTheme.titleLarge),
+                        const SizedBox(height: 4),
+                        Text(l10n.adminCityAssignmentsSubtitle),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton.icon(
+                    onPressed: _savingCityAssignments ? null : _assignCityAdmin,
+                    icon: const Icon(Icons.add_location_alt_rounded),
+                    label: Text(l10n.adminAssignCityAdmin),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              cityAdmins.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (error, _) => _ErrorCard(message: error.toString()),
+                data: (result) {
+                  final cityNames = cities.maybeWhen(
+                    data: (items) => {for (final city in items) city.id: city.name},
+                    orElse: () => const <String, String>{},
+                  );
+                  if (result.items.isEmpty) {
+                    return Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(l10n.adminCityAdminEmpty),
+                      ),
+                    );
+                  }
+                  return Card(
+                    child: Column(
+                      children: [
+                        for (var i = 0; i < result.items.length; i++) ...[
+                          ListTile(
+                            leading: const Icon(Icons.location_city_rounded),
+                            title: Text(result.items[i].label),
+                            subtitle: Text(
+                              '${result.items[i].email ?? l10n.adminNoEmail}\n${result.items[i].cityIds.map((id) => cityNames[id] ?? id).join(', ')}',
+                            ),
+                            isThreeLine: true,
+                            trailing: IconButton(
+                              tooltip: l10n.adminEditCityAssignments,
+                              icon: const Icon(Icons.edit_location_alt_rounded),
+                              onPressed: () => _editCityAssignments(result.items[i]),
+                            ),
+                          ),
+                          if (i < result.items.length - 1) const Divider(height: 1),
+                        ],
+                      ],
+                    ),
+                  );
+                },
+              ),
+            const SizedBox(height: 24),
             const SizedBox(height: 16),
             TextField(
               controller: _searchController,
@@ -147,6 +266,7 @@ Future<void> _showPromotionDialog(
     builder: (_) => _PromotionDialog(
       initialSearch: initialSearch,
       repository: ref.read(adminUsersRepositoryProvider),
+      title: l10n.adminMakeAdmin,
     ),
   );
   if (selected == null || !context.mounted) return;
@@ -180,11 +300,52 @@ Future<void> _showPromotionDialog(
   }
 }
 
+
+Future<void> _editCityAssignmentsForUser(
+  BuildContext context,
+  WidgetRef ref,
+  AdminUser user,
+  AppLocalizations l10n,
+) async {
+  final cityIds = await showDialog<List<String>>(
+    context: context,
+    builder: (_) => CityAdminAssignmentDialog(
+      userLabel: user.label,
+      initialCityIds: user.cityIds,
+    ),
+  );
+  if (cityIds == null || !context.mounted) return;
+  try {
+    await ref.read(adminUsersRepositoryProvider).changeRole(
+          user.id,
+          'CITY_ADMIN',
+          cityIds: cityIds,
+        );
+    ref.invalidate(cityAdminsProvider);
+    ref.invalidate(adminUsersProvider);
+    ref.invalidate(adminAuditHistoryProvider);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.adminCityAssignmentSaved)),
+      );
+    }
+  } catch (error) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString())));
+    }
+  }
+}
+
+String l10nCityAdminSaved(BuildContext context) =>
+    AppLocalizations.of(context)!.adminCityAssignmentSaved;
+
 class _PromotionDialog extends StatefulWidget {
-  const _PromotionDialog({this.initialSearch, required this.repository});
+  const _PromotionDialog({this.initialSearch, required this.repository, required this.title, this.role = 'USER'});
 
   final String? initialSearch;
   final AdminUsersRepository repository;
+  final String title;
+  final String role;
 
   @override
   State<_PromotionDialog> createState() => _PromotionDialogState();
@@ -224,7 +385,7 @@ class _PromotionDialogState extends State<_PromotionDialog> {
     try {
       final result = await widget.repository.getUsers(
         search: _search.isEmpty ? null : _search,
-        role: 'USER',
+        role: widget.role,
         page: _page,
         pageSize: _pageSize,
       );
@@ -260,7 +421,7 @@ class _PromotionDialogState extends State<_PromotionDialog> {
     final result = _result;
 
     return AlertDialog(
-      title: Text(l10n.adminMakeAdmin),
+      title: Text(widget.title),
       content: SizedBox(
         width: double.maxFinite,
         height: 420,
@@ -427,13 +588,19 @@ class _UserTile extends StatelessWidget {
         children: [
           Text(user.email ?? l10n.adminNoEmail),
           const SizedBox(height: 2),
-          Text(user.isAdmin ? l10n.adminRole : l10n.adminUserRoleUser),
+          Text(user.isCityAdmin ? l10n.adminCityAdmin : (user.isAdmin ? l10n.adminRole : l10n.adminUserRoleUser)),
         ],
       ),
       isThreeLine: true,
       trailing: user.isSuperAdmin
           ? const Icon(Icons.shield_rounded)
-          : user.isAdmin
+          : user.isCityAdmin
+              ? IconButton(
+                  tooltip: l10n.adminEditCityAssignments,
+                  icon: const Icon(Icons.edit_location_alt_rounded),
+                  onPressed: () => _editCityAssignmentsForUser(context, ref, user, l10n),
+                )
+              : user.isAdmin
               ? PopupMenuButton<String>(
                   onSelected: (role) => _confirmRoleChange(context, role),
                   itemBuilder: (context) => [

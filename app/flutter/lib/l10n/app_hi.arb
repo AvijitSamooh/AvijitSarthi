@@ -569,7 +569,7 @@
   "cityContentCreate": "नई प्रविष्टि बनाएँ",
   "cityContentTitle": "शीर्षक",
   "cityContentDescription": "विवरण",
-  "cityContentCity": "शहर ID",
+  "cityContentCity": "शहर",
   "cityContentStartDate": "प्रारंभ दिनांक और समय (ISO 8601)",
   "cityContentAchievedAt": "उपलब्धि दिनांक और समय (ISO 8601)",
   "cityContentEndDate": "समाप्ति दिनांक और समय (वैकल्पिक)",
@@ -591,5 +591,38 @@
         "type": "String"
       }
     }
-  }
+  },
+  "homeActivities": "गतिविधियाँ",
+  "homeActivitiesSubtitle": "शहर की सामुदायिक पहलों और कार्यक्रमों को देखें।",
+  "homeAccomplishments": "उपलब्धियाँ",
+  "homeAccomplishmentsSubtitle": "उपलब्धियों और सामुदायिक प्रभाव का उत्सव मनाएँ।",
+  "communityDiscoveryTitle": "समुदाय की गतिविधियाँ",
+  "communityActivitiesTab": "गतिविधियाँ",
+  "communityAccomplishmentsTab": "उपलब्धियाँ",
+  "communityFilterCity": "शहर के अनुसार फ़िल्टर करें",
+  "communityAllCities": "सभी शहर",
+  "communityCityCatalogueError": "शहरों की सूची लोड नहीं हो सकी।",
+  "communityContentLoadError": "सामुदायिक जानकारी लोड नहीं हो सकी।",
+  "communityNoActivities": "इस शहर के लिए अभी कोई प्रकाशित गतिविधि नहीं है।",
+  "communityNoAccomplishments": "इस शहर के लिए अभी कोई प्रकाशित उपलब्धि नहीं है।",
+  "communityActivityUntil": "अंतिम तिथि: {date}",
+  "@communityActivityUntil": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "adminCityAssignments": "शहर प्रशासक आवंटन",
+  "adminCityAssignmentsSubtitle": "प्रत्येक City Admin द्वारा प्रबंधित शहरों को निर्धारित और अपडेट करें।",
+  "adminAssignCityAdmin": "City Admin नियुक्त करें",
+  "adminEditCityAssignments": "शहर आवंटन संपादित करें",
+  "adminCityAdmin": "शहर प्रशासक",
+  "adminCityAdminEmpty": "अभी तक कोई City Admin नियुक्त नहीं किया गया है।",
+  "adminCityAssignmentFor": "{user} किन शहरों का प्रबंधन कर सकते हैं, चुनें।",
+  "@adminCityAssignmentFor": {
+    "placeholders": {
+      "user": {}
+    }
+  },
+  "adminCityAssignmentSave": "आवंटन सहेजें",
+  "adminCityAssignmentSaved": "शहर आवंटन सहेजा गया और ऑडिट इतिहास में दर्ज किया गया।"
 }

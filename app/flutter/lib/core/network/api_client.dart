@@ -108,6 +108,28 @@ class ApiClient {
     return decoded.map((item) => item as Map<String, dynamic>).toList(growable: false);
   }
 
+  Future<List<Map<String, dynamic>>> getCities(String languageCode) async {
+    final uri = Uri.parse('$baseUrl/cities').replace(queryParameters: {
+      'language': languageCode,
+    });
+    final response = await _client.get(uri);
+    _ensureSuccess(response, 'Loading cities');
+    return (jsonDecode(response.body) as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
+  Future<List<Map<String, dynamic>>> getPublicCityContent(
+    String kind, {
+    String? cityId,
+  }) async {
+    _validateCityContentKind(kind);
+    final uri = Uri.parse('$baseUrl/$kind').replace(queryParameters: {
+      if (cityId != null && cityId.isNotEmpty) 'cityId': cityId,
+    });
+    final response = await _client.get(uri);
+    _ensureSuccess(response, 'Loading $kind');
+    return (jsonDecode(response.body) as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
   Future<Map<String, dynamic>> createDonation(Map<String, dynamic> payload) async {
     final response = await _client.post(
       Uri.parse('$baseUrl/donations'),
@@ -167,11 +189,11 @@ class ApiClient {
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
-  Future<Map<String, dynamic>> makeAdmin(String userId, {String role = 'ADMIN'}) async {
+  Future<Map<String, dynamic>> makeAdmin(String userId, {String role = 'ADMIN', List<String> cityIds = const []}) async {
     final response = await _client.patch(
       Uri.parse('$baseUrl/admin/users/$userId/role'),
       headers: await _headers(json: true),
-      body: jsonEncode({'role': role}),
+      body: jsonEncode({'role': role, 'cityIds': cityIds}),
     );
     _ensureSuccess(response, 'Changing administrator role');
     return jsonDecode(response.body) as Map<String, dynamic>;

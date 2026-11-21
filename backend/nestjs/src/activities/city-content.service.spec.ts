@@ -46,6 +46,14 @@ describe('CityContentService business rules', () => {
     expect((await service.list('activities')).map((x) => x.id)).toContain(created.id);
   });
 
+  it('rejects content for a city outside the localized catalogue', async () => {
+    const { service, docs } = makeHarness();
+    await expect(service.create('activities', {
+      cityId: 'unknown-city', title: 'x', description: 'y', startsAt: '2026-12-01T10:00:00Z',
+    }, superAdmin)).rejects.toBeInstanceOf(BadRequestException);
+    expect(docs.size).toBe(0);
+  });
+
   it('prevents a city admin creating or reading content outside assigned cities', async () => {
     const { service } = makeHarness({ 'outside-1': { id: 'outside-1', cityId: 'mumbai', status: 'PUBLISHED' } });
     await expect(service.create('activities', {

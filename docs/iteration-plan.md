@@ -4,11 +4,12 @@
 
 - [ ] PostgreSQL to Firestore migration — user identity, roles, admin authorization and role-audit history are now implemented on Firestore; remaining domain migrations and production cutover are pending.
 - [ ] Split Education into Education Assistance and Pratibha Samman — production migration recovery/deployment verification remains.
-- [ ] City Activities and Accomplishments — backend Firestore domain, public/admin APIs, city-scoped authorization, Super Admin City Admin assignment and basic Flutter City Admin create/edit/publish/delete screens. Public discovery screens, Super Admin city-assignment UI and localized city catalogue remain follow-up work.
+
 
 ## Recently Completed
 
 - [x] Firestore user/authorization slice — Firebase-authenticated user records, admin/super-admin guards, admin user management, role audit history, and idempotent PostgreSQL-to-Firestore backfill.
+- [x] City Activities and Accomplishments — published-only public discovery, city filtering, localized city catalogue, Super Admin City Admin assignment UI, canonical city validation, and Flutter/API/backend coverage.
 
 # Iteration 0 --- Foundation
 
@@ -634,9 +635,9 @@ Add a bounded community-impact layer without changing the giving and financial d
 
 Cover publication visibility, affiliate reference integrity, duplicate affiliate IDs, invalid activity date ranges, missing records, city boundary enforcement on list/detail/update/delete, Super Admin cross-city access, role assignment validation and audit consistency.
 
-### Follow-up
+### Completed follow-up
 
-- Flutter public Activities and Accomplishments discovery pages.
-- Super Admin city-assignment UI.
-- Localized city catalogue and labels in English, Hindi, Marathi and Gujarati.
-- End-to-end Flutter/API tests for public and administrator client journeys.
+- [x] Flutter public Activities and Accomplishments discovery pages with all-city and city-specific filters, backed only by published public APIs.
+- [x] Super Admin city-assignment UI to assign and update City Admin scopes, with the existing backend audit record.
+- [x] Localized city catalogue and labels in English, Hindi, Marathi and Gujarati.
+- [x] Backend contract, Flutter API/model/widget coverage, and city-scope validation.
