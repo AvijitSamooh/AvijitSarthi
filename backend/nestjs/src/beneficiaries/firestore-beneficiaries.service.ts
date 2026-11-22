@@ -213,7 +213,7 @@ export class FirestoreBeneficiariesService {
     if (!relation?.media) return null;
     return {
       id: relation.media.id,
-      url: this.mediaUrl(relation.media),
+      url: await this.mediaUrl(relation.media),
       mimeType: relation.media.mimeType,
       width: relation.media.width,
       height: relation.media.height,
