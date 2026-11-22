@@ -116,6 +116,15 @@ describe('FirestoreCausesService',()=>{
     await expect(service.getMediaByIds(['m','z'])).resolves.toHaveLength(1);
   });
 
+  it('keeps active standalone causes visible as leaf causes', async () => {
+    const causes = firebase.db.collection('causes');
+    const standalone = cause({ id: 'medical', slug: 'medical', childIds: [] });
+    causes.get.mockResolvedValueOnce({ docs: [{ data: () => standalone }] });
+    await expect(service.findAll('en')).resolves.toEqual([
+      expect.objectContaining({ id: 'medical', hasChildren: false, children: [] }),
+    ]);
+  });
+
   it('hides parent categories that have no active children from public discovery', async () => {
     const causes = firebase.db.collection('causes');
     const parent = cause({ id: 'education', slug: 'education', childIds: ['inactive-child'] });
