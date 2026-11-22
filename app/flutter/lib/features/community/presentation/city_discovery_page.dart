@@ -46,15 +46,15 @@ class _CityDiscoveryPageState extends ConsumerState<CityDiscoveryPage> {
                 error: (_, _) => Row(
                   children: [
                     Expanded(
-                    child: Semantics(
-                      container: true,
-                      liveRegion: true,
-                      label: l10n.communityCityCatalogueError,
-                      child: ExcludeSemantics(
-                        child: Text(l10n.communityCityCatalogueError),
+                      child: Semantics(
+                        container: true,
+                        liveRegion: true,
+                        label: l10n.communityCityCatalogueError,
+                        child: ExcludeSemantics(
+                          child: Text(l10n.communityCityCatalogueError),
+                        ),
                       ),
                     ),
-                  ),
                     TextButton(
                       onPressed: () => ref.invalidate(cityCatalogueProvider(languageCode)),
                       child: Text(l10n.retry),
