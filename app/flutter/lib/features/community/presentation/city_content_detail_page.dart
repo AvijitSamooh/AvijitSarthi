@@ -29,7 +29,14 @@ class CityContentDetailPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.communityDetailTitle)),
       body: detail.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => Center(
+          child: Semantics(
+            container: true,
+            liveRegion: true,
+            label: l10n.communityLoadingDetails,
+            child: const ExcludeSemantics(child: CircularProgressIndicator()),
+          ),
+        ),
         error: (_, _) => _DetailErrorState(
           message: l10n.communityContentLoadError,
           retryLabel: l10n.retry,
@@ -90,10 +97,26 @@ class CityContentDetailPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: 10),
                 organisations.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () => Center(
+                    child: Semantics(
+                      container: true,
+                      liveRegion: true,
+                      label: l10n.communityLoadingAffiliates,
+                      child: const ExcludeSemantics(child: CircularProgressIndicator()),
+                    ),
+                  ),
                   error: (_, _) => Row(
                     children: [
-                      Expanded(child: Text(l10n.communityAffiliateLoadError)),
+                      Expanded(
+                        child: Semantics(
+                          container: true,
+                          liveRegion: true,
+                          label: l10n.communityAffiliateLoadError,
+                          child: ExcludeSemantics(
+                            child: Text(l10n.communityAffiliateLoadError),
+                          ),
+                        ),
+                      ),
                       TextButton(
                         onPressed: () =>
                             ref.invalidate(cityOrganisationsProvider(languageCode)),
@@ -107,7 +130,14 @@ class CityContentDetailPage extends ConsumerWidget {
                             item.organisationIds.contains(organisation.id))
                         .toList(growable: false);
                     if (linked.isEmpty) {
-                      return Text(l10n.communityNoAffiliates);
+                      return Semantics(
+                        container: true,
+                        liveRegion: true,
+                        label: l10n.communityNoAffiliates,
+                        child: ExcludeSemantics(
+                          child: Text(l10n.communityNoAffiliates),
+                        ),
+                      );
                     }
                     return Column(
                       children: [
@@ -179,9 +209,16 @@ class _DetailErrorState extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.cloud_off_rounded, size: 42),
+              const ExcludeSemantics(child: Icon(Icons.cloud_off_rounded, size: 42)),
               const SizedBox(height: 12),
-              Text(message, textAlign: TextAlign.center),
+              Semantics(
+                container: true,
+                liveRegion: true,
+                label: message,
+                child: ExcludeSemantics(
+                  child: Text(message, textAlign: TextAlign.center),
+                ),
+              ),
               const SizedBox(height: 12),
               TextButton(onPressed: onRetry, child: Text(retryLabel)),
             ],
