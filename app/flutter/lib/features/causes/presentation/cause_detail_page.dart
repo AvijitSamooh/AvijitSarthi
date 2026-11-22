@@ -21,7 +21,7 @@ class CauseDetailPage extends ConsumerWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final applicationType = switch (slug) {
-      'education' || 'education-assistance' => 'EDUCATION_ASSISTANCE',
+      'education-assistance' => 'EDUCATION_ASSISTANCE',
       'healthcare' || 'medical' => 'MEDICAL_HELP',
       'pratibha-samman' || 'pratibha' => 'PRATIBHA_SAMMAN',
       _ => null,
@@ -79,22 +79,33 @@ class CauseDetailPage extends ConsumerWidget {
                     ),
                   ],
                   const SizedBox(height: 24),
-                  FilledButton.icon(
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => DonationPage(
-                          initialCauseId: cause.id,
-                        ),
+                  if (cause.isParent) ...[
+                    const SizedBox(height: 18),
+                    Text(
+                      l10n.causeChooseChild,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: Colors.white.withValues(alpha: .88),
                       ),
                     ),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFFF5A623),
-                      foregroundColor: const Color(0xFF4C120D),
+                  ],
+                  if (cause.isLeaf)
+                    FilledButton.icon(
+                      key: ValueKey('cause_support_${cause.id}'),
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => DonationPage(
+                            initialCauseId: cause.id,
+                          ),
+                        ),
+                      ),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFFF5A623),
+                        foregroundColor: const Color(0xFF4C120D),
+                      ),
+                      icon: const Icon(Icons.favorite_rounded),
+                      label: Text(l10n.supportThisCause),
                     ),
-                    icon: const Icon(Icons.favorite_rounded),
-                    label: Text(l10n.supportThisCause),
-                  ),
-                  if (applicationType != null) ...[
+                  if (cause.isLeaf && applicationType != null) ...[
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
@@ -130,6 +141,33 @@ class CauseDetailPage extends ConsumerWidget {
                 ],
               ),
             ),
+            if (cause.isParent) ...[
+              const SizedBox(height: 30),
+              Text(l10n.causeChildrenTitle, style: theme.textTheme.titleLarge),
+              const SizedBox(height: 12),
+              if (cause.children.isEmpty)
+                Text(l10n.causeNoActiveChildren)
+              else
+                ...cause.children.map(
+                  (child) => Card(
+                    key: ValueKey('cause_child_card_${child.id}'),
+                    margin: const EdgeInsets.only(bottom: 10),
+                    child: ListTile(
+                      leading: const Icon(Icons.subdirectory_arrow_right_rounded),
+                      title: Text(child.name),
+                      subtitle: child.description?.isNotEmpty == true
+                          ? Text(child.description!, maxLines: 2, overflow: TextOverflow.ellipsis)
+                          : null,
+                      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => CauseDetailPage(slug: child.slug),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
             if (cause.organisations.isNotEmpty) ...[
               const SizedBox(height: 30),
               Text(l10n.causeReachTitle,
