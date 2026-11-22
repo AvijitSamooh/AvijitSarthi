@@ -645,6 +645,8 @@
     }
   },
   "communityDetailTitle": "समुदाय का प्रभाव",
+  "communityLoadingDetails": "समुदाय की जानकारी लोड हो रही है।",
+  "communityLoadingAffiliates": "संस्था की जानकारी लोड हो रही है।",
   "communityAffiliatedOrganisations": "संबद्ध संस्थाएँ",
   "communityNoAffiliates": "इस जानकारी के लिए कोई संस्था विवरण उपलब्ध नहीं है।",
   "communityAffiliateLoadError": "संस्था विवरण लोड नहीं हो सका।",

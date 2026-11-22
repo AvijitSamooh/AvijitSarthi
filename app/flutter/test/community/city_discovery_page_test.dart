@@ -283,6 +283,7 @@ void main() {
 
     await tester.pumpAndSettle();
     expect(find.text('No organisation details are available for this item.'), findsOneWidget);
+    expectLiveRegion(tester, 'No organisation details are available for this item.');
   });
 
   testWidgets('shows localized content error and retries the public feed', (tester) async {
@@ -360,11 +361,144 @@ void main() {
 
     await tester.pumpAndSettle();
     expect(find.text('Organisation details could not be loaded.'), findsOneWidget);
+    expectLiveRegion(tester, 'Organisation details could not be loaded.');
     shouldFail = false;
     await tester.tap(find.text('Retry'));
     await tester.pumpAndSettle();
     expect(find.text('Seva Trust'), findsOneWidget);
   });
 
+
+  testWidgets('announces community detail loading while the detail is pending', (tester) async {
+    final detail = Completer<CityContent>();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          cityContentDetailProvider((kind: 'activities', id: 'pending')).overrideWith(
+            (ref) => detail.future,
+          ),
+          cityOrganisationsProvider('en').overrideWith((ref) async => const []),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('en'),
+          home: const CityContentDetailPage(
+            kind: 'activities',
+            contentId: 'pending',
+            cityName: 'Pune',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expectLiveRegion(tester, 'Loading community details.');
+  });
+
+  testWidgets('announces affiliate loading while organisation references are pending', (tester) async {
+    final organisations = Completer<List<Organisation>>();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          cityContentDetailProvider((kind: 'activities', id: 'activity-loading')).overrideWith(
+            (ref) async => CityContent(
+              id: 'activity-loading',
+              cityId: 'pune',
+              title: 'Community meal',
+              description: 'Shared meal for families',
+              organisationIds: const ['org-1'],
+            ),
+          ),
+          cityOrganisationsProvider('en').overrideWith((ref) => organisations.future),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('en'),
+          home: const CityContentDetailPage(
+            kind: 'activities',
+            contentId: 'activity-loading',
+            cityName: 'Pune',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expectLiveRegion(tester, 'Loading organisation details.');
+  });
+
+  testWidgets('announces community detail errors and keeps retry available', (tester) async {
+    var shouldFail = true;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          cityContentDetailProvider((kind: 'activities', id: 'activity-error')).overrideWith(
+            (ref) async {
+              if (shouldFail) throw StateError('offline');
+              return CityContent(
+                id: 'activity-error',
+                cityId: 'pune',
+                title: 'Recovered detail',
+                description: 'Loaded after retry',
+              );
+            },
+          ),
+          cityOrganisationsProvider('en').overrideWith((ref) async => const []),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('en'),
+          home: const CityContentDetailPage(
+            kind: 'activities',
+            contentId: 'activity-error',
+            cityName: 'Pune',
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    expectLiveRegion(tester, 'Unable to load community updates.');
+    expect(find.text('Retry'), findsOneWidget);
+    shouldFail = false;
+    await tester.tap(find.text('Retry'));
+    await tester.pumpAndSettle();
+    expect(find.text('Recovered detail'), findsOneWidget);
+  });
+
+  test('community detail loading announcements are localized in all supported languages', () async {
+    const expected = <String, Map<String, String>>{
+      'en': {
+        'details': 'Loading community details.',
+        'affiliates': 'Loading organisation details.',
+      },
+      'hi': {
+        'details': 'समुदाय की जानकारी लोड हो रही है।',
+        'affiliates': 'संस्था की जानकारी लोड हो रही है।',
+      },
+      'mr': {
+        'details': 'समुदायाची माहिती लोड होत आहे.',
+        'affiliates': 'संस्थेची माहिती लोड होत आहे.',
+      },
+      'gu': {
+        'details': 'સમુદાયની વિગતો લોડ થઈ રહી છે.',
+        'affiliates': 'સંસ્થાની વિગતો લોડ થઈ રહી છે.',
+      },
+    };
+
+    for (final locale in AppLocalizations.supportedLocales) {
+      final l10n = await AppLocalizations.delegate.load(locale);
+      final values = expected[locale.languageCode]!;
+      expect(l10n.communityLoadingDetails, values['details']);
+      expect(l10n.communityLoadingAffiliates, values['affiliates']);
+    }
+  });
 
 }

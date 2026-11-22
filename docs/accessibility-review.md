@@ -10,6 +10,7 @@ This review tracks accessible interaction and content descriptions in Avijit Sar
 - Widget tests assert the image semantics and verify all four localized descriptions.
 
 - Public city-discovery loading, empty and error states expose localized live-region announcements; retry remains a separate, actionable control.
+- City-content detail and affiliated-Organisation loading, empty and error states expose localized live-region announcements; retry remains independently actionable.
 - Widget tests verify loading, empty and error announcements plus all four loading-message translations.
 
 ## Remaining manual review
