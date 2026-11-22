@@ -8,6 +8,7 @@ class Cause {
     this.description,
     this.displayOrder = 0,
     this.parentId,
+    this.hasChildren = false,
     this.children = const [],
     this.organisations = const [],
   });
@@ -18,14 +19,15 @@ class Cause {
   final String? description;
   final int displayOrder;
   final String? parentId;
+  final bool hasChildren;
   final List<Cause> children;
   final List<Organisation> organisations;
 
-  bool get isParent => children.isNotEmpty;
-  bool get isLeaf => children.isEmpty;
+  bool get isParent => hasChildren || children.isNotEmpty;
+  bool get isLeaf => !isParent;
 
   Iterable<Cause> get leafCauses sync* {
-    if (children.isEmpty) {
+    if (!isParent) {
       yield this;
       return;
     }
@@ -35,6 +37,9 @@ class Cause {
   }
 
   factory Cause.fromJson(Map<String, dynamic> json) {
+    final children = (json['children'] as List<dynamic>? ?? [])
+        .map((item) => Cause.fromJson(item as Map<String, dynamic>))
+        .toList(growable: false);
     return Cause(
       id: json['id'] as String,
       slug: json['slug'] as String,
@@ -42,9 +47,8 @@ class Cause {
       description: json['description'] as String?,
       displayOrder: (json['displayOrder'] as num?)?.toInt() ?? 0,
       parentId: json['parentId'] as String?,
-      children: (json['children'] as List<dynamic>? ?? [])
-          .map((item) => Cause.fromJson(item as Map<String, dynamic>))
-          .toList(growable: false),
+      hasChildren: json['hasChildren'] as bool? ?? children.isNotEmpty,
+      children: children,
       organisations: (json['organisations'] as List<dynamic>? ?? [])
           .map((item) => Organisation.fromJson(item as Map<String, dynamic>))
           .toList(growable: false),
