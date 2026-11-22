@@ -185,7 +185,13 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.text('Pune'), findsOneWidget);
-    expect(find.text('Save assignments'), findsOneWidget);
+    final saveAction = find.text('Save assignments');
+    expect(saveAction, findsOneWidget);
+    expect(
+      tester.getRect(saveAction).bottom,
+      lessThanOrEqualTo(tester.view.physicalSize.height),
+      reason: 'The save action should remain inside the compact viewport.',
+    );
   });
 
 }

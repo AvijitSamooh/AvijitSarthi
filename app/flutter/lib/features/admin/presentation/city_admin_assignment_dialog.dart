@@ -27,7 +27,7 @@ class _CityAdminAssignmentDialogState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final dialogHeight =
-        (MediaQuery.sizeOf(context).height * 0.55).clamp(180.0, 420.0).toDouble();
+        (MediaQuery.sizeOf(context).height * 0.45).clamp(180.0, 420.0).toDouble();
     final languageCode = Localizations.localeOf(context).languageCode;
     final cities = ref.watch(cityCatalogueProvider(languageCode));
     final availableCityIds = cities.maybeWhen(
