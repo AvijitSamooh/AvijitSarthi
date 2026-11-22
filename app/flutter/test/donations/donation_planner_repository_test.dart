@@ -108,12 +108,12 @@ void main() {
       ]),
       throwsArgumentError,
     );
-    await expect(
+    await expectLater(
       save(allocations: const [
         DonationPlanAllocation(causeId: 'cause-1', percentage: 90),
-        DonationPlanAllocation(causeId: 'cause-2', percentage: 10),
+        DonationPlanAllocation(causeId: 'cause-2', percentage: 9),
       ]),
-      returnsNormally,
+      throwsArgumentError,
     );
     await expect(
       save(allocations: const [
