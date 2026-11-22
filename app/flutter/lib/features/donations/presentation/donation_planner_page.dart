@@ -252,6 +252,12 @@ class _DonationPlannerPageState extends ConsumerState<DonationPlannerPage> {
     final plan = _savedState.plan;
     final monthlyEstimate = _monthlyEstimatePaise;
     final validationMessage = _validationMessage(l10n);
+    final availableCauses = causesAsync.when(
+      data: (causes) => causes.expand((cause) => cause.leafCauses).toList(growable: false),
+      loading: () => <Cause>[],
+      error: (_, _) => <Cause>[],
+    );
+    final causeNameById = {for (final cause in availableCauses) cause.id: cause.name};
 
     return Scaffold(
       appBar: AppBar(
@@ -399,11 +405,19 @@ class _DonationPlannerPageState extends ConsumerState<DonationPlannerPage> {
                     else
                       ..._savedState.history.map((entry) {
                         final date = DateFormat.yMMMd(languageCode).add_jm().format(entry.changedAt.toLocal());
+                        final allocations = entry.allocations
+                            .map((item) => '${causeNameById[item.causeId] ?? item.causeId} ${item.percentage}%')
+                            .join(' · ');
                         return ListTile(
                           contentPadding: EdgeInsets.zero,
                           leading: const Icon(Icons.history_rounded),
                           title: Text(_historyLabel(l10n, entry.action)),
-                          subtitle: Text('${formatRupees(entry.amountPaise)} · ${_frequencyLabel(l10n, entry.frequency)} · $date'),
+                          subtitle: Text([
+                            formatRupees(entry.amountPaise),
+                            _frequencyLabel(l10n, entry.frequency),
+                            if (allocations.isNotEmpty) allocations,
+                            date,
+                          ].join(' · ')),
                         );
                       }),
                   ],
