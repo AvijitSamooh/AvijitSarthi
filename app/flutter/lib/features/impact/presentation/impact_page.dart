@@ -13,6 +13,7 @@ Widget beneficiaryImage(
   double iconSize = 64,
 }) {
   final image = Semantics(
+    container: true,
     label: semanticLabel,
     image: true,
     child: photoUrl != null && photoUrl.trim().isNotEmpty
