@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../../l10n/app_localizations.dart';
 import '../../../core/widgets/app_settings_menu.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../causes/models/cause.dart';
 import '../../causes/providers/causes_providers.dart';
 import '../models/donation_plan.dart';
@@ -255,7 +255,7 @@ class _DonationPlannerPageState extends ConsumerState<DonationPlannerPage> {
     final availableCauses = causesAsync.when(
       data: (causes) => causes.expand((cause) => cause.leafCauses).toList(growable: false),
       loading: () => <Cause>[],
-      error: (_, _) => <Cause>[],
+      error: (_error, _stackTrace) => <Cause>[],
     );
     final causeNameById = {for (final cause in availableCauses) cause.id: cause.name};
     final availableCauseIds = availableCauses.map((cause) => cause.id).toSet();
@@ -349,7 +349,7 @@ class _DonationPlannerPageState extends ConsumerState<DonationPlannerPage> {
                           child: CircularProgressIndicator(),
                         ),
                       ),
-                      error: (_, _) => Column(
+                      error: (_error, _stackTrace) => Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(l10n.causesLoadError),
