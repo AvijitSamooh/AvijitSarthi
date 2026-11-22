@@ -99,8 +99,8 @@ void main() {
       );
     }
 
-    await expect(save(amount: 0), throwsArgumentError);
-    await expect(save(frequency: DonationPlanFrequency.custom, days: 0), throwsArgumentError);
+    await expectLater(save(amount: 0), throwsArgumentError);
+    await expectLater(save(frequency: DonationPlanFrequency.custom, days: 0), throwsArgumentError);
     await expect(
       save(allocations: const [
         DonationPlanAllocation(causeId: 'cause-1', percentage: 60),
@@ -115,7 +115,7 @@ void main() {
       ]),
       throwsArgumentError,
     );
-    await expect(
+    await expectLater(
       save(allocations: const [
         DonationPlanAllocation(causeId: 'cause-1', percentage: 0),
         DonationPlanAllocation(causeId: 'cause-2', percentage: 100),
