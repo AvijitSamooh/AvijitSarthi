@@ -69,7 +69,7 @@ class _CauseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    if (cause.children.isEmpty) {
+    if (!cause.isParent) {
       return _LeafCauseCard(cause: cause);
     }
 
@@ -96,6 +96,11 @@ class _CauseCard extends StatelessWidget {
             : null,
         childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 14),
         children: [
+          if (cause.children.isEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
+              child: Text(AppLocalizations.of(context)!.causeNoActiveChildren),
+            ),
           for (final child in cause.children)
             Padding(
               padding: const EdgeInsets.only(top: 10),
