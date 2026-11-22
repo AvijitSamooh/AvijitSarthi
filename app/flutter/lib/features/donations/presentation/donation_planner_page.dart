@@ -258,6 +258,8 @@ class _DonationPlannerPageState extends ConsumerState<DonationPlannerPage> {
       error: (_, _) => <Cause>[],
     );
     final causeNameById = {for (final cause in availableCauses) cause.id: cause.name};
+    final availableCauseIds = availableCauses.map((cause) => cause.id).toSet();
+    final canSave = _canSave && availableCauseIds.containsAll(_selectedCauseIds);
 
     return Scaffold(
       appBar: AppBar(
@@ -385,7 +387,7 @@ class _DonationPlannerPageState extends ConsumerState<DonationPlannerPage> {
                     const SizedBox(height: 12),
                     FilledButton.icon(
                       key: const ValueKey('donation_plan_save'),
-                      onPressed: _canSave ? _savePlan : null,
+                      onPressed: canSave ? _savePlan : null,
                       icon: _saving
                           ? const SizedBox(
                               width: 18,
