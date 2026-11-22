@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
+import 'package:avijit_sahyog/core/network/api_client.dart';
 import 'package:avijit_sahyog/features/auth/data/auth_repository.dart';
 import 'package:avijit_sahyog/features/auth/models/app_user.dart';
 import 'package:avijit_sahyog/features/auth/providers/auth_providers.dart';
