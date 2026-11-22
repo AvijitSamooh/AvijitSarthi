@@ -25,7 +25,7 @@ describe('FirestoreBeneficiariesService', () => {
     }),
   };
 
-  function db() {
+  function db(causeData: any = { id: 'c1', slug: 'cause', isActive: true, childIds: [] }) {
     const ref: any = {
       id: 'b1',
       get: jest.fn().mockResolvedValue({ exists: true, data: () => item }),
@@ -40,14 +40,19 @@ describe('FirestoreBeneficiariesService', () => {
       doc: jest.fn(() => ref),
     };
     const d: any = {
-      collection: jest.fn((name) => name === 'beneficiaries' ? col : {
-        doc: jest.fn((id) => ({
-          id,
-          get: jest.fn().mockResolvedValue({
-            exists: true,
-            data: () => ({ id, slug: id, isActive: true, storageKey: 'x', storageProvider: 'R2', mimeType: 'image/jpeg', width: 10, height: 10 }),
-          }),
-        })),
+      collection: jest.fn((name) => {
+        if (name === 'beneficiaries') return col;
+        return {
+          doc: jest.fn((id) => ({
+            id,
+            get: jest.fn().mockResolvedValue({
+              exists: true,
+              data: () => name === 'causes'
+                ? causeData
+                : { id, slug: id, isActive: true, storageKey: 'x', storageProvider: 'R2', mimeType: 'image/jpeg', width: 10, height: 10 },
+            }),
+          })),
+        };
       }),
       getAll: jest.fn(async (...refs: any[]) => refs.map((ref: any) => ({
         id: ref.id,
@@ -75,6 +80,25 @@ describe('FirestoreBeneficiariesService', () => {
     await service.removeBeneficiary('b1');
     expect(ref.delete).toHaveBeenCalled();
     expect((await service.findAll({ search: 'ali', causeId: 'c1', year: 2026, sort: 'name_asc' }))[0].name).toBe('Alice');
+  });
+
+  it('rejects inactive and parent causes for new beneficiaries', async () => {
+    const parentDb = db({ id: 'c1', slug: 'education', isActive: true, childIds: ['child-1'] });
+    const parentService = new FirestoreBeneficiariesService({ db: parentDb.d } as any, mediaService as any);
+    await expect(parentService.create({ name: 'Bob', causeId: 'c1' }))
+      .rejects.toThrow('leaf cause');
+
+    const inactiveDb = db({ id: 'c1', slug: 'medical', isActive: false, childIds: [] });
+    const inactiveService = new FirestoreBeneficiariesService({ db: inactiveDb.d } as any, mediaService as any);
+    await expect(inactiveService.create({ name: 'Bob', causeId: 'c1' }))
+      .rejects.toThrow('active cause');
+  });
+
+  it('rejects changing a beneficiary to a parent cause', async () => {
+    const { d } = db({ id: 'c1', slug: 'education', isActive: true, childIds: ['child-1'] });
+    const service = new FirestoreBeneficiariesService({ db: d } as any, mediaService as any);
+    await expect(service.update('b1', { causeId: 'c1' }))
+      .rejects.toThrow('leaf cause');
   });
 
   it('covers sorting and provider-aware media helpers', async () => {
