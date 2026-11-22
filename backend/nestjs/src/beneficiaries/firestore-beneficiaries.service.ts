@@ -66,6 +66,7 @@ export class FirestoreBeneficiariesService {
     createdAt: Date;
     updatedAt: Date;
   }) {
+    await this.validateLeafCause(document.causeId);
     await this.firebase.db.collection('beneficiaries').doc(document.id).set(document, { merge: true });
   }
 
