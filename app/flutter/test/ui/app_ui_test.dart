@@ -130,10 +130,11 @@ void main() {
     WidgetTester tester, {
     List<Cause> causes = const [_cause],
     List<Override> overrides = const [],
+    String? initialCauseId = 'cause-1',
   }) async {
     await pumpApp(
       tester,
-      home: const DonationPage(initialCauseId: 'cause-1'),
+      home: DonationPage(initialCauseId: initialCauseId),
       overrides: [
         causesProvider('en').overrideWith((ref) async => causes),
         ...overrides,
@@ -1145,12 +1146,26 @@ void main() {
     expect(find.text('Support this Cause'), findsOneWidget);
   });
 
-  testWidgets('education cause detail describes assistance and recognition and offers education assistance application', (tester) async {
+  testWidgets('education parent guides users to its leaf causes', (tester) async {
+    const educationAssistance = Cause(
+      id: 'education-assistance',
+      slug: 'education-assistance',
+      name: 'Education Assistance',
+      parentId: 'education',
+    );
+    const pratibhaSamman = Cause(
+      id: 'pratibha-samman',
+      slug: 'pratibha-samman',
+      name: 'Pratibha Samman',
+      parentId: 'education',
+    );
     const education = Cause(
       id: 'education',
       slug: 'education',
       name: 'Education',
       description: 'We support students from financially underserved backgrounds so they can continue their education, and celebrate talented individuals whose achievements inspire others through Pratibha Samman.',
+      hasChildren: true,
+      children: [educationAssistance, pratibhaSamman],
     );
     await pumpApp(
       tester,
@@ -1158,11 +1173,21 @@ void main() {
       overrides: [
         causeProvider((slug: 'education', languageCode: 'en'))
             .overrideWith((ref) async => education),
+        causeProvider((slug: 'education-assistance', languageCode: 'en'))
+            .overrideWith((ref) async => educationAssistance),
+        causeProvider((slug: 'pratibha-samman', languageCode: 'en'))
+            .overrideWith((ref) async => pratibhaSamman),
       ],
     );
 
     expect(find.textContaining('financially underserved backgrounds'), findsOneWidget);
-    expect(find.textContaining('Pratibha Samman'), findsOneWidget);
+    expect(find.textContaining('Pratibha Samman'), findsWidgets);
+    expect(find.text('Specific causes'), findsOneWidget);
+    expect(find.byKey(const ValueKey('cause_support_education')), findsNothing);
+    expect(find.byKey(const ValueKey('cause_apply_EDUCATION_ASSISTANCE')), findsNothing);
+
+    await tapVisible(tester, find.text('Education Assistance').last);
+    await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('cause_apply_EDUCATION_ASSISTANCE')), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('cause_apply_EDUCATION_ASSISTANCE')));
@@ -1305,6 +1330,51 @@ void main() {
 
     expect(find.byKey(const ValueKey('app_settings_menu')), findsOneWidget);
     expect(find.byType(AppNavigationBar), findsOneWidget);
+  });
+
+  testWidgets('donation page does not preselect a parent cause', (tester) async {
+    const educationAssistance = Cause(
+      id: 'education-assistance',
+      slug: 'education-assistance',
+      name: 'Education Assistance',
+      parentId: 'education',
+    );
+    const pratibhaSamman = Cause(
+      id: 'pratibha-samman',
+      slug: 'pratibha-samman',
+      name: 'Pratibha Samman',
+      parentId: 'education',
+    );
+    const education = Cause(
+      id: 'education',
+      slug: 'education',
+      name: 'Education',
+      hasChildren: true,
+      children: [educationAssistance, pratibhaSamman],
+    );
+    await pumpDonationPage(
+      tester,
+      causes: [education],
+      initialCauseId: 'education',
+    );
+
+    expect(find.byKey(const ValueKey('donation_cause_education')), findsNothing);
+    final leaf = find.byKey(const ValueKey('donation_cause_education-assistance'));
+    await tester.scrollUntilVisible(
+      leaf,
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(leaf, findsOneWidget);
+    expect(tester.widget<CheckboxListTile>(leaf).value, isFalse);
+
+    final submit = find.byKey(const ValueKey('donation_submit'));
+    await tester.scrollUntilVisible(
+      submit,
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
   });
 
   testWidgets('donation defaults a single selected cause to 100 percent', (tester) async {

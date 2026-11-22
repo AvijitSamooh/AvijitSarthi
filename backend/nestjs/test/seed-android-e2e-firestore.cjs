@@ -79,6 +79,59 @@ async function main() {
       },
     ];
 
+    const causes = [
+      {
+        id: 'e2e-education',
+        slug: 'education',
+        parentId: null,
+        isActive: true,
+        displayOrder: 1,
+        translations: { en: { name: 'E2E Education', description: 'Education support programmes.' } },
+        childIds: ['e2e-education-assistance', 'e2e-pratibha-samman'],
+        organisationIds: [],
+      },
+      {
+        id: 'e2e-education-assistance',
+        slug: 'education-assistance',
+        parentId: 'e2e-education',
+        isActive: true,
+        displayOrder: 1,
+        translations: { en: { name: 'E2E Education Assistance', description: 'Support for education needs.' } },
+        childIds: [],
+        organisationIds: [],
+      },
+      {
+        id: 'e2e-pratibha-samman',
+        slug: 'pratibha-samman',
+        parentId: 'e2e-education',
+        isActive: true,
+        displayOrder: 2,
+        translations: { en: { name: 'E2E Pratibha Samman', description: 'Recognising student achievement.' } },
+        childIds: [],
+        organisationIds: [],
+      },
+      {
+        id: 'e2e-empty-parent',
+        slug: 'empty-parent',
+        parentId: null,
+        isActive: true,
+        displayOrder: 2,
+        translations: { en: { name: 'E2E Empty Parent', description: 'No active child causes.' } },
+        childIds: ['e2e-inactive-child'],
+        organisationIds: [],
+      },
+      {
+        id: 'e2e-inactive-child',
+        slug: 'inactive-child',
+        parentId: 'e2e-empty-parent',
+        isActive: false,
+        displayOrder: 1,
+        translations: { en: { name: 'E2E Inactive Child', description: 'Must not be selectable.' } },
+        childIds: [],
+        organisationIds: [],
+      },
+    ];
+
     await Promise.all([
       ...activities.map((item) => db.collection('activities').doc(item.id).set({
         ...item,
@@ -90,10 +143,15 @@ async function main() {
         createdAt: now,
         updatedAt: now,
       })),
+      ...causes.map((item) => db.collection('causes').doc(item.id).set({
+        ...item,
+        createdAt: now,
+        updatedAt: now,
+      })),
     ]);
 
     process.stdout.write(
-      `Seeded ${activities.length} Activities and ${accomplishments.length} Accomplishments into the local Firestore emulator.\n`,
+      `Seeded ${activities.length} Activities, ${accomplishments.length} Accomplishments and ${causes.length} Causes into the local Firestore emulator.\n`,
     );
   } finally {
     await app.delete();

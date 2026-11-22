@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
+import 'package:avijit_sahyog/core/navigation/app_shell_scope.dart';
+import 'package:avijit_sahyog/features/causes/presentation/causes_page.dart';
 import 'package:avijit_sahyog/features/community/presentation/city_discovery_page.dart';
 import 'package:avijit_sahyog/l10n/app_localizations.dart';
 
@@ -54,6 +56,78 @@ void main() {
 
       expect(find.text('E2E Pune published accomplishment'), findsOneWidget);
       expect(find.text('E2E Mumbai published accomplishment'), findsNothing);
+    },
+    skip: !Platform.isAndroid,
+  );
+
+  testWidgets(
+    'guest selects a leaf cause from the published hierarchical catalogue',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: AppShellScope(
+            onLocaleChanged: (_) {},
+            navigation: AppNavigationController(),
+            child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              locale: const Locale('en'),
+              theme: ThemeData(useMaterial3: true),
+              home: const CausesPage(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle(const Duration(milliseconds: 100));
+
+      expect(find.text('E2E Education'), findsOneWidget);
+      expect(find.text('E2E Empty Parent'), findsNothing);
+
+      await tester.tap(find.byKey(const ValueKey('cause_parent_e2e-education')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('E2E Education Assistance'), findsOneWidget);
+      expect(find.text('E2E Pratibha Samman'), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('cause_child_e2e-education-assistance')));
+      await tester.pumpAndSettle(const Duration(milliseconds: 100));
+
+      expect(find.byKey(const ValueKey('cause_support_e2e-education-assistance')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('cause_support_e2e-education-assistance')));
+      await tester.pumpAndSettle(const Duration(milliseconds: 100));
+
+      final educationAssistance = find.byKey(
+        const ValueKey('donation_cause_e2e-education-assistance'),
+      );
+      await tester.scrollUntilVisible(
+        educationAssistance,
+        240,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(educationAssistance, findsOneWidget);
+      expect(
+        tester.widget<CheckboxListTile>(educationAssistance).value,
+        isTrue,
+      );
+
+      final pratibhaSamman = find.byKey(
+        const ValueKey('donation_cause_e2e-pratibha-samman'),
+      );
+      await tester.scrollUntilVisible(
+        pratibhaSamman,
+        240,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(pratibhaSamman, findsOneWidget);
+      expect(find.byKey(const ValueKey('donation_cause_e2e-education')), findsNothing);
+
+      final submit = find.byKey(const ValueKey('donation_submit'));
+      await tester.scrollUntilVisible(
+        submit,
+        240,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(submit, findsOneWidget);
     },
     skip: !Platform.isAndroid,
   );

@@ -481,7 +481,7 @@ Prepare for real users.
 
 ### Product
 
--   **Hierarchical cause navigation** — Education is presented as a parent cause with Education Assistance and Pratibha Samman as child causes; donation and beneficiary workflows select leaf causes.
+-   [x] **Hierarchical cause navigation** — Education is presented as a parent cause with Education Assistance and Pratibha Samman as child causes; public and admin clients preserve parent state, donation allocations and beneficiary records accept only active leaf causes, and the backend rejects parent-cause assignments.
 
 -   Accessibility review
 -   Localization review

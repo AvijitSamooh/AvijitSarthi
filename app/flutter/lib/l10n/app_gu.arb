@@ -698,5 +698,8 @@
   "donationStatusSuccessful": "સફળ",
   "donationStatusPending": "બાકી",
   "donationStatusFailed": "નિષ્ફળ",
-  "donationStatusCancelled": "રદ"
+  "donationStatusCancelled": "રદ",
+  "causeChildrenTitle": "વિશિષ્ટ સેવા ક્ષેત્રો",
+  "causeChooseChild": "આ ક્ષેત્રને ટેકો આપવા માટે નીચેનું વિશિષ્ટ સેવા ક્ષેત્ર પસંદ કરો.",
+  "causeNoActiveChildren": "હાલમાં અહીં કોઈ સક્રિય સેવા ક્ષેત્ર ઉપલબ્ધ નથી."
 }

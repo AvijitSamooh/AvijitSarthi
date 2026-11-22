@@ -95,77 +95,217 @@ export class FirestoreCausesService {
     return this.adminResponse(snap.data() as CauseDocument,new Map(all.map(x=>[x.id,x])));
   }
 
-  async create(dto:any) {
+  async create(dto: any) {
     this.validateAdminTranslations(dto.translations);
-    const duplicate=await this.firebase.db.collection('causes').where('slug','==',dto.slug).limit(1).get();
-    if(!duplicate.empty) throw new ConflictException(`Cause slug '${dto.slug}' already exists`);
-    if(dto.parentId && !(await this.firebase.db.collection('causes').doc(dto.parentId).get()).exists) throw new BadRequestException('Parent cause does not exist.');
-    const id=randomUUID(), now=new Date();
-    const doc:any={id,slug:dto.slug,parentId:dto.parentId??null,isActive:dto.isActive??true,displayOrder:dto.displayOrder??0,translations:Object.fromEntries(dto.translations.map((t:any)=>[t.languageCode,{name:t.name,description:t.description??null}])),childIds:[],organisationIds:[],createdAt:now,updatedAt:now};
-    if(doc.parentId){await this.firebase.db.collection('causes').doc(doc.parentId).set({childIds:FieldValue.arrayUnion(id),updatedAt:now},{merge:true});}
+    const duplicate = await this.firebase.db.collection('causes')
+      .where('slug', '==', dto.slug).limit(1).get();
+    if (!duplicate.empty) throw new ConflictException(`Cause slug '${dto.slug}' already exists`);
+
+    const parentId = dto.parentId == null ? null : String(dto.parentId).trim();
+    if (dto.parentId != null && !parentId) {
+      throw new BadRequestException('Parent cause ID must be a non-empty ID or null.');
+    }
+    if (parentId) await this.validateParentCause(parentId);
+
+    const id = randomUUID();
+    const now = new Date();
+    const doc: any = {
+      id,
+      slug: dto.slug,
+      parentId,
+      isActive: dto.isActive ?? true,
+      displayOrder: dto.displayOrder ?? 0,
+      translations: Object.fromEntries(dto.translations.map((translation: any) => [
+        translation.languageCode,
+        { name: translation.name, description: translation.description ?? null },
+      ])),
+      childIds: [],
+      organisationIds: [],
+      createdAt: now,
+      updatedAt: now,
+    };
+    if (parentId) {
+      await this.firebase.db.collection('causes').doc(parentId).set({
+        childIds: FieldValue.arrayUnion(id),
+        updatedAt: now,
+      }, { merge: true });
+    }
     await this.firebase.db.collection('causes').doc(id).set(doc);
-    return this.adminResponse(doc,new Map([[id,doc]]));
+    return this.adminResponse(doc, new Map([[id, doc]]));
   }
 
-  async update(id:string,dto:any) {
-    const existing=await this.findOneForAdmin(id); const ref=this.firebase.db.collection('causes').doc(id); const current=(await ref.get()).data() as CauseDocument;
-    if(dto.slug && dto.slug!==current.slug){const duplicate=await this.firebase.db.collection('causes').where('slug','==',dto.slug).limit(1).get();if(!duplicate.empty&&duplicate.docs[0].id!==id)throw new ConflictException(`Cause slug '${dto.slug}' already exists`);}
-    if(dto.parentId!==undefined&&dto.parentId!==current.parentId){if(dto.parentId===id)throw new BadRequestException('A cause cannot be its own parent.');if(dto.parentId&&!(await this.firebase.db.collection('causes').doc(dto.parentId).get()).exists)throw new BadRequestException('Parent cause does not exist.');}
-    const now=new Date(); const next:any={...current,...(dto.slug!==undefined?{slug:dto.slug}:{}),...(dto.parentId!==undefined?{parentId:dto.parentId}:{}),...(dto.displayOrder!==undefined?{displayOrder:dto.displayOrder}:{}),...(dto.isActive!==undefined?{isActive:dto.isActive}:{}),...(dto.translations?{translations:Object.fromEntries(dto.translations.map((t:any)=>[t.languageCode,{name:t.name,description:t.description??null}]) )}:{}),updatedAt:now};
-    const batch=this.firebase.db.batch();
-    if(dto.parentId!==undefined&&dto.parentId!==current.parentId){if(current.parentId)batch.update(this.firebase.db.collection('causes').doc(current.parentId),{childIds:FieldValue.arrayRemove(id),updatedAt:now});if(dto.parentId)batch.update(this.firebase.db.collection('causes').doc(dto.parentId),{childIds:FieldValue.arrayUnion(id),updatedAt:now});}
-    batch.set(ref,next); await batch.commit(); return this.findOneForAdmin(id);
+  async update(id: string, dto: any) {
+    await this.findOneForAdmin(id);
+    const ref = this.firebase.db.collection('causes').doc(id);
+    const current = (await ref.get()).data() as CauseDocument;
+
+    if (dto.slug && dto.slug !== current.slug) {
+      const duplicate = await this.firebase.db.collection('causes')
+        .where('slug', '==', dto.slug).limit(1).get();
+      if (!duplicate.empty && duplicate.docs[0].id !== id) {
+        throw new ConflictException(`Cause slug '${dto.slug}' already exists`);
+      }
+    }
+
+    const requestedParentId = dto.parentId === undefined
+      ? current.parentId
+      : dto.parentId == null
+        ? null
+        : String(dto.parentId).trim();
+    if (dto.parentId !== undefined && dto.parentId != null && !requestedParentId) {
+      throw new BadRequestException('Parent cause ID must be a non-empty ID or null.');
+    }
+
+    if (requestedParentId !== current.parentId && requestedParentId) {
+      if ((current.childIds ?? []).length > 0) {
+        throw new BadRequestException('A parent cause cannot be nested under another cause.');
+      }
+      await this.validateParentCause(requestedParentId, id);
+    }
+
+    if (dto.isActive === false && current.isActive !== false) {
+      await this.ensureCanDeactivate(current);
+    }
+
+    const now = new Date();
+    const next: any = {
+      ...current,
+      ...(dto.slug !== undefined ? { slug: dto.slug } : {}),
+      ...(dto.parentId !== undefined ? { parentId: requestedParentId } : {}),
+      ...(dto.displayOrder !== undefined ? { displayOrder: dto.displayOrder } : {}),
+      ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
+      ...(dto.translations ? {
+        translations: Object.fromEntries(dto.translations.map((translation: any) => [
+          translation.languageCode,
+          { name: translation.name, description: translation.description ?? null },
+        ])),
+      } : {}),
+      updatedAt: now,
+    };
+
+    const batch = this.firebase.db.batch();
+    if (dto.parentId !== undefined && requestedParentId !== current.parentId) {
+      if (current.parentId) {
+        batch.update(this.firebase.db.collection('causes').doc(current.parentId), {
+          childIds: FieldValue.arrayRemove(id),
+          updatedAt: now,
+        });
+      }
+      if (requestedParentId) {
+        batch.update(this.firebase.db.collection('causes').doc(requestedParentId), {
+          childIds: FieldValue.arrayUnion(id),
+          updatedAt: now,
+        });
+      }
+    }
+    batch.set(ref, next);
+    await batch.commit();
+    return this.findOneForAdmin(id);
   }
 
-  async setActive(id:string,isActive:boolean){const ref=this.firebase.db.collection('causes').doc(id);const snap=await ref.get();if(!snap.exists)throw new NotFoundException(`Cause '${id}' not found`);await ref.update({isActive,updatedAt:new Date()});return this.findOneForAdmin(id);}
+  async setActive(id: string, isActive: boolean) {
+    const ref = this.firebase.db.collection('causes').doc(id);
+    const snapshot = await ref.get();
+    if (!snapshot.exists) throw new NotFoundException(`Cause '${id}' not found`);
+    const current = snapshot.data() as CauseDocument;
+    if (!isActive && current.isActive !== false) await this.ensureCanDeactivate(current);
+    await ref.update({ isActive, updatedAt: new Date() });
+    return this.findOneForAdmin(id);
+  }
+  private async ensureCanDeactivate(cause: CauseDocument) {
+    const assignedBeneficiaries = await this.firebase.db
+      .collection('beneficiaries')
+      .where('causeId', '==', cause.id)
+      .limit(1)
+      .get();
+    if (!assignedBeneficiaries.empty) {
+      throw new BadRequestException(
+        'Reassign or remove beneficiaries before deactivating this cause.',
+      );
+    }
+
+    const children = await this.getByIds<CauseDocument>('causes', cause.childIds ?? []);
+    if (children.some((child) => child.isActive && child.parentId === cause.id)) {
+      throw new BadRequestException(
+        'Deactivate active child causes before deactivating this parent cause.',
+      );
+    }
+  }
+
   private validateAdminTranslations(translations:any[]){if(!translations?.length)throw new BadRequestException('At least one translation is required.');if(new Set(translations.map(x=>x.languageCode)).size!==translations.length)throw new BadRequestException('Each language may only appear once.');if(translations.some(x=>!x.name?.trim()))throw new BadRequestException('Translation names are required.');}
-  private adminResponse(cause:CauseDocument,byId:Map<string,CauseDocument>){return {...cause,translations:Object.entries(cause.translations??{}).map(([language,t])=>({language,text:t.name??'',name:t.name??'',description:t.description??null})),parent:cause.parentId?{id:cause.parentId,slug:byId.get(cause.parentId)?.slug??null}:null,children:(cause.childIds??[]).map(id=>byId.get(id)).filter(Boolean).sort((a:any,b:any)=>a.displayOrder-b.displayOrder).map((x:any)=>this.adminResponse(x,byId))};}
+
+  private async validateParentCause(parentId: string, causeId?: string) {
+    if (parentId === causeId) throw new BadRequestException('A cause cannot be its own parent.');
+    const snapshot = await this.firebase.db.collection('causes').doc(parentId).get();
+    if (!snapshot.exists) throw new BadRequestException('Parent cause does not exist.');
+    const parent = (snapshot.data() ?? {}) as CauseDocument;
+    if (parent.parentId) {
+      throw new BadRequestException('Only top-level causes can contain child causes.');
+    }
+    const assignedBeneficiaries = await this.firebase.db
+      .collection('beneficiaries')
+      .where('causeId', '==', parentId)
+      .limit(1)
+      .get();
+    if (!assignedBeneficiaries.empty) {
+      throw new BadRequestException('Move existing beneficiaries to a leaf cause before adding child causes.');
+    }
+  }
+
+  private adminResponse(cause:CauseDocument,byId:Map<string,CauseDocument>){return {...cause,hasChildren:(cause.childIds??[]).length>0,translations:Object.entries(cause.translations??{}).map(([language,t])=>({language,text:t.name??'',name:t.name??'',description:t.description??null})),parent:cause.parentId?{id:cause.parentId,slug:byId.get(cause.parentId)?.slug??null}:null,children:(cause.childIds??[]).map(id=>byId.get(id)).filter(Boolean).sort((a:any,b:any)=>a.displayOrder-b.displayOrder).map((x:any)=>this.adminResponse(x,byId))};}
 
   async findAll(languageCode: string) {
     // Keep the public feed query to a single-field filter. This avoids a
-    // composite-index dependency during deployments where Firestore indexes
-    // have not yet finished building; ordering and parent filtering are cheap
-    // in-memory operations for the public cause catalogue.
+    // composite-index dependency while the catalogue is small enough to
+    // order and group in memory.
     const snapshot = await this.firebase.db
       .collection('causes')
       .where('isActive', '==', true)
       .get();
 
-    const causes = snapshot.docs
+    const roots = snapshot.docs
       .map((doc) => doc.data() as CauseDocument)
       .filter((cause) => cause.parentId == null)
       .sort((a, b) => a.displayOrder - b.displayOrder);
-    const childIds = causes.flatMap((cause) => cause.childIds ?? []);
+    const childIds = roots.flatMap((cause) => cause.childIds ?? []);
     const children = await this.getByIds<CauseDocument>('causes', childIds);
+    const visibleRoots = roots.filter((cause) =>
+      (cause.childIds ?? []).length === 0 ||
+      children.some((child) => child.isActive && child.parentId === cause.id),
+    );
 
-    return causes.map((cause) => ({
-      id: cause.id,
-      slug: cause.slug,
-      parentId: cause.parentId,
-      displayOrder: cause.displayOrder,
-      ...this.translation(cause.translations, languageCode),
-      children: children
+    return visibleRoots.map((cause) => {
+      const activeChildren = children
         .filter((child) => child.isActive && child.parentId === cause.id)
-        .sort((a, b) => a.displayOrder - b.displayOrder)
-        .map((child) => ({
+        .sort((a, b) => a.displayOrder - b.displayOrder);
+
+      return {
+        id: cause.id,
+        slug: cause.slug,
+        parentId: cause.parentId,
+        displayOrder: cause.displayOrder,
+        hasChildren: (cause.childIds ?? []).length > 0,
+        ...this.translation(cause.translations, languageCode),
+        children: activeChildren.map((child) => ({
           id: child.id,
           slug: child.slug,
           parentId: child.parentId ?? cause.id,
           displayOrder: child.displayOrder,
+          hasChildren: (child.childIds ?? []).length > 0,
           ...this.translation(child.translations, languageCode),
         })),
-    }));
+      };
+    });
   }
 
   async findOne(slug: string, languageCode: string) {
     const snapshot = await this.firebase.db
       .collection('causes')
       .where('slug', '==', slug)
-      .where('isActive', '==', true)
       .limit(1)
       .get();
 
-    if (snapshot.empty) {
+    if (snapshot.empty || snapshot.docs[0].data()?.isActive !== true) {
       throw new NotFoundException(`Cause '${slug}' not found`);
     }
 
@@ -188,12 +328,14 @@ export class FirestoreCausesService {
       slug: cause.slug,
       parentId: cause.parentId,
       displayOrder: cause.displayOrder,
+      hasChildren: (cause.childIds ?? []).length > 0,
       ...this.translation(cause.translations, languageCode),
       children: activeChildren.map((child) => ({
         id: child.id,
         slug: child.slug,
         parentId: child.parentId ?? cause.id,
         displayOrder: child.displayOrder,
+        hasChildren: (child.childIds ?? []).length > 0,
         ...this.translation(child.translations, languageCode),
       })),
       organisations: await Promise.all(

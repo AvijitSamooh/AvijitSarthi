@@ -13,7 +13,7 @@ class CausesRepository {
   }) : _preferencesProvider =
             preferencesProvider ?? SharedPreferences.getInstance;
 
-  static const _cachePrefix = 'causes_cache_v1_';
+  static const _cachePrefix = 'causes_cache_v2_';
   static const _freshDuration = Duration(hours: 1);
   static const _staleDuration = Duration(days: 30);
 

@@ -698,5 +698,8 @@
   "donationStatusSuccessful": "सफल",
   "donationStatusPending": "लंबित",
   "donationStatusFailed": "असफल",
-  "donationStatusCancelled": "रद्द"
+  "donationStatusCancelled": "रद्द",
+  "causeChildrenTitle": "विशिष्ट सेवा क्षेत्र",
+  "causeChooseChild": "इस क्षेत्र का समर्थन करने के लिए नीचे दिया गया विशिष्ट सेवा क्षेत्र चुनें।",
+  "causeNoActiveChildren": "फिलहाल यहाँ कोई सक्रिय सेवा क्षेत्र उपलब्ध नहीं है।"
 }

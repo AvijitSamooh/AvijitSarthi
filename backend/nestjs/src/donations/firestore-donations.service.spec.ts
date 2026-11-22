@@ -92,6 +92,16 @@ describe('FirestoreDonationsService', () => {
     } as any)).rejects.toThrow('active causes');
   });
 
+  it('rejects allocations to a parent cause', async () => {
+    const { service } = makeService({
+      causeData: { id: 'cause-1', slug: 'education', isActive: true, childIds: ['education-assistance'] },
+    });
+    await expect(service.create({
+      amount: '10',
+      allocations: [{ causeId: 'cause-1', amount: '10' }],
+    } as any)).rejects.toThrow('leaf causes');
+  });
+
   it('rejects a missing cause snapshot', async () => {
     const { service } = makeService();
     const db: any = (service as any).firebase.db;

@@ -135,11 +135,11 @@ class _AdminBeneficiaryEditorPageState
             loading: () => const LinearProgressIndicator(),
             error: (error, stackTrace) => Text(l10n.adminBeneficiaryUnableLoadCauses),
             data: (items) {
-              final rootCauses = items.where((item) => item.parentId == null);
-              final seenCauseKeys = <String>{};
-              final leafCauses = rootCauses
-                  .expand((item) => item.children.isEmpty ? [item] : item.children)
-                  .where((item) => seenCauseKeys.add(item.slug))
+              final seenCauseIds = <String>{};
+              final leafCauses = items
+                  .where((item) => item.parentId == null)
+                  .expand((item) => item.activeLeafCauses)
+                  .where((item) => seenCauseIds.add(item.id))
                   .toList(growable: false);
               return DropdownButtonFormField<String>(
               key: const ValueKey('admin_beneficiary_cause'),
