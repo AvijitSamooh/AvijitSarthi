@@ -5,19 +5,36 @@ import '../../../l10n/app_localizations.dart';
 import '../providers/beneficiaries_providers.dart';
 import 'beneficiary_detail_page.dart';
 
-Widget beneficiaryImage(String? photoUrl, {required double height, required BorderRadius borderRadius, double iconSize = 64}) {
+Widget beneficiaryImage(
+  String? photoUrl, {
+  required double height,
+  required BorderRadius borderRadius,
+  required String semanticLabel,
+  double iconSize = 64,
+}) {
+  final image = photoUrl != null && photoUrl.trim().isNotEmpty
+      ? Image.network(
+          photoUrl,
+          fit: BoxFit.cover,
+          semanticLabel: semanticLabel,
+          errorBuilder: (_, _, _) => Semantics(
+            label: semanticLabel,
+            image: true,
+            child: _beneficiaryPlaceholder(iconSize),
+          ),
+        )
+      : Semantics(
+          label: semanticLabel,
+          image: true,
+          child: _beneficiaryPlaceholder(iconSize),
+        );
+
   return ClipRRect(
     borderRadius: borderRadius,
     child: SizedBox(
       height: height,
       width: double.infinity,
-      child: photoUrl != null && photoUrl.trim().isNotEmpty
-          ? Image.network(
-              photoUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => _beneficiaryPlaceholder(iconSize),
-            )
-          : _beneficiaryPlaceholder(iconSize),
+      child: image,
     ),
   );
 }
@@ -160,6 +177,7 @@ class _Card extends StatelessWidget {
                   x.primaryImageUrl,
                   height: 150,
                   borderRadius: BorderRadius.circular(14),
+                  semanticLabel: AppLocalizations.of(context)!.accessibilityBeneficiaryPhoto(x.name),
                 ),
               ),
               const SizedBox(height: 16),
