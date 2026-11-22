@@ -484,6 +484,7 @@ Prepare for real users.
 -   [x] **Hierarchical cause navigation** — Education is presented as a parent cause with Education Assistance and Pratibha Samman as child causes; public and admin clients preserve parent state, donation allocations and beneficiary records accept only active leaf causes, and the backend rejects parent-cause assignments.
 
 -   [x] Accessible content-image semantics — localized descriptions for beneficiary and organisation gallery images; decorative logos are excluded from redundant announcements ([review checklist](accessibility-review.md)).
+-   [x] Accessible city-discovery async states — localized live-region announcements for city/feed loading, empty and error states, with retry kept independently actionable.
 -   Accessibility review
 -   Localization review
 -   Error-state review

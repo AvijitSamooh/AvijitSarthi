@@ -42,10 +42,19 @@ class _CityDiscoveryPageState extends ConsumerState<CityDiscoveryPage> {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: cities.when(
-                loading: () => const LinearProgressIndicator(),
+                loading: () => const ExcludeSemantics(child: LinearProgressIndicator()),
                 error: (_, _) => Row(
                   children: [
-                    Expanded(child: Text(l10n.communityCityCatalogueError)),
+                    Expanded(
+                      child: Semantics(
+                        container: true,
+                        liveRegion: true,
+                        label: l10n.communityCityCatalogueError,
+                        child: ExcludeSemantics(
+                          child: Text(l10n.communityCityCatalogueError),
+                        ),
+                      ),
+                    ),
                     TextButton(
                       onPressed: () => ref.invalidate(cityCatalogueProvider(languageCode)),
                       child: Text(l10n.retry),
@@ -77,10 +86,15 @@ class _CityDiscoveryPageState extends ConsumerState<CityDiscoveryPage> {
             ),
             Expanded(
               child: cities.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (_, _) => Center(
-                  child: Text(l10n.communityCityCatalogueError),
+                loading: () => Center(
+                  child: Semantics(
+                    container: true,
+                    liveRegion: true,
+                    label: l10n.communityLoadingCities,
+                    child: const CircularProgressIndicator(),
+                  ),
                 ),
+                error: (_, _) => const SizedBox.shrink(),
                 data: (items) {
                   final cityNames = {
                     for (final city in items) city.id: city.name,
@@ -128,24 +142,43 @@ class _CityContentList extends ConsumerWidget {
     final emptyMessage = kind == 'activities'
         ? l10n.communityNoActivities
         : l10n.communityNoAccomplishments;
+    final loadingMessage = kind == 'activities'
+        ? l10n.communityLoadingActivities
+        : l10n.communityLoadingAccomplishments;
 
     return RefreshIndicator(
       onRefresh: () => ref.refresh(cityContentProvider(query).future),
       child: content.when(
         loading: () => ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          children: const [
-            SizedBox(height: 180),
-            Center(child: CircularProgressIndicator()),
+          children: [
+            const SizedBox(height: 180),
+            Center(
+              child: Semantics(
+                container: true,
+                liveRegion: true,
+                label: loadingMessage,
+                child: const CircularProgressIndicator(),
+              ),
+            ),
           ],
         ),
         error: (_, _) => ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(24),
           children: [
-            const Icon(Icons.cloud_off_rounded, size: 42),
+            const ExcludeSemantics(child: Icon(Icons.cloud_off_rounded, size: 42)),
             const SizedBox(height: 12),
-            Center(child: Text(l10n.communityContentLoadError)),
+            Center(
+              child: Semantics(
+                container: true,
+                liveRegion: true,
+                label: l10n.communityContentLoadError,
+                child: ExcludeSemantics(
+                  child: Text(l10n.communityContentLoadError),
+                ),
+              ),
+            ),
             Center(
               child: TextButton(
                 onPressed: () => ref.invalidate(cityContentProvider(query)),
@@ -164,7 +197,14 @@ class _CityContentList extends ConsumerWidget {
                     size: 44,
                   )),
                   const SizedBox(height: 12),
-                  Center(child: Text(emptyMessage)),
+                  Center(
+                    child: Semantics(
+                      container: true,
+                      liveRegion: true,
+                      label: emptyMessage,
+                      child: ExcludeSemantics(child: Text(emptyMessage)),
+                    ),
+                  ),
                 ],
               )
             : ListView.separated(
