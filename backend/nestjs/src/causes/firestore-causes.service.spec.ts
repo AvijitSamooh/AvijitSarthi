@@ -98,6 +98,26 @@ describe('FirestoreCausesService',()=>{
     await expect(service.getMediaByIds(['m','z'])).resolves.toHaveLength(1);
   });
 
+  it('hides parent categories that have no active children from public discovery', async () => {
+    const causes = firebase.db.collection('causes');
+    const parent = cause({ id: 'education', slug: 'education', childIds: ['inactive-child'] });
+    const inactiveChild = cause({ id: 'inactive-child', parentId: 'education', isActive: false });
+    causes.get.mockResolvedValueOnce({ docs: [{ data: () => parent }] });
+    firebase.db.getAll.mockResolvedValueOnce([{ id: 'inactive-child', exists: true, data: () => inactiveChild }]);
+    await expect(service.findAll('en')).resolves.toEqual([]);
+  });
+
+  it('preserves parent metadata when every child is inactive in a direct lookup', async () => {
+    const causes = firebase.db.collection('causes');
+    const parent = cause({ id: 'education', slug: 'education', childIds: ['inactive-child'] });
+    const inactiveChild = cause({ id: 'inactive-child', parentId: 'education', isActive: false });
+    causes.get.mockResolvedValueOnce({ empty: false, docs: [{ data: () => parent }] });
+    firebase.db.getAll.mockResolvedValueOnce([{ id: 'inactive-child', exists: true, data: () => inactiveChild }]);
+    await expect(service.findOne('education', 'en')).resolves.toEqual(
+      expect.objectContaining({ hasChildren: true, children: [] }),
+    );
+  });
+
   it('covers admin response recursion and organisation media response',async()=>{
     const parent=cause({id:'p',slug:'parent',childIds:['c']}); const child=cause({id:'c',slug:'child',parentId:'p',displayOrder:1,translations:{en:{name:'Child',description:null}}});
     const mapped=service.adminResponse(parent,new Map([['p',parent],['c',child]]));
