@@ -115,6 +115,7 @@ class DonationPlanHistoryEntry {
     required this.amountPaise,
     required this.frequency,
     required this.isActive,
+    required this.allocations,
     required this.changedAt,
   });
 
@@ -122,6 +123,7 @@ class DonationPlanHistoryEntry {
   final int amountPaise;
   final DonationPlanFrequency frequency;
   final bool isActive;
+  final List<DonationPlanAllocation> allocations;
   final DateTime changedAt;
 
   Map<String, dynamic> toJson() => {
@@ -129,6 +131,7 @@ class DonationPlanHistoryEntry {
         'amountPaise': amountPaise,
         'frequency': frequency.name,
         'isActive': isActive,
+        'allocations': allocations.map((item) => item.toJson()).toList(),
         'changedAt': changedAt.toUtc().toIso8601String(),
       };
 
@@ -142,6 +145,9 @@ class DonationPlanHistoryEntry {
         orElse: () => DonationPlanFrequency.daily,
       ),
       isActive: json['isActive'] as bool? ?? true,
+      allocations: (json['allocations'] as List<dynamic>? ?? [])
+          .map((item) => DonationPlanAllocation.fromJson(item as Map<String, dynamic>))
+          .toList(growable: false),
       changedAt: DateTime.parse(json['changedAt'] as String).toUtc(),
     );
   }
