@@ -151,8 +151,8 @@ class _CityContentList extends ConsumerWidget {
       child: content.when(
         loading: () => ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          children: const [
-            SizedBox(height: 180),
+          children: [
+            const SizedBox(height: 180),
             Center(
               child: Semantics(
                 container: true,
