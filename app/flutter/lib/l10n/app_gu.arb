@@ -701,5 +701,26 @@
   "donationStatusCancelled": "રદ",
   "causeChildrenTitle": "વિશિષ્ટ સેવા ક્ષેત્રો",
   "causeChooseChild": "આ ક્ષેત્રને ટેકો આપવા માટે નીચેનું વિશિષ્ટ સેવા ક્ષેત્ર પસંદ કરો.",
-  "causeNoActiveChildren": "હાલમાં અહીં કોઈ સક્રિય સેવા ક્ષેત્ર ઉપલબ્ધ નથી."
+  "causeNoActiveChildren": "હાલમાં અહીં કોઈ સક્રિય સેવા ક્ષેત્ર ઉપલબ્ધ નથી.",
+  "accessibilityBeneficiaryPhoto": "{name}નો ફોટો",
+  "@accessibilityBeneficiaryPhoto": {
+    "description": "લાભાર્થીના પ્રોફાઇલ ફોટા માટે વૈકલ્પિક લખાણ.",
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "accessibilityBeneficiaryGalleryImage": "{name}ની વાર્તાનો ફોટો {index}",
+  "@accessibilityBeneficiaryGalleryImage": {
+    "description": "લાભાર્થીની વાર્તાની ગેલેરીના ફોટા માટે વૈકલ્પિક લખાણ.",
+    "placeholders": {
+      "name": { "type": "String" },
+      "index": { "type": "int" }
+    }
+  },
+  "accessibilityOrganisationGalleryImage": "{name}ની ગેલેરીનો ફોટો {index}",
+  "@accessibilityOrganisationGalleryImage": {
+    "description": "સંસ્થાની ગેલેરીના ફોટા માટે વૈકલ્પિક લખાણ.",
+    "placeholders": {
+      "name": { "type": "String" },
+      "index": { "type": "int" }
+    }
+  }
 }
