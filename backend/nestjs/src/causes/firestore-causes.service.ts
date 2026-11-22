@@ -163,6 +163,10 @@ export class FirestoreCausesService {
       await this.validateParentCause(requestedParentId, id);
     }
 
+    if (dto.isActive === false && current.isActive !== false) {
+      await this.ensureCanDeactivate(current);
+    }
+
     const now = new Date();
     const next: any = {
       ...current,
@@ -199,7 +203,35 @@ export class FirestoreCausesService {
     return this.findOneForAdmin(id);
   }
 
-  async setActive(id:string,isActive:boolean){const ref=this.firebase.db.collection('causes').doc(id);const snap=await ref.get();if(!snap.exists)throw new NotFoundException(`Cause '${id}' not found`);await ref.update({isActive,updatedAt:new Date()});return this.findOneForAdmin(id);}
+  async setActive(id: string, isActive: boolean) {
+    const ref = this.firebase.db.collection('causes').doc(id);
+    const snapshot = await ref.get();
+    if (!snapshot.exists) throw new NotFoundException(`Cause '${id}' not found`);
+    const current = snapshot.data() as CauseDocument;
+    if (!isActive && current.isActive !== false) await this.ensureCanDeactivate(current);
+    await ref.update({ isActive, updatedAt: new Date() });
+    return this.findOneForAdmin(id);
+  }
+  private async ensureCanDeactivate(cause: CauseDocument) {
+    const assignedBeneficiaries = await this.firebase.db
+      .collection('beneficiaries')
+      .where('causeId', '==', cause.id)
+      .limit(1)
+      .get();
+    if (!assignedBeneficiaries.empty) {
+      throw new BadRequestException(
+        'Reassign or remove beneficiaries before deactivating this cause.',
+      );
+    }
+
+    const children = await this.getByIds<CauseDocument>('causes', cause.childIds ?? []);
+    if (children.some((child) => child.isActive && child.parentId === cause.id)) {
+      throw new BadRequestException(
+        'Deactivate active child causes before deactivating this parent cause.',
+      );
+    }
+  }
+
   private validateAdminTranslations(translations:any[]){if(!translations?.length)throw new BadRequestException('At least one translation is required.');if(new Set(translations.map(x=>x.languageCode)).size!==translations.length)throw new BadRequestException('Each language may only appear once.');if(translations.some(x=>!x.name?.trim()))throw new BadRequestException('Translation names are required.');}
 
   private async validateParentCause(parentId: string, causeId?: string) {
