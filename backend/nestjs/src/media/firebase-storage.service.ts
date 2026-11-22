@@ -56,6 +56,20 @@ export class FirebaseStorageService {
     }
   }
 
+  async getSignedUrl(key: string, expiresInMs = 60 * 60 * 1000): Promise<string> {
+    try {
+      const [url] = await this.getBucket().file(key).getSignedUrl({
+        action: 'read',
+        expires: Date.now() + expiresInMs,
+      });
+      return url;
+    } catch {
+      throw new InternalServerErrorException(
+        'Unable to create a temporary read URL for Firebase Storage.',
+      );
+    }
+  }
+
   async delete(key: string): Promise<void> {
     try {
       await this.getBucket().file(key).delete({ ignoreNotFound: true });

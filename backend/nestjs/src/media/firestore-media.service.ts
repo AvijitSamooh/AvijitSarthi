@@ -2,10 +2,13 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Timestamp } from 'firebase-admin/firestore';
 import { FirebaseService } from '../firebase/firebase.service';
 
+export type MediaStorageProvider = 'R2' | 'FIREBASE_STORAGE';
+
 export type FirestoreMedia = {
   id: string;
   uploadedById: string | null;
   storageKey: string;
+  storageProvider: MediaStorageProvider;
   mimeType: string;
   fileSize: number;
   width: number | null;
@@ -30,7 +33,9 @@ export class FirestoreMediaService {
   async getById(id: string) {
     const snapshot = await this.firebase.db.collection('media').doc(id).get();
     if (!snapshot.exists) throw new NotFoundException('Image not found.');
-    return snapshot.data() as FirestoreMedia;
+    const media = snapshot.data() as Omit<FirestoreMedia, 'storageProvider'> & { storageProvider?: MediaStorageProvider };
+    // Media documents written before provider tracking were stored in Firebase Storage.
+    return { ...media, storageProvider: media.storageProvider ?? 'FIREBASE_STORAGE' };
   }
 
   async delete(id: string) {

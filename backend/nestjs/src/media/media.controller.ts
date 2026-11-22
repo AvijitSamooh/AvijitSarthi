@@ -1,5 +1,5 @@
 import {
-  Controller, Delete, Get, Post, Param, UploadedFile, Req, UseGuards, UseInterceptors,
+  Controller, Delete, Get, Post, Param, UploadedFile, Req, UseGuards, UseInterceptors, InternalServerErrorException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -9,6 +9,7 @@ import { AuthenticatedRequest } from '../auth/auth.types';
 import { AuthService } from '../auth/auth.service';
 import { Request } from 'express';
 import { MediaService } from './media.service';
+import { R2StorageService } from './r2-storage.service';
 import { FirebaseStorageService } from './firebase-storage.service';
 
 @Controller('admin/media')
@@ -16,16 +17,26 @@ import { FirebaseStorageService } from './firebase-storage.service';
 export class MediaController {
   constructor(
     private readonly mediaService: MediaService,
-    private readonly storageService: FirebaseStorageService,
+    private readonly storageService: R2StorageService,
+    private readonly privateStorageService: FirebaseStorageService,
   ) {}
 
   @Get('verify')
   async verifyConnection() {
-    await this.storageService.verifyConnection();
+    const publicBaseUrl = process.env.R2_PUBLIC_BASE_URL?.trim();
+    if (!publicBaseUrl || !publicBaseUrl.startsWith('https://')) {
+      throw new InternalServerErrorException('R2_PUBLIC_BASE_URL must be configured as an HTTPS URL.');
+    }
+    await Promise.all([
+      this.storageService.verifyConnection(),
+      this.privateStorageService.verifyConnection(),
+    ]);
     return {
       status: 'ok',
-      storage: 'firebase-storage',
-      bucket: process.env.FIREBASE_STORAGE_BUCKET,
+      storage: 'cloudflare-r2',
+      bucket: process.env.R2_BUCKET_NAME,
+      privateStorage: 'firebase-storage',
+      privateBucket: process.env.FIREBASE_STORAGE_BUCKET,
     };
   }
 

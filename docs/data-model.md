@@ -67,7 +67,8 @@ Managed images are represented by an embedded `media` association array on the B
 
 Represents a processed image stored in object storage.
 
-- `storageKey` — unique Cloudflare R2 object key
+- `storageKey` — unique object key within the selected storage provider
+- `storageProvider` — `R2` for public admin-managed content or `FIREBASE_STORAGE` for private applicant media and legacy objects; missing values are treated as legacy Firebase Storage
 - `mimeType` — persisted output MIME type
 - `fileSize` — processed file size in bytes
 - `width` / `height` — processed image dimensions
@@ -94,31 +95,32 @@ An embedded entry in the Beneficiary document's `media` array that references a 
 ## Media storage and processing
 
 ```text
-Admin upload
-    ↓
-NestJS Media API
-    ↓
-Validate MIME type + size
-    ↓
-Sharp: auto-rotate + resize
-    ↓
-Convert to WebP
-    ↓
-Cloudflare R2
-    ↓
-Persist Media metadata in Firestore
-    ↓
-Attach Media to Organisation or Beneficiary
+Admin content upload                     Applicant upload
+    ↓                                           ↓
+NestJS Media API                          Authenticated Media API
+    ↓                                           ↓
+Validate MIME type + size                Validate MIME type + size
+    ↓                                           ↓
+Sharp: auto-rotate + resize              Sharp: auto-rotate + resize
+    ↓                                           ↓
+Convert to WebP                           Convert to WebP
+    ↓                                           ↓
+Cloudflare R2 (public content)            Firebase Storage (private)
+    ↓                                           ↓
+Persist provider + key in Firestore       Persist provider + key in Firestore
+    ↓                                           ↓
+Attach to Organisation/Beneficiary        Attach to authenticated application
 ```
 
 Current upload constraints:
 
 - Accepted input: JPEG, PNG, WebP
 - Maximum upload size: 10 MB
-- Maximum processed dimension: 1920 px
-- Output format: WebP (quality 82)
+- Maximum processed dimension: 1600 px
+- Maximum processed object size: 1.5 MB
+- Output format: WebP (adaptive quality starting at 82, reduced as needed to remain within 1.5 MB)
 
-If Firestore metadata persistence fails after object upload, the backend attempts to remove the uploaded R2 object to avoid orphaned files.
+If Firestore metadata persistence fails after object upload, the backend attempts to remove the object from the same provider to avoid orphaned files. Legacy media documents without `storageProvider` are read and deleted from Firebase Storage.
 
 The current `logoUrl` and `photoUrl` fields remain temporarily for backward compatibility. New gallery functionality should use the embedded media associations and referenced Media documents.
 
@@ -232,13 +234,14 @@ Supported purposes are `PROFILE` and `GALLERY`.
 
 ## Public image delivery
 
-Public Organisation and Beneficiary APIs now resolve attached Media records into client-ready image objects. Set `R2_PUBLIC_BASE_URL` to the Cloudflare R2 custom/public domain.
+Public Organisation and Beneficiary APIs resolve attached Media records through the provider-aware MediaService. Set `R2_PUBLIC_BASE_URL` to the Cloudflare R2 custom/public domain. Firebase Storage media uses short-lived signed read URLs; this preserves legacy public media and allows only the selected certificate photo of a published Samman beneficiary to be exposed through public Beneficiary records.
 
 - Organisation responses expose `logoUrl` (preferring attached LOGO media) and `gallery`.
 - Beneficiary responses expose `photoUrl` (preferring attached PROFILE media), `profileImage`, and `gallery`.
 - Gallery items are ordered by `displayOrder`.
 - Legacy `logoUrl` and `photoUrl` fields remain as fallbacks for backwards compatibility.
-- Storage keys are not exposed as public API URLs when `R2_PUBLIC_BASE_URL` is configured.
+- R2 storage keys are not exposed as public API URLs when `R2_PUBLIC_BASE_URL` is configured.
+- Applicant uploads remain in Firebase Storage and are returned as short-lived signed URLs from authenticated application workflows. If a certificate photo is selected as the profile image when a Pratibha Samman application reaches `CONSIDERED_FOR_SAMMAN` and is published as a Beneficiary, a short-lived signed URL for that selected image is exposed through the public Beneficiary response; other application photos remain private.
 
 
 ## City content domain

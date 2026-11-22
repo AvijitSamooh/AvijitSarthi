@@ -10,9 +10,11 @@ describe('FirebaseStorageService', () => {
   const download = jest.fn();
   const remove = jest.fn();
   const exists = jest.fn();
-  const bucket = { exists, file: jest.fn(() => ({ save, download, delete: remove })) };
+  const getSignedUrl = jest.fn();
+  const bucket = { exists, file: jest.fn(() => ({ save, download, delete: remove, getSignedUrl })) };
 
   beforeEach(() => {
+    jest.restoreAllMocks();
     jest.clearAllMocks();
     process.env = { ...originalEnv, FIREBASE_STORAGE_BUCKET: 'test-project.firebasestorage.app' };
     (getStorage as jest.Mock).mockReturnValue({ bucket: jest.fn(() => bucket) });
@@ -20,6 +22,7 @@ describe('FirebaseStorageService', () => {
     save.mockResolvedValue(undefined);
     download.mockResolvedValue([Buffer.from('image')]);
     remove.mockResolvedValue(undefined);
+    getSignedUrl.mockResolvedValue(['https://signed.example/image.webp']);
   });
 
   afterAll(() => {
@@ -61,6 +64,18 @@ describe('FirebaseStorageService', () => {
   it('wraps download errors', async () => {
     download.mockRejectedValue(new Error('missing'));
     await expect(new FirebaseStorageService().download('image.webp')).rejects.toThrow('Unable to download image from Firebase Storage.');
+  });
+
+  it('creates temporary read URLs for private application media', async () => {
+    jest.spyOn(Date, 'now').mockReturnValue(1_000);
+    await expect(new FirebaseStorageService().getSignedUrl('applications/photo.webp', 60_000)).resolves.toBe('https://signed.example/image.webp');
+    expect(bucket.file).toHaveBeenCalledWith('applications/photo.webp');
+    expect(getSignedUrl).toHaveBeenCalledWith({ action: 'read', expires: 61_000 });
+  });
+
+  it('wraps signed URL errors', async () => {
+    getSignedUrl.mockRejectedValue(new Error('denied'));
+    await expect(new FirebaseStorageService().getSignedUrl('applications/photo.webp')).rejects.toThrow('Unable to create a temporary read URL for Firebase Storage.');
   });
 
   it('deletes objects while ignoring missing objects', async () => {

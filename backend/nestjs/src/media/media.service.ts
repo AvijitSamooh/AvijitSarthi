@@ -1,19 +1,23 @@
 import { BadRequestException, Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import sharp from 'sharp';
-import { FirestoreMediaService } from './firestore-media.service';
+import { FirestoreMedia, FirestoreMediaService } from './firestore-media.service';
 import { FirebaseService } from '../firebase/firebase.service';
 import { FirebaseStorageService } from './firebase-storage.service';
+import { R2StorageService } from './r2-storage.service';
 
 const ALLOWED_IMAGE_FORMATS = new Set(['jpeg', 'png', 'webp']);
 const MAX_UPLOAD_SIZE = 10 * 1024 * 1024;
 const MAX_DIMENSION = 1600;
 const MAX_PROCESSED_SIZE = 1.5 * 1024 * 1024;
 
+type MediaLocation = Pick<FirestoreMedia, 'storageKey'> & { storageProvider?: FirestoreMedia['storageProvider'] };
+
 @Injectable()
 export class MediaService {
   constructor(
-    private readonly storage: FirebaseStorageService,
+    private readonly r2Storage: R2StorageService,
+    private readonly firebaseStorage: FirebaseStorageService,
     private readonly firestore: FirestoreMediaService,
     private readonly firebase: FirebaseService,
   ) {}
@@ -46,13 +50,18 @@ export class MediaService {
       const outputMeta = await sharp(processed).metadata();
       const id = randomUUID();
       const key = `${folder}/${id}.webp`;
-      await this.storage.upload(key, processed, 'image/webp');
+      // Applicant uploads remain private in Firebase Storage. Public admin-managed
+      // content images use the R2 bucket served by R2_PUBLIC_BASE_URL.
+      const storageProvider = folder === 'applications' ? 'FIREBASE_STORAGE' : 'R2';
+      const storage = this.storageFor(storageProvider);
+      await storage.upload(key, processed, 'image/webp');
       try {
         const now = new Date();
         return await this.firestore.upsert({
           id,
           uploadedById: uploadedById ?? null,
           storageKey: key,
+          storageProvider,
           mimeType: 'image/webp',
           fileSize: processed.length,
           width: outputMeta.width ?? null,
@@ -61,7 +70,7 @@ export class MediaService {
           updatedAt: now,
         });
       } catch (error) {
-        await this.storage.delete(key).catch(() => undefined);
+        await storage.delete(key).catch(() => undefined);
         throw error;
       }
     } catch (error) {
@@ -71,8 +80,21 @@ export class MediaService {
     }
   }
 
-  async downloadImage(storageKey: string) {
-    return this.storage.download(storageKey);
+  async downloadImage(media: MediaLocation) {
+    return this.storageFor(media.storageProvider ?? 'FIREBASE_STORAGE').download(media.storageKey);
+  }
+
+  async getReadUrl(media: MediaLocation): Promise<string> {
+    const provider = media.storageProvider ?? 'FIREBASE_STORAGE';
+    if (provider === 'R2') {
+      const base = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '');
+      if (!base) {
+        throw new InternalServerErrorException('R2_PUBLIC_BASE_URL is required to serve public media.');
+      }
+      const encodedKey = media.storageKey.split('/').map(encodeURIComponent).join('/');
+      return `${base}/${encodedKey}`;
+    }
+    return this.firebaseStorage.getSignedUrl(media.storageKey);
   }
 
   async deleteUserImage(id: string, uploadedById: string) {
@@ -80,9 +102,13 @@ export class MediaService {
     if (media.uploadedById !== uploadedById) throw new NotFoundException('Image not found.');
     const refs = await this.referenceCount(id);
     if (refs > 0) throw new BadRequestException('This image is still attached to an application and cannot be deleted.');
-    await this.storage.delete(media.storageKey);
+    await this.storageFor(media.storageProvider ?? 'FIREBASE_STORAGE').delete(media.storageKey);
     await this.firestore.delete(id);
     return { id, deleted: true };
+  }
+
+  private storageFor(provider: FirestoreMedia['storageProvider']) {
+    return provider === 'R2' ? this.r2Storage : this.firebaseStorage;
   }
 
   private async referenceCount(id: string) {
