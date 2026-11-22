@@ -35,29 +35,29 @@ void main() {
     final semantics = tester.ensureSemantics();
     try {
       const beneficiary = Beneficiary(
-      id: 'beneficiary-1',
-      name: 'Alice',
-      cause: 'Education',
-      supportedYear: 2026,
-      contributionAmount: 0,
-      gallery: ['https://images.example.com/story-1.webp'],
-    );
+        id: 'beneficiary-1',
+        name: 'Alice',
+        cause: 'Education',
+        supportedYear: 2026,
+        contributionAmount: 0,
+        gallery: ['https://images.example.com/story-1.webp'],
+      );
 
-    await tester.pumpWidget(
-      ProviderScope(
-        child: AppShellScope(
-          onLocaleChanged: (_) {},
-          navigation: AppNavigationController(),
-          child: const MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            locale: Locale('en'),
-            home: BeneficiaryDetailPage(beneficiary: beneficiary),
+      await tester.pumpWidget(
+        ProviderScope(
+          child: AppShellScope(
+            onLocaleChanged: (_) {},
+            navigation: AppNavigationController(),
+            child: const MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              locale: Locale('en'),
+              home: BeneficiaryDetailPage(beneficiary: beneficiary),
+            ),
           ),
         ),
-      ),
-    );
-    await tester.pump();
+      );
+      await tester.pump();
 
       expect(find.bySemanticsLabel('Photo of Alice'), findsOneWidget);
       expect(find.bySemanticsLabel("Photo 1 in Alice's story"), findsOneWidget);
