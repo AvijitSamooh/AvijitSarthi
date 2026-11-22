@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/widgets/app_settings_menu.dart';
+import '../../../l10n/app_localizations.dart';
 import '../models/organisation.dart';
 
 class OrganisationDetailPage extends StatelessWidget {
@@ -11,6 +12,7 @@ class OrganisationDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final location = [
       if (organisation.city?.isNotEmpty == true) organisation.city!,
       if (organisation.state?.isNotEmpty == true) organisation.state!,
@@ -34,6 +36,7 @@ class OrganisationDetailPage extends StatelessWidget {
                   ? Image.network(
                       organisation.logoUrl!,
                       fit: BoxFit.cover,
+                      excludeFromSemantics: true,
                       errorBuilder: (_, _, _) => const Icon(
                         Icons.account_balance_rounded,
                         color: Color(0xFF6E1A14),
@@ -108,6 +111,10 @@ class OrganisationDetailPage extends StatelessWidget {
                     child: Image.network(
                       url,
                       fit: BoxFit.cover,
+                      semanticLabel: l10n.accessibilityOrganisationGalleryImage(
+                        organisation.name,
+                        index + 1,
+                      ),
                       errorBuilder: (_, _, _) => const Center(
                         child: Icon(Icons.broken_image_outlined),
                       ),
@@ -129,6 +136,7 @@ class OrganisationDetailPage extends StatelessWidget {
       MaterialPageRoute(
         builder: (_) => _OrganisationGalleryViewer(
           images: organisation.gallery,
+          organisationName: organisation.name,
           initialIndex: initialIndex,
         ),
       ),
@@ -156,9 +164,14 @@ class _InfoRow extends StatelessWidget {
 }
 
 class _OrganisationGalleryViewer extends StatefulWidget {
-  const _OrganisationGalleryViewer({required this.images, required this.initialIndex});
+  const _OrganisationGalleryViewer({
+    required this.images,
+    required this.organisationName,
+    required this.initialIndex,
+  });
 
   final List<String> images;
+  final String organisationName;
   final int initialIndex;
 
   @override
@@ -184,6 +197,7 @@ class _OrganisationGalleryViewerState extends State<_OrganisationGalleryViewer> 
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -200,6 +214,10 @@ class _OrganisationGalleryViewerState extends State<_OrganisationGalleryViewer> 
             child: Image.network(
               widget.images[index],
               fit: BoxFit.contain,
+              semanticLabel: l10n.accessibilityOrganisationGalleryImage(
+                widget.organisationName,
+                index + 1,
+              ),
               errorBuilder: (_, _, _) => const Icon(
                 Icons.broken_image_outlined,
                 color: Colors.white,
