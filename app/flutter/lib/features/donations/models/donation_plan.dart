@@ -180,7 +180,8 @@ class DonationPlannerState {
 
 int? parseRupeesToPaise(String value) {
   final normalized = value.trim();
-  if (!RegExp(r'^(?:[0-9]+|[0-9]{1,3}(?:,[0-9]{3})+)(?:[.][0-9]{1,2})?
+  if (!RegExp(r'^(?:[0-9]+|[0-9]{1,3}(?:,[0-9]{3})+)(?:[.][0-9]{1,2})?$').hasMatch(normalized)) return null;
+  final ungrouped = normalized.replaceAll(',', '');
   final parts = ungrouped.split('.');
   final whole = int.tryParse(parts.first);
   if (whole == null) return null;
