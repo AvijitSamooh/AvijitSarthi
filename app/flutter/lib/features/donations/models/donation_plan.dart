@@ -195,18 +195,3 @@ String formatRupees(int paise) {
   final fraction = (paise % 100).toString().padLeft(2, '0');
   return '₹$whole.$fraction';
 }
-).hasMatch(normalized)) return null;
-  final ungrouped = normalized.replaceAll(',', '');
-  final parts = normalized.split('.');
-  final whole = int.tryParse(parts.first);
-  if (whole == null) return null;
-  final fraction = parts.length == 2 ? parts[1].padRight(2, '0') : '00';
-  final paise = whole * 100 + int.parse(fraction);
-  return paise > 0 ? paise : null;
-}
-
-String formatRupees(int paise) {
-  final whole = paise ~/ 100;
-  final fraction = (paise % 100).toString().padLeft(2, '0');
-  return '₹$whole.$fraction';
-}
