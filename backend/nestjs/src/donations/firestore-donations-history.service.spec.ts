@@ -46,7 +46,7 @@ describe('FirestoreDonationsService donor history and receipts', () => {
       })),
     };
     const users = {
-      upsertFromIdentity: jest.fn().mockResolvedValue({ id: 'user-1' }),
+      upsertFromIdentity: jest.fn(async (value: { uid: string }) => ({ id: value.uid === 'firebase-user-1' ? 'user-1' : 'user-2' })),
     };
     return {
       service: new FirestoreDonationsService({ db } as any, users as any),
