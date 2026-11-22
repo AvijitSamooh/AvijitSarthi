@@ -121,6 +121,8 @@ describe('FirestoreBeneficiariesService', () => {
     const service = new FirestoreBeneficiariesService({ db: d } as any, mediaService as any);
     await expect(service.update('b1', { causeId: 'c1' }))
       .rejects.toThrow('leaf cause');
+    await expect(service.update('b1', { causeId: null }))
+      .rejects.toThrow('cause is required');
     await expect(service.update('b1', { story: 'updated story' }))
       .rejects.toThrow('leaf cause');
     await expect(service.setActive('b1', true))
