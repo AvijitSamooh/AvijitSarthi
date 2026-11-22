@@ -167,6 +167,37 @@ void main() {
     api.dispose();
   });
 
+
+  test('donor history and receipt requests require the Firebase bearer token', () async {
+    var calls = 0;
+    final client = MockClient((request) async {
+      expect(request.headers['authorization'], 'Bearer donor-token');
+      calls++;
+      if (request.method == 'GET' && request.url.path == '/donations/mine') {
+        return http.Response('[]', 200);
+      }
+      if (request.method == 'GET' && request.url.path == '/donations/mine/donation-1') {
+        return http.Response('{"id":"donation-1","amount":"25.00","currency":"INR","status":"SUCCESS","createdAt":"2026-01-01T00:00:00.000Z","updatedAt":"2026-01-01T00:00:00.000Z","allocations":[]}', 200);
+      }
+      expect(request.method, 'POST');
+      expect(request.url.path, '/donations/mine/donation-1/receipt');
+      expect(jsonDecode(request.body), {'language': 'hi'});
+      return http.Response('{"id":"donation-1","donationId":"donation-1","receiptNumber":"AS-2026-ABCDEF1234","amount":"25.00","currency":"INR","language":"hi","allocations":[],"donationCreatedAt":"2026-01-01T00:00:00.000Z","issuedAt":"2026-01-01T00:00:00.000Z"}', 201);
+    });
+    final api = ApiClient(
+      client: client,
+      baseUrl: 'https://api.example.com',
+      authTokenProvider: () async => 'donor-token',
+    );
+
+    expect(await api.getMyDonations(), isEmpty);
+    expect(await api.getMyDonation('donation-1'), containsPair('id', 'donation-1'));
+    final receipt = await api.issueMyDonationReceipt('donation-1', languageCode: 'hi');
+    expect(receipt['language'], 'hi');
+    expect(calls, 3);
+    api.dispose();
+  });
+
   test('tracks in-flight mutations and clears after completion', () async {
     final completer = Completer<http.Response>();
     final client = MockClient((request) {

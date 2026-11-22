@@ -21,7 +21,8 @@ describe('FirestoreDonationsService', () => {
       collection: jest.fn((name: string) => name === 'causes' ? causes : donations),
       runTransaction: jest.fn(async (callback: any) => callback(transaction)),
     };
-    return { service: new FirestoreDonationsService({ db } as any), db, transaction, donations, causes };
+    const users = { upsertFromIdentity: jest.fn().mockResolvedValue({ id: 'user-1' }) };
+    return { service: new FirestoreDonationsService({ db } as any, users as any), db, transaction, donations, causes };
   }
 
   it('creates a valid INR donation and allocation', async () => {
@@ -127,7 +128,7 @@ describe('FirestoreDonationsService', () => {
         })),
       })),
     };
-    const service = new FirestoreDonationsService({ db } as any);
+    const service = new FirestoreDonationsService({ db } as any, { upsertFromIdentity: jest.fn().mockResolvedValue({ id: 'user-1' }) } as any);
     const result = await service.findOne('donation-1');
     expect(result.allocations[0].cause).toEqual({ id: 'cause-1', slug: 'medical' });
     expect(result.createdAt).toBeInstanceOf(Date);

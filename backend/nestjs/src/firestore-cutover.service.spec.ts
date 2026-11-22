@@ -117,7 +117,7 @@ describe('Firestore cutover services', () => {
       collection: jest.fn(() => ({ doc: jest.fn(() => causeRef) })),
       runTransaction: jest.fn(async (callback: any) => callback(transaction)),
     };
-    const service = new FirestoreDonationsService({ db } as any);
+    const service = new FirestoreDonationsService({ db } as any, { upsertFromIdentity: jest.fn().mockResolvedValue({ id: 'user-1' }) } as any);
 
     const result = await service.create({ amount: '100.00', currency: 'INR', allocations: [{ causeId: 'cause-1', amount: '100.00' }] });
     expect(result.amount).toBe('100.00');
