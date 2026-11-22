@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:avijit_sahyog/core/navigation/app_shell_scope.dart';
+import 'package:avijit_sahyog/features/admin/models/admin_cause.dart';
 import 'package:avijit_sahyog/features/causes/models/cause.dart';
 import 'package:avijit_sahyog/features/causes/presentation/cause_detail_page.dart';
 import 'package:avijit_sahyog/features/causes/providers/causes_providers.dart';
@@ -51,6 +52,37 @@ void main() {
       _education.leafCauses.map((cause) => cause.id).toList(),
       ['education-assistance-id', 'pratibha-samman-id'],
     );
+  });
+
+  test('admin beneficiary selection traverses only active leaf causes', () {
+    final parent = AdminCause(
+      id: 'education',
+      slug: 'education',
+      isActive: true,
+      displayOrder: 1,
+      translations: const [],
+      hasChildren: true,
+      children: [
+        AdminCause(
+          id: 'education-assistance',
+          slug: 'education-assistance',
+          isActive: true,
+          displayOrder: 1,
+          translations: const [],
+          parentId: 'education',
+        ),
+        AdminCause(
+          id: 'pratibha-samman',
+          slug: 'pratibha-samman',
+          isActive: false,
+          displayOrder: 2,
+          translations: const [],
+          parentId: 'education',
+        ),
+      ],
+    );
+
+    expect(parent.activeLeafCauses.map((cause) => cause.id), ['education-assistance']);
   });
 
   testWidgets('parent detail guides users to child causes instead of donation', (tester) async {
