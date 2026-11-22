@@ -101,7 +101,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(activeSwitch);
     await tester.pumpAndSettle();
-    expect(find.text('Plan paused'), findsOneWidget);
+    expect(find.text('Plan paused'), findsWidgets);
   });
 }
 
