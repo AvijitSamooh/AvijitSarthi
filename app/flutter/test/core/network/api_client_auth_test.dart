@@ -172,11 +172,11 @@ void main() {
     final client = MockClient((request) => completer.future);
     final api = ApiClient(client: client, baseUrl: 'https://api.example.com');
 
-    final future = api.createDonation({'amount': 100});
+    final future = api.getHealth();
     await Future<void>.delayed(Duration.zero);
     expect(ApiClient.activeRequests.value, 1);
 
-    completer.complete(http.Response('{"id":"donation-1"}', 200));
+    completer.complete(http.Response('{"status":"ok"}', 200));
     await future;
     expect(ApiClient.activeRequests.value, 0);
     api.dispose();
