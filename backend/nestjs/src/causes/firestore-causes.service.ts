@@ -185,11 +185,10 @@ export class FirestoreCausesService {
     const snapshot = await this.firebase.db
       .collection('causes')
       .where('slug', '==', slug)
-      .where('isActive', '==', true)
       .limit(1)
       .get();
 
-    if (snapshot.empty) {
+    if (snapshot.empty || snapshot.docs[0].data()?.isActive !== true) {
       throw new NotFoundException(`Cause '${slug}' not found`);
     }
 
