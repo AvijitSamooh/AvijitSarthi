@@ -486,6 +486,7 @@ Prepare for real users.
 -   [x] Accessible content-image semantics — localized descriptions for beneficiary and organisation gallery images; decorative logos are excluded from redundant announcements ([review checklist](accessibility-review.md)).
 -   [x] Accessible city-discovery async states — localized live-region announcements for city/feed loading, empty and error states, with retry kept independently actionable.
 -   [x] Accessible city-content detail states — localized live-region announcements for detail and Organisation loading, empty and error states, with retry kept independently actionable.
+-   [x] Accessible Super Admin city-assignment states — localized loading, empty and error announcements, independently actionable retry, and checked-state semantics for city choices.
 -   Accessibility review
 -   Localization review
 -   Error-state review
