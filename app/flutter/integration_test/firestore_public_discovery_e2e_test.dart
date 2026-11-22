@@ -96,10 +96,38 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('cause_support_e2e-education-assistance')));
       await tester.pumpAndSettle(const Duration(milliseconds: 100));
 
-      expect(find.byKey(const ValueKey('donation_cause_e2e-education-assistance')), findsOneWidget);
-      expect(find.byKey(const ValueKey('donation_cause_e2e-pratibha-samman')), findsOneWidget);
+      final educationAssistance = find.byKey(
+        const ValueKey('donation_cause_e2e-education-assistance'),
+      );
+      await tester.scrollUntilVisible(
+        educationAssistance,
+        240,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(educationAssistance, findsOneWidget);
+      expect(
+        tester.widget<CheckboxListTile>(educationAssistance).value,
+        isTrue,
+      );
+
+      final pratibhaSamman = find.byKey(
+        const ValueKey('donation_cause_e2e-pratibha-samman'),
+      );
+      await tester.scrollUntilVisible(
+        pratibhaSamman,
+        240,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(pratibhaSamman, findsOneWidget);
       expect(find.byKey(const ValueKey('donation_cause_e2e-education')), findsNothing);
-      expect(find.byKey(const ValueKey('donation_submit')), findsOneWidget);
+
+      final submit = find.byKey(const ValueKey('donation_submit'));
+      await tester.scrollUntilVisible(
+        submit,
+        240,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(submit, findsOneWidget);
     },
     skip: !Platform.isAndroid,
   );
