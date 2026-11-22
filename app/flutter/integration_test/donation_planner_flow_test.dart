@@ -45,17 +45,20 @@ void main() {
 
     await tester.enterText(find.byKey(const ValueKey('donation_plan_amount')), '5');
     await tester.pump();
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('donation_plan_save')), 300);
     await tester.tap(find.byKey(const ValueKey('donation_plan_save')));
     await tester.pumpAndSettle();
 
     expect(find.text('Your giving plan is saved on this device.'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('₹150.00'), -300);
     expect(find.text('₹150.00'), findsOneWidget);
 
     await tester.pumpWidget(plannerApp());
     await tester.pumpAndSettle();
 
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('donation_plan_active')), 300);
     expect(find.text('Plan active'), findsOneWidget);
-    expect(find.text('₹150.00'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Plan created'), 300);
     expect(find.text('Plan created'), findsOneWidget);
   });
 }
