@@ -108,18 +108,23 @@ class OrganisationDetailPage extends StatelessWidget {
                   clipBehavior: Clip.antiAlias,
                   child: InkWell(
                     onTap: () => _openGallery(context, index),
-                    child: Image.network(
-                      url,
-                      fit: BoxFit.cover,
-                      semanticLabel: l10n.accessibilityOrganisationGalleryImage(
+                    child: Semantics(
+                      container: true,
+                      label: l10n.accessibilityOrganisationGalleryImage(
                         organisation.name,
                         index + 1,
                       ),
-                      errorBuilder: (_, _, _) => const Center(
-                        child: Icon(Icons.broken_image_outlined),
+                      image: true,
+                      child: Image.network(
+                        url,
+                        fit: BoxFit.cover,
+                        excludeFromSemantics: true,
+                        errorBuilder: (_, _, _) => const Center(
+                          child: Icon(Icons.broken_image_outlined),
+                        ),
+                        loadingBuilder: (context, child, progress) =>
+                            progress == null ? child : const Center(child: CircularProgressIndicator()),
                       ),
-                      loadingBuilder: (context, child, progress) =>
-                          progress == null ? child : const Center(child: CircularProgressIndicator()),
                     ),
                   ),
                 );
@@ -211,20 +216,25 @@ class _OrganisationGalleryViewerState extends State<_OrganisationGalleryViewer> 
         onPageChanged: (index) => setState(() => _index = index),
         itemBuilder: (context, index) => InteractiveViewer(
           child: Center(
-            child: Image.network(
-              widget.images[index],
-              fit: BoxFit.contain,
-              semanticLabel: l10n.accessibilityOrganisationGalleryImage(
+            child: Semantics(
+              container: true,
+              label: l10n.accessibilityOrganisationGalleryImage(
                 widget.organisationName,
                 index + 1,
               ),
-              errorBuilder: (_, _, _) => const Icon(
-                Icons.broken_image_outlined,
-                color: Colors.white,
-                size: 48,
+              image: true,
+              child: Image.network(
+                widget.images[index],
+                fit: BoxFit.contain,
+                excludeFromSemantics: true,
+                errorBuilder: (_, _, _) => const Icon(
+                  Icons.broken_image_outlined,
+                  color: Colors.white,
+                  size: 48,
+                ),
+                loadingBuilder: (context, child, progress) =>
+                    progress == null ? child : const Center(child: CircularProgressIndicator()),
               ),
-              loadingBuilder: (context, child, progress) =>
-                  progress == null ? child : const Center(child: CircularProgressIndicator()),
             ),
           ),
         ),
