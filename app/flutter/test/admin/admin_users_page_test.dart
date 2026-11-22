@@ -140,7 +140,7 @@ void main() {
     await tester.tap(find.text('Nikita Manoriya'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Unable to load the city list.'), findsOneWidget);
+    expect(find.text('Unable to load cities for assignment.'), findsOneWidget);
     shouldFail = false;
     await tester.tap(find.text('Retry').last);
     await tester.pumpAndSettle();
