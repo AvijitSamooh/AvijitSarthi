@@ -11,29 +11,30 @@ import 'package:avijit_sahyog/l10n/app_localizations.dart';
 void main() {
   testWidgets('announces a beneficiary placeholder as a named image', (tester) async {
     final semantics = tester.ensureSemantics();
-    addTearDown(semantics.dispose);
-
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: beneficiaryImage(
-            null,
-            height: 120,
-            borderRadius: BorderRadius.zero,
-            semanticLabel: 'Photo of Alice',
+    try {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: beneficiaryImage(
+              null,
+              height: 120,
+              borderRadius: BorderRadius.zero,
+              semanticLabel: 'Photo of Alice',
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(find.bySemanticsLabel('Photo of Alice'), findsOneWidget);
+      expect(find.bySemanticsLabel('Photo of Alice'), findsOneWidget);
+    } finally {
+      semantics.dispose();
+    }
   });
 
   testWidgets('labels the beneficiary profile and story gallery images', (tester) async {
     final semantics = tester.ensureSemantics();
-    addTearDown(semantics.dispose);
-
-    const beneficiary = Beneficiary(
+    try {
+      const beneficiary = Beneficiary(
       id: 'beneficiary-1',
       name: 'Alice',
       cause: 'Education',
@@ -58,7 +59,10 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.bySemanticsLabel('Photo of Alice'), findsOneWidget);
-    expect(find.bySemanticsLabel("Photo 1 in Alice's story"), findsOneWidget);
+      expect(find.bySemanticsLabel('Photo of Alice'), findsOneWidget);
+      expect(find.bySemanticsLabel("Photo 1 in Alice's story"), findsOneWidget);
+    } finally {
+      semantics.dispose();
+    }
   });
 }
