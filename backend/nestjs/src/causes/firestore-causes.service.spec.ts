@@ -54,6 +54,24 @@ describe('FirestoreCausesService',()=>{
     })).rejects.toThrow('top-level causes');
   });
 
+  it('prevents turning a cause with beneficiaries into a parent', async () => {
+    const causes = firebase.db.collection('causes');
+    const beneficiaries = firebase.db.collection('beneficiaries');
+    causes.doc.mockReturnValue({
+      id: 'education',
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => cause({ id: 'education', slug: 'education' }),
+      }),
+    });
+    beneficiaries.get.mockResolvedValue({ empty: false, docs: [{ id: 'b1' }] });
+    await expect(service.create({
+      slug: 'education-assistance',
+      parentId: 'education',
+      translations: [{ languageCode: 'en', name: 'Education Assistance' }],
+    })).rejects.toThrow('Move existing beneficiaries to a leaf cause');
+  });
+
   it('covers updates, parent relations and conflicts',async()=>{
     const causes=firebase.db.collection('causes'); const ref:any={id:'c1',get:jest.fn().mockResolvedValue({exists:true,data:()=>cause({parentId:'old'})}),set:jest.fn(),update:jest.fn()};
     causes.doc.mockImplementation((id:string)=> id==='c1'?ref:{id,get:jest.fn().mockResolvedValue({exists:true}),set:jest.fn(),update:jest.fn()});
