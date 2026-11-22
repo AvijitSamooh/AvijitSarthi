@@ -234,14 +234,14 @@ Supported purposes are `PROFILE` and `GALLERY`.
 
 ## Public image delivery
 
-Public Organisation and Beneficiary APIs resolve attached Media records through the provider-aware MediaService. Set `R2_PUBLIC_BASE_URL` to the Cloudflare R2 custom/public domain. Firebase Storage media uses short-lived signed read URLs; this preserves legacy public media and allows only approved application photos to be exposed through published Beneficiary records.
+Public Organisation and Beneficiary APIs resolve attached Media records through the provider-aware MediaService. Set `R2_PUBLIC_BASE_URL` to the Cloudflare R2 custom/public domain. Firebase Storage media uses short-lived signed read URLs; this preserves legacy public media and allows only the selected certificate photo of a published Samman beneficiary to be exposed through public Beneficiary records.
 
 - Organisation responses expose `logoUrl` (preferring attached LOGO media) and `gallery`.
 - Beneficiary responses expose `photoUrl` (preferring attached PROFILE media), `profileImage`, and `gallery`.
 - Gallery items are ordered by `displayOrder`.
 - Legacy `logoUrl` and `photoUrl` fields remain as fallbacks for backwards compatibility.
 - R2 storage keys are not exposed as public API URLs when `R2_PUBLIC_BASE_URL` is configured.
-- Applicant uploads remain in Firebase Storage and are returned as short-lived signed URLs from authenticated application workflows. If a certificate photo is later selected as an approved Pratibha Samman Beneficiary profile image, a short-lived signed URL for that selected image is also exposed through the public Beneficiary response; other application photos remain private.
+- Applicant uploads remain in Firebase Storage and are returned as short-lived signed URLs from authenticated application workflows. If a certificate photo is selected as the profile image when a Pratibha Samman application reaches `CONSIDERED_FOR_SAMMAN` and is published as a Beneficiary, a short-lived signed URL for that selected image is exposed through the public Beneficiary response; other application photos remain private.
 
 
 ## City content domain
