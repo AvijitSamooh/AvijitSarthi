@@ -99,8 +99,14 @@ describe('Firestore cutover services', () => {
   });
 
   it('creates a beneficiary in Firestore without a PostgreSQL dependency', async () => {
-    const document = ref();
-    const db = { collection: jest.fn(() => ({ doc: jest.fn(() => document) })) };
+    const document = ref('beneficiary-1');
+    const cause = ref('cause-1');
+    cause.get.mockResolvedValue({ exists: true, data: () => ({ isActive: true, childIds: [] }) });
+    const db = {
+      collection: jest.fn((name: string) => ({
+        doc: jest.fn(() => name === 'causes' ? cause : document),
+      })),
+    };
     const service = new FirestoreBeneficiariesService({ db } as any, { getReadUrl: jest.fn() } as any);
     const result = await service.create({ name: 'Test Beneficiary', causeId: 'cause-1' });
     expect(result.name).toBe('Test Beneficiary');
