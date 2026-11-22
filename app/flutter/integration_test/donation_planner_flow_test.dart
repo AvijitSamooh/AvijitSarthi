@@ -4,6 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:avijit_sahyog/features/auth/data/auth_repository.dart';
+import 'package:avijit_sahyog/features/auth/models/app_user.dart';
+import 'package:avijit_sahyog/features/auth/providers/auth_providers.dart';
+
 import 'package:avijit_sahyog/features/causes/models/cause.dart';
 import 'package:avijit_sahyog/features/causes/providers/causes_providers.dart';
 import 'package:avijit_sahyog/features/donations/presentation/donation_planner_page.dart';
@@ -20,6 +24,7 @@ void main() {
     Widget plannerApp({String? initialCauseId}) {
       return ProviderScope(
         overrides: [
+          authProvider.overrideWith((ref) => AuthController(_GuestAuthRepository())),
           causesProvider('en').overrideWith(
             (ref) async => const [
               Cause(id: 'jeev-daya', slug: 'jeev-daya', name: 'Jeev Daya'),
@@ -53,4 +58,15 @@ void main() {
     expect(find.text('₹150.00'), findsOneWidget);
     expect(find.text('Plan created'), findsOneWidget);
   });
+}
+
+class _GuestAuthRepository implements AuthRepository {
+  @override
+  Future<AppUser?> restoreSession() async => null;
+
+  @override
+  Future<AppUser> signInWithGoogle() => throw UnimplementedError();
+
+  @override
+  Future<void> signOut() async {}
 }
