@@ -165,25 +165,19 @@ void main() {
             (ref) async => const [City(id: 'pune', name: 'Pune')],
           ),
         ],
-        child: _dialogApp(),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.binding.setSurfaceSize(const Size(320, 480));
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          cityCatalogueProvider('en').overrideWith(
-            (ref) async => const [City(id: 'pune', name: 'Pune')],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('en'),
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: const TextScaler.linear(2),
+            ),
+            child: child!,
           ),
-        ],
-        child: MediaQuery(
-          data: const MediaQueryData(
-            size: Size(320, 480),
-            textScaler: TextScaler.linear(2),
+          home: const Scaffold(
+            body: CityAdminAssignmentDialog(userLabel: 'Nikita Manoriya'),
           ),
-          child: _dialogApp(),
         ),
       ),
     );
