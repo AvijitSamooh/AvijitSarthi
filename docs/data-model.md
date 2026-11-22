@@ -118,7 +118,7 @@ Current upload constraints:
 - Maximum upload size: 10 MB
 - Maximum processed dimension: 1600 px
 - Maximum processed object size: 1.5 MB
-- Output format: WebP (quality 82)
+- Output format: WebP (adaptive quality starting at 82, reduced as needed to remain within 1.5 MB)
 
 If Firestore metadata persistence fails after object upload, the backend attempts to remove the object from the same provider to avoid orphaned files. Legacy media documents without `storageProvider` are read and deleted from Firebase Storage.
 
@@ -241,7 +241,7 @@ Public Organisation and Beneficiary APIs resolve attached Media records through 
 - Gallery items are ordered by `displayOrder`.
 - Legacy `logoUrl` and `photoUrl` fields remain as fallbacks for backwards compatibility.
 - R2 storage keys are not exposed as public API URLs when `R2_PUBLIC_BASE_URL` is configured.
-- Applicant uploads remain in Firebase Storage and are returned as short-lived signed URLs only from authenticated application workflows. A certificate photo is included in public Beneficiary responses only after the application is approved for Pratibha Samman.
+- Applicant uploads remain in Firebase Storage and are returned as short-lived signed URLs from authenticated application workflows. If a certificate photo is later selected as an approved Pratibha Samman Beneficiary profile image, a short-lived signed URL for that selected image is also exposed through the public Beneficiary response; other application photos remain private.
 
 
 ## City content domain

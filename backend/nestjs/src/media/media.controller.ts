@@ -1,5 +1,5 @@
 import {
-  Controller, Delete, Get, Post, Param, UploadedFile, Req, UseGuards, UseInterceptors,
+  Controller, Delete, Get, Post, Param, UploadedFile, Req, UseGuards, UseInterceptors, InternalServerErrorException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -21,6 +21,10 @@ export class MediaController {
 
   @Get('verify')
   async verifyConnection() {
+    const publicBaseUrl = process.env.R2_PUBLIC_BASE_URL?.trim();
+    if (!publicBaseUrl || !publicBaseUrl.startsWith('https://')) {
+      throw new InternalServerErrorException('R2_PUBLIC_BASE_URL must be configured as an HTTPS URL.');
+    }
     await this.storageService.verifyConnection();
     return {
       status: 'ok',

@@ -12,9 +12,11 @@ describe('MediaController', () => {
   });
 
   describe('verifyConnection', () => {
-    it('verifies Firebase Storage connectivity', async () => {
+    it('verifies the R2 bucket and public HTTPS base URL', async () => {
       const previousBucket = process.env.R2_BUCKET_NAME;
+      const previousBaseUrl = process.env.R2_PUBLIC_BASE_URL;
       process.env.R2_BUCKET_NAME = 'avijit-sahyog-public';
+      process.env.R2_PUBLIC_BASE_URL = 'https://cdn.avijitsarthi.example';
       await expect(controller.verifyConnection()).resolves.toEqual({
         status: 'ok',
         storage: 'cloudflare-r2',
@@ -23,6 +25,19 @@ describe('MediaController', () => {
       expect(storageService.verifyConnection).toHaveBeenCalledTimes(1);
       if (previousBucket === undefined) delete process.env.R2_BUCKET_NAME;
       else process.env.R2_BUCKET_NAME = previousBucket;
+      if (previousBaseUrl === undefined) delete process.env.R2_PUBLIC_BASE_URL;
+      else process.env.R2_PUBLIC_BASE_URL = previousBaseUrl;
+    });
+
+    it('rejects a missing or non-HTTPS public base before checking the bucket', async () => {
+      const previousBaseUrl = process.env.R2_PUBLIC_BASE_URL;
+      delete process.env.R2_PUBLIC_BASE_URL;
+      await expect(controller.verifyConnection()).rejects.toThrow('R2_PUBLIC_BASE_URL must be configured as an HTTPS URL.');
+      expect(storageService.verifyConnection).not.toHaveBeenCalled();
+      process.env.R2_PUBLIC_BASE_URL = 'http://cdn.example';
+      await expect(controller.verifyConnection()).rejects.toThrow('R2_PUBLIC_BASE_URL must be configured as an HTTPS URL.');
+      if (previousBaseUrl === undefined) delete process.env.R2_PUBLIC_BASE_URL;
+      else process.env.R2_PUBLIC_BASE_URL = previousBaseUrl;
     });
 
     it('propagates storage verification failures', async () => {

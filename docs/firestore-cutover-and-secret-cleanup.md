@@ -14,7 +14,7 @@ These remain required after PostgreSQL is removed:
 - `R2_SECRET_ACCESS_KEY`
 - `R2_BUCKET_NAME`
 - `R2_PUBLIC_BASE_URL`
-- `FIREBASE_STORAGE_BUCKET` (private applicant uploads and legacy media; retain until a separately verified migration removes the last Firebase-backed media record)
+- `FIREBASE_STORAGE_BUCKET` (private applicant uploads and legacy media; retain while either category is Firebase-backed)
 - `EXPORT_TOKEN_SECRET`
 - `CORS_ORIGINS`
 - `PORT`
@@ -47,7 +47,7 @@ The last three are legacy build-time downtime variables. Runtime downtime is now
 
 ## Do not remove
 
-Do not remove Firebase Admin credentials, `FIREBASE_STORAGE_BUCKET`, R2 credentials, Android signing credentials, Play Store publishing credentials, or `EXPORT_TOKEN_SECRET`. Firebase Storage remains the private home for applicant uploads; do not remove its bucket while application media records still reference it.
+Do not remove Firebase Admin credentials, `FIREBASE_STORAGE_BUCKET`, R2 credentials, Android signing credentials, Play Store publishing credentials, or `EXPORT_TOKEN_SECRET`. Firebase Storage remains the private home for applicant uploads and the compatibility path for legacy media; do not remove its bucket while either category still references it.
 
 ## Final removal order
 
