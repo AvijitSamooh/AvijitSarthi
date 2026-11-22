@@ -60,7 +60,7 @@ class DonationHistoryPage extends ConsumerWidget {
                     data: (donations) => donations.isEmpty
                         ? _HistoryMessage(message: l10n.donationHistoryEmpty)
                         : RefreshIndicator(
-                            onRefresh: () async { await ref.refresh(myDonationsProvider.future); },
+                            onRefresh: () => ref.refresh(myDonationsProvider.future).then<void>((_) {}),
                             child: ListView.separated(
                               padding: const EdgeInsets.all(16),
                               itemCount: donations.length,
@@ -145,7 +145,7 @@ class _DonationDetailPageState extends ConsumerState<DonationDetailPage> {
       ),
       body: donationAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => _HistoryMessage(
+        error: (_, _) => _HistoryMessage(
           message: l10n.donationHistoryLoadError,
           actionLabel: l10n.donationHistoryRetry,
           onRetry: () => ref.invalidate(myDonationProvider(widget.donationId)),
