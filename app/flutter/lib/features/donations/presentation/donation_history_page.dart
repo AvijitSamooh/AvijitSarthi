@@ -7,7 +7,6 @@ import '../../../l10n/app_localizations.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../../causes/models/cause.dart';
 import '../../causes/providers/causes_providers.dart';
-import '../data/donation_history_repository.dart';
 import '../models/donation_history.dart';
 import '../providers/donation_history_providers.dart';
 
@@ -53,7 +52,7 @@ class DonationHistoryPage extends ConsumerWidget {
                 )
               : ref.watch(myDonationsProvider).when(
                     loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (_, __) => _HistoryMessage(
+                    error: (_, _) => _HistoryMessage(
                       message: l10n.donationHistoryLoadError,
                       actionLabel: l10n.donationHistoryRetry,
                       onRetry: () => ref.invalidate(myDonationsProvider),
@@ -65,7 +64,7 @@ class DonationHistoryPage extends ConsumerWidget {
                             child: ListView.separated(
                               padding: const EdgeInsets.all(16),
                               itemCount: donations.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 8),
+                              separatorBuilder: (_, _) => const SizedBox(height: 8),
                               itemBuilder: (context, index) {
                                 final donation = donations[index];
                                 final date = DateFormat.yMMMd(
