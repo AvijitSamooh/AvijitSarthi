@@ -6,6 +6,7 @@ import '../../../core/navigation/app_shell_scope.dart';
 import '../../../core/widgets/app_navigation_bar.dart';
 import '../../../core/widgets/app_settings_menu.dart';
 import '../../causes/providers/causes_providers.dart';
+import 'donation_planner_page.dart';
 
 class DonationPage extends ConsumerStatefulWidget {
   const DonationPage({super.key, this.initialCauseId});
@@ -148,6 +149,17 @@ class _DonationPageState extends ConsumerState<DonationPage> {
         FilledButton.icon(key: const ValueKey('donation_submit'), onPressed: _totalAmount <= 0 || _selectedCauseIds.isEmpty || _allocationTotal != 100 ? null : _submit, icon: const Icon(Icons.favorite_rounded), label: Text(l10n.donateNow)),
         const SizedBox(height: 12),
         Text(l10n.donationPaymentLater, textAlign: TextAlign.center, style: theme.textTheme.bodySmall),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          key: const ValueKey('donation_plan_entry'),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => DonationPlannerPage(initialCauseId: widget.initialCauseId),
+            ),
+          ),
+          icon: const Icon(Icons.calendar_month_rounded),
+          label: Text(l10n.donationPlannerEntry),
+        ),
       ]),
       bottomNavigationBar: AppNavigationBar(
         selectedIndex: 1,
