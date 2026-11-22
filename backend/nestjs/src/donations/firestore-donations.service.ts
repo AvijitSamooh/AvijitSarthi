@@ -248,7 +248,7 @@ export class FirestoreDonationsService {
 
   private cents(value: string, fieldName: string): bigint {
     const normalized = String(value).trim();
-    if (!/^\\d+(?:\\.\\d{1,2})?$/.test(normalized)) {
+    if (!/^\d+(?:\.\d{1,2})?$/.test(normalized)) {
       throw new BadRequestException(`${fieldName} must be a valid decimal amount`);
     }
     const [whole, fraction = ''] = normalized.split('.');
