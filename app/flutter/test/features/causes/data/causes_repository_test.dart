@@ -44,6 +44,23 @@ void main() {
     expect(client.getCalls, 1);
   });
 
+  test('does not reuse v1 cache entries without explicit parent metadata', () async {
+    SharedPreferences.setMockInitialValues({
+      'causes_cache_v1_en': jsonEncode({
+        'savedAt': DateTime.now().toIso8601String(),
+        'payload': [
+          {'id': 'education', 'slug': 'education', 'name': 'Education', 'children': []},
+        ],
+      }),
+    });
+    final client = _FakeClient()..fail = true;
+    final api = ApiClient(client: client, baseUrl: 'https://example.test');
+    final repository = CausesRepository(api);
+
+    await expectLater(repository.getCauses('en'), throwsA(isA<Exception>()));
+    expect(client.getCalls, 1);
+  });
+
   test('returns cached causes when the backend becomes unavailable', () async {
     final client = _FakeClient();
     final api = ApiClient(client: client, baseUrl: 'https://example.test');
