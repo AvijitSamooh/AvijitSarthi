@@ -233,6 +233,7 @@ class _OrganisationInfoCard extends StatelessWidget {
                         child: Image.network(
                           organisation.logoUrl!,
                           fit: BoxFit.cover,
+                          excludeFromSemantics: true,
                           errorBuilder: (_, _, _) => const Icon(
                             Icons.account_balance_rounded,
                             color: Color(0xFF6E1A14),

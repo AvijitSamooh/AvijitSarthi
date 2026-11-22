@@ -701,5 +701,26 @@
   "donationStatusCancelled": "रद्द",
   "causeChildrenTitle": "विशिष्ट सेवा क्षेत्र",
   "causeChooseChild": "इस क्षेत्र का समर्थन करने के लिए नीचे दिया गया विशिष्ट सेवा क्षेत्र चुनें।",
-  "causeNoActiveChildren": "फिलहाल यहाँ कोई सक्रिय सेवा क्षेत्र उपलब्ध नहीं है।"
+  "causeNoActiveChildren": "फिलहाल यहाँ कोई सक्रिय सेवा क्षेत्र उपलब्ध नहीं है।",
+  "accessibilityBeneficiaryPhoto": "लाभार्थी {name} की तस्वीर",
+  "@accessibilityBeneficiaryPhoto": {
+    "description": "लाभार्थी की प्रोफ़ाइल तस्वीर के लिए वैकल्पिक पाठ।",
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "accessibilityBeneficiaryGalleryImage": "लाभार्थी {name} की कहानी की तस्वीर {index}",
+  "@accessibilityBeneficiaryGalleryImage": {
+    "description": "लाभार्थी की कहानी की गैलरी तस्वीर के लिए वैकल्पिक पाठ।",
+    "placeholders": {
+      "name": { "type": "String" },
+      "index": { "type": "int" }
+    }
+  },
+  "accessibilityOrganisationGalleryImage": "संस्था {name} की गैलरी की तस्वीर {index}",
+  "@accessibilityOrganisationGalleryImage": {
+    "description": "संस्था की गैलरी तस्वीर के लिए वैकल्पिक पाठ।",
+    "placeholders": {
+      "name": { "type": "String" },
+      "index": { "type": "int" }
+    }
+  }
 }

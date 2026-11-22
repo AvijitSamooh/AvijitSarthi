@@ -19,7 +19,13 @@ class BeneficiaryDetailPage extends StatelessWidget {
         children: [
           Hero(
             tag: 'beneficiary-${beneficiary.id}',
-            child: beneficiaryImage(beneficiary.primaryImageUrl, height: 240, borderRadius: BorderRadius.circular(24), iconSize: 100),
+            child: beneficiaryImage(
+              beneficiary.primaryImageUrl,
+              height: 240,
+              borderRadius: BorderRadius.circular(24),
+              iconSize: 100,
+              semanticLabel: l10n.accessibilityBeneficiaryPhoto(beneficiary.name),
+            ),
           ),
           if (beneficiary.gallery.isNotEmpty) ...[
             const SizedBox(height: 12),
@@ -33,10 +39,19 @@ class BeneficiaryDetailPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   child: AspectRatio(
                     aspectRatio: 1,
-                    child: Image.network(
-                      beneficiary.gallery[index],
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => const Icon(Icons.image_not_supported_rounded),
+                    child: Semantics(
+                      container: true,
+                      label: l10n.accessibilityBeneficiaryGalleryImage(
+                        beneficiary.name,
+                        index + 1,
+                      ),
+                      image: true,
+                      child: Image.network(
+                        beneficiary.gallery[index],
+                        fit: BoxFit.cover,
+                        excludeFromSemantics: true,
+                        errorBuilder: (_, _, _) => const Icon(Icons.image_not_supported_rounded),
+                      ),
                     ),
                   ),
                 ),

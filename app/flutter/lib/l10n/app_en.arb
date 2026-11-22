@@ -701,5 +701,26 @@
   "donationStatusCancelled": "Cancelled",
   "causeChildrenTitle": "Specific causes",
   "causeChooseChild": "Choose a specific cause below to support this area.",
-  "causeNoActiveChildren": "No active causes are available here right now."
+  "causeNoActiveChildren": "No active causes are available here right now.",
+  "accessibilityBeneficiaryPhoto": "Photo of {name}",
+  "@accessibilityBeneficiaryPhoto": {
+    "description": "Alternative text for a beneficiary profile image.",
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "accessibilityBeneficiaryGalleryImage": "Photo {index} in {name}'s story",
+  "@accessibilityBeneficiaryGalleryImage": {
+    "description": "Alternative text for a beneficiary story gallery image.",
+    "placeholders": {
+      "name": { "type": "String" },
+      "index": { "type": "int" }
+    }
+  },
+  "accessibilityOrganisationGalleryImage": "Photo {index} in {name}'s gallery",
+  "@accessibilityOrganisationGalleryImage": {
+    "description": "Alternative text for an organisation gallery image.",
+    "placeholders": {
+      "name": { "type": "String" },
+      "index": { "type": "int" }
+    }
+  }
 }
