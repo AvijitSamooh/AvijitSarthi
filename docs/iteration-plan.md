@@ -6,7 +6,7 @@
 
 - [ ] Production Firestore cutover verification — Firestore domain services, user/role authorization, audit history and Prisma retirement are implemented in the repository. Verify the deployed Avijit Sarthi service, production Firestore configuration, historical-data reconciliation, backup/restore and retirement of obsolete database infrastructure/secrets before declaring the operational cutover complete.
 - [ ] Education Assistance / Pratibha Samman production recovery — separate application types, Firestore application records, rules/windows and admin/client flows are implemented. Verify historical application migration/recovery and production deployment; code-level tests do not establish production data completeness.
-- [ ] Media storage reconciliation — new admin-managed content uploads use Cloudflare R2; applicant uploads remain private in Firebase Storage. Existing media documents without `storageProvider` are treated as legacy Firebase objects. Reconcile historical media records and verify signed private-photo access before retiring any Firebase Storage configuration.
+- [ ] Media storage reconciliation — new admin-managed content uploads use Cloudflare R2; applicant uploads remain private in Firebase Storage. Existing media documents without `storageProvider` are treated as legacy Firebase objects. Reconcile historical media records and verify signed private-photo access before considering any future Firebase Storage retirement; the bucket remains required for private applicant uploads.
 
 ## Recently Completed
 
