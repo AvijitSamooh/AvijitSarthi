@@ -2,6 +2,12 @@ name: Cleanup Actions Runs
 
 on:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Preview the cleanup plan without deleting data (manual runs default to safe mode)'
+        required: true
+        type: boolean
+        default: true
   schedule:
     - cron: '30 14 */3 * *'
 
@@ -10,7 +16,7 @@ permissions:
 
 jobs:
   cleanup:
-    name: Retain Android releases and recent successful builds
+    name: Retain Android releases and CI diagnostics
     runs-on: ubuntu-latest
     steps:
       - name: Validate cleanup plan and remove non-retained data
@@ -18,43 +24,71 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPOSITORY: ${{ github.repository }}
           CURRENT_RUN_ID: ${{ github.run_id }}
+          DRY_RUN_INPUT: ${{ inputs.dry_run || false }}
         run: |
           set -euo pipefail
 
           ANDROID_ARTIFACT_PREFIX='avijit-sahyog-release-aab-'
           MAX_ANDROID_ARTIFACTS=5
           MAX_SUCCESSFUL_RUNS=10
+          MAX_RECENT_FAILURE_DAYS=14
+          DRY_RUN="$DRY_RUN_INPUT"
+          RECENT_FAILURE_CUTOFF="$(date -u -d "${MAX_RECENT_FAILURE_DAYS} days ago" +%Y-%m-%dT%H:%M:%SZ)"
 
           declare -A KEEP_ARTIFACT=()
           declare -A KEEP_RUN=()
           declare -A KNOWN_RUN=()
+          declare -A OPEN_PR_BRANCH=()
           declare -A SUCCESSFUL_RUN_COUNT=()
 
-          mapfile -t ARTIFACTS < <(
-            gh api --paginate \
-              -H 'Accept: application/vnd.github+json' \
-              -H 'X-GitHub-Api-Version: 2026-03-10' \
-              "/repos/${REPOSITORY}/actions/artifacts?per_page=100" \
-              --jq '.artifacts[] | [.id, (.workflow_run.id // 0), .name, .expired, .created_at] | @tsv' \
-              | sort -t $'\t' -k5,5r
-          )
+          # Preserve every run from a branch while its pull request remains open.
+          OPEN_PR_BRANCHES_RAW=$(gh api --paginate \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2026-03-10' \
+            "/repos/${REPOSITORY}/pulls?state=open&per_page=100" \
+            --jq '.[].head.ref')
 
-          mapfile -t RUNS < <(
-            gh api --paginate \
-              -H 'Accept: application/vnd.github+json' \
-              -H 'X-GitHub-Api-Version: 2026-03-10' \
-              "/repos/${REPOSITORY}/actions/runs?per_page=100&exclude_pull_requests=true" \
-              --jq '.workflow_runs[] | [.id, .name, .status, .conclusion, .created_at] | @tsv'
-          )
+          if [[ -n "$OPEN_PR_BRANCHES_RAW" ]]; then
+            mapfile -t OPEN_PR_BRANCHES <<< "$OPEN_PR_BRANCHES_RAW"
+            for branch in "${OPEN_PR_BRANCHES[@]}"; do
+              [[ -n "$branch" ]] && OPEN_PR_BRANCH["$branch"]=1
+            done
+          fi
+
+          ARTIFACTS_RAW=$(gh api --paginate \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2026-03-10' \
+            "/repos/${REPOSITORY}/actions/artifacts?per_page=100" \
+            --jq '.artifacts[] | [.id, (.workflow_run.id // 0), .name, .expired, .created_at] | @tsv' \
+            | sort -t $'\t' -k5,5r)
+
+          RUNS_RAW=$(gh api --paginate \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2026-03-10' \
+            "/repos/${REPOSITORY}/actions/runs?per_page=100" \
+            --jq '.workflow_runs[] | [.id, .name, .event, .head_branch, .status, (.conclusion // ""), .created_at] | @tsv' \
+            | sort -t $'\t' -k7,7r)
+
+          ARTIFACTS=()
+          RUNS=()
+          if [[ -n "$ARTIFACTS_RAW" ]]; then
+            mapfile -t ARTIFACTS <<< "$ARTIFACTS_RAW"
+          fi
+          if [[ -n "$RUNS_RAW" ]]; then
+            mapfile -t RUNS <<< "$RUNS_RAW"
+          fi
 
           for run in "${RUNS[@]}"; do
-            IFS=$'\t' read -r run_id workflow_name status conclusion created_at <<< "$run"
+            IFS=$'\t' read -r run_id workflow_name event head_branch status conclusion created_at <<< "$run"
             KNOWN_RUN["$run_id"]=1
           done
 
           android_candidates=0
           android_invalid=0
           kept_android=0
+          open_pr_runs=0
+          recent_non_success_runs=0
+          active_runs=0
 
           for artifact in "${ARTIFACTS[@]}"; do
             IFS=$'\t' read -r artifact_id artifact_run_id artifact_name artifact_expired artifact_created_at <<< "$artifact"
@@ -82,14 +116,44 @@ jobs:
           fi
 
           for run in "${RUNS[@]}"; do
-            IFS=$'\t' read -r run_id workflow_name status conclusion created_at <<< "$run"
-            [[ "$status" == "completed" && "$conclusion" == "success" ]] || continue
+            IFS=$'\t' read -r run_id workflow_name event head_branch status conclusion created_at <<< "$run"
             [[ "$run_id" == "$CURRENT_RUN_ID" ]] && continue
 
-            count=${SUCCESSFUL_RUN_COUNT["$workflow_name"]:-0}
-            if [[ "$count" -lt "$MAX_SUCCESSFUL_RUNS" ]]; then
+            if [[ -n "$head_branch" && -n "${OPEN_PR_BRANCH[$head_branch]:-}" ]]; then
               KEEP_RUN["$run_id"]=1
-              SUCCESSFUL_RUN_COUNT["$workflow_name"]=$((count + 1))
+              open_pr_runs=$((open_pr_runs + 1))
+              continue
+            fi
+
+            if [[ "$status" != "completed" ]]; then
+              KEEP_RUN["$run_id"]=1
+              active_runs=$((active_runs + 1))
+              continue
+            fi
+
+            if [[ "$conclusion" != "success" && "$created_at" > "$RECENT_FAILURE_CUTOFF" ]]; then
+              KEEP_RUN["$run_id"]=1
+              recent_non_success_runs=$((recent_non_success_runs + 1))
+              continue
+            fi
+
+            if [[ "$conclusion" == "success" ]]; then
+              count=${SUCCESSFUL_RUN_COUNT["$workflow_name"]:-0}
+              if [[ "$count" -lt "$MAX_SUCCESSFUL_RUNS" ]]; then
+                KEEP_RUN["$run_id"]=1
+                SUCCESSFUL_RUN_COUNT["$workflow_name"]=$((count + 1))
+              fi
+            fi
+          done
+
+          # Keep diagnostics and coverage artifacts for retained runs, while the
+          # five-artifact cap continues to apply specifically to release AABs.
+          for artifact in "${ARTIFACTS[@]}"; do
+            IFS=$'\t' read -r artifact_id artifact_run_id artifact_name artifact_expired artifact_created_at <<< "$artifact"
+            [[ "$artifact_expired" == "true" ]] && continue
+            [[ "$artifact_name" == "${ANDROID_ARTIFACT_PREFIX}"* ]] && continue
+            if [[ -n "${KEEP_RUN[$artifact_run_id]:-}" ]]; then
+              KEEP_ARTIFACT["$artifact_id"]=1
             fi
           done
 
@@ -100,28 +164,37 @@ jobs:
             fi
           done
 
-          echo "VALIDATION PASSED: retaining ${kept_android} Android release artifacts and the last ${MAX_SUCCESSFUL_RUNS} successful runs per workflow."
+          echo "VALIDATION PASSED: retaining ${kept_android} Android release artifacts, ${open_pr_runs} open-PR branch runs, ${recent_non_success_runs} recent non-success runs, ${active_runs} active runs, and the last ${MAX_SUCCESSFUL_RUNS} successful runs per workflow."
+          echo "Cleanup mode: DRY_RUN=${DRY_RUN}; recent failure cutoff: ${RECENT_FAILURE_CUTOFF}"
 
           for artifact in "${ARTIFACTS[@]}"; do
             IFS=$'\t' read -r artifact_id artifact_run_id artifact_name artifact_expired artifact_created_at <<< "$artifact"
             [[ -n "${KEEP_ARTIFACT[$artifact_id]:-}" ]] && continue
-            echo "DELETE artifact=${artifact_id} name=${artifact_name}"
-            gh api --method DELETE \
-              -H 'Accept: application/vnd.github+json' \
-              -H 'X-GitHub-Api-Version: 2026-03-10' \
-              "/repos/${REPOSITORY}/actions/artifacts/${artifact_id}"
+            if [[ "$DRY_RUN" == "true" ]]; then
+              echo "DRY RUN: DELETE artifact=${artifact_id} name=${artifact_name}"
+            else
+              echo "DELETE artifact=${artifact_id} name=${artifact_name}"
+              gh api --method DELETE \
+                -H 'Accept: application/vnd.github+json' \
+                -H 'X-GitHub-Api-Version: 2026-03-10' \
+                "/repos/${REPOSITORY}/actions/artifacts/${artifact_id}"
+            fi
           done
 
           for run in "${RUNS[@]}"; do
-            IFS=$'\t' read -r run_id workflow_name status conclusion created_at <<< "$run"
+            IFS=$'\t' read -r run_id workflow_name event head_branch status conclusion created_at <<< "$run"
             [[ "$run_id" == "$CURRENT_RUN_ID" ]] && continue
             [[ -n "${KEEP_RUN[$run_id]:-}" ]] && continue
             [[ "$status" == "completed" ]] || continue
-            echo "DELETE run=${run_id} workflow=${workflow_name}"
-            gh api --method DELETE \
-              -H 'Accept: application/vnd.github+json' \
-              -H 'X-GitHub-Api-Version: 2026-03-10' \
-              "/repos/${REPOSITORY}/actions/runs/${run_id}"
+            if [[ "$DRY_RUN" == "true" ]]; then
+              echo "DRY RUN: DELETE run=${run_id} workflow=${workflow_name} conclusion=${conclusion}"
+            else
+              echo "DELETE run=${run_id} workflow=${workflow_name} conclusion=${conclusion}"
+              gh api --method DELETE \
+                -H 'Accept: application/vnd.github+json' \
+                -H 'X-GitHub-Api-Version: 2026-03-10' \
+                "/repos/${REPOSITORY}/actions/runs/${run_id}"
+            fi
           done
 
           echo "Cleanup complete."

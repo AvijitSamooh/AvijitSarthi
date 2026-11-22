@@ -33,6 +33,7 @@ jobs:
       - name: Find and remove expired workflow runs
         env:
           GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           RETENTION_DAYS: ${{ inputs.retention_days || '30' }}
           MANUAL_DRY_RUN: ${{ inputs.dry_run || 'false' }}
         shell: bash
@@ -45,33 +46,80 @@ jobs:
           fi
 
           CUTOFF="$(date -u -d "${RETENTION_DAYS} days ago" +%Y-%m-%dT%H:%M:%SZ)"
+          RECENT_FAILURE_DAYS=14
+          RECENT_FAILURE_CUTOFF="$(date -u -d "${RECENT_FAILURE_DAYS} days ago" +%Y-%m-%dT%H:%M:%SZ)"
           DRY_RUN=false
           if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" && "$MANUAL_DRY_RUN" == "true" ]]; then
             DRY_RUN=true
           fi
 
+          declare -A OPEN_PR_BRANCH=()
+
+          OPEN_PR_BRANCHES_RAW=$(gh api --paginate \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2026-03-10' \
+            "repos/$GITHUB_REPOSITORY/pulls?state=open&per_page=100" \
+            --jq '.[].head.ref')
+
+          if [[ -n "$OPEN_PR_BRANCHES_RAW" ]]; then
+            mapfile -t OPEN_PR_BRANCHES <<< "$OPEN_PR_BRANCHES_RAW"
+            for branch in "${OPEN_PR_BRANCHES[@]}"; do
+              [[ -n "$branch" ]] && OPEN_PR_BRANCH["$branch"]=1
+            done
+          fi
+
+          RUNS_RAW=$(gh api --paginate \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2026-03-10' \
+            "repos/$GITHUB_REPOSITORY/actions/runs?per_page=100&status=completed" \
+            --jq '.workflow_runs[] | [.id, .head_branch, (.conclusion // ""), .created_at] | @tsv' \
+            | sort -t $'\t' -k4,4r)
+
+          RUNS=()
+          if [[ -n "$RUNS_RAW" ]]; then
+            mapfile -t RUNS <<< "$RUNS_RAW"
+          fi
+
           echo "Repository: $GITHUB_REPOSITORY"
           echo "Retention: $RETENTION_DAYS days"
           echo "Cutoff (UTC): $CUTOFF"
+          echo "Recent non-success retention: $RECENT_FAILURE_DAYS days"
           echo "Dry run: $DRY_RUN"
 
-          mapfile -t RUN_IDS < <(
-            CUTOFF="$CUTOFF" gh api --paginate \
-              "repos/$GITHUB_REPOSITORY/actions/runs?per_page=100&status=completed" \
-              --jq '.workflow_runs[] | select(.created_at < env.CUTOFF) | .id'
-          )
+          eligible_runs=0
+          kept_open_pr_runs=0
+          kept_recent_non_success_runs=0
 
-          echo "Eligible completed runs: ${#RUN_IDS[@]}"
-          for run_id in "${RUN_IDS[@]}"; do
-            if [[ -z "$run_id" ]]; then
+          for run in "${RUNS[@]}"; do
+            IFS=$'\t' read -r run_id head_branch conclusion created_at <<< "$run"
+
+            if [[ -n "$head_branch" && -n "${OPEN_PR_BRANCH[$head_branch]:-}" ]]; then
+              echo "KEEP run=$run_id reason=open-pr-branch"
+              kept_open_pr_runs=$((kept_open_pr_runs + 1))
               continue
             fi
-            if [[ "$DRY_RUN" == "true" ]]; then
-              echo "DRY RUN: would delete run $run_id"
-            else
-              echo "Deleting completed run $run_id"
-              gh api --method DELETE "repos/$GITHUB_REPOSITORY/actions/runs/$run_id"
+
+            if [[ "$conclusion" != "success" && "$created_at" > "$RECENT_FAILURE_CUTOFF" ]]; then
+              echo "KEEP run=$run_id reason=recent-non-success"
+              kept_recent_non_success_runs=$((kept_recent_non_success_runs + 1))
+              continue
+            fi
+
+            if [[ "$created_at" < "$CUTOFF" ]]; then
+              eligible_runs=$((eligible_runs + 1))
+              if [[ "$DRY_RUN" == "true" ]]; then
+                echo "DRY RUN: would delete run=$run_id conclusion=$conclusion created_at=$created_at"
+              else
+                echo "DELETE run=$run_id conclusion=$conclusion created_at=$created_at"
+                gh api --method DELETE \
+                  -H 'Accept: application/vnd.github+json' \
+                  -H 'X-GitHub-Api-Version: 2026-03-10' \
+                  "repos/$GITHUB_REPOSITORY/actions/runs/$run_id"
+              fi
             fi
           done
 
+          echo "Eligible completed runs: $eligible_runs"
+          echo "Retained open-PR runs: $kept_open_pr_runs"
+          echo "Retained recent non-success runs: $kept_recent_non_success_runs"
           echo "Cleanup finished."
