@@ -152,8 +152,12 @@ export class FirestoreCausesService {
       .sort((a, b) => a.displayOrder - b.displayOrder);
     const childIds = roots.flatMap((cause) => cause.childIds ?? []);
     const children = await this.getByIds<CauseDocument>('causes', childIds);
+    const visibleRoots = roots.filter((cause) =>
+      (cause.childIds ?? []).length === 0 ||
+      children.some((child) => child.isActive && child.parentId === cause.id),
+    );
 
-    return roots.map((cause) => {
+    return visibleRoots.map((cause) => {
       const activeChildren = children
         .filter((child) => child.isActive && child.parentId === cause.id)
         .sort((a, b) => a.displayOrder - b.displayOrder);
