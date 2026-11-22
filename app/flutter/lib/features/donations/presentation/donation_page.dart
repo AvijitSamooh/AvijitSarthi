@@ -128,11 +128,13 @@ class _DonationPageState extends ConsumerState<DonationPage> {
             if (!_initialCauseResolved) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (!mounted || _initialCauseResolved) return;
-                final initialCause = selectableCauses.where((cause) => cause.id == widget.initialCauseId).firstOrNull;
-                if (initialCause == null) {
+                final initialCauseMatches = selectableCauses
+                    .where((cause) => cause.id == widget.initialCauseId);
+                if (initialCauseMatches.isEmpty) {
                   _initialCauseResolved = true;
                   return;
                 }
+                final initialCause = initialCauseMatches.first;
                 setState(() {
                   _initialCauseResolved = true;
                   _selectedCauseIds.add(initialCause.id);
