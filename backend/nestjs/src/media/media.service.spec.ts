@@ -176,7 +176,11 @@ describe('MediaService', () => {
     await expect(service.deleteUserImage('m1', 'u1')).resolves.toEqual({ id: 'm1', deleted: true });
     expect(firebaseStorage.delete).toHaveBeenCalledWith('uploads/m1.webp');
 
-    const query = { count: jest.fn(() => ({ get: jest.fn().mockResolvedValue({ data: () => ({ count: 2 }) })) })) };
+    const query = {
+      count: jest.fn(() => ({
+        get: jest.fn().mockResolvedValue({ data: () => ({ count: 2 }) }),
+      })),
+    };
     firebase.db.collection.mockReturnValue({ where: jest.fn(() => query) });
     firestore.getById.mockResolvedValue(media);
     await expect(service.deleteUserImage('m1', 'u1')).rejects.toThrow(BadRequestException);
