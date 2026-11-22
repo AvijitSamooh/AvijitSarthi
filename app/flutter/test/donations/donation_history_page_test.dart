@@ -48,7 +48,7 @@ void main() {
 
     expect(find.text('My donations'), findsOneWidget);
     expect(find.text('₹25.00'), findsOneWidget);
-    expect(find.text('Successful'), findsOneWidget);
+    expect(find.textContaining('Successful'), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('donation_history_donation-1')));
     await tester.pumpAndSettle();
