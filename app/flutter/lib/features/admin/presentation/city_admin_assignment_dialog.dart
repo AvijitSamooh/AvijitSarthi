@@ -39,6 +39,7 @@ class _CityAdminAssignmentDialogState
     final hasChanges = selectedCityIds.join('|') != initialCityIds.join('|');
 
     return AlertDialog(
+      scrollable: true,
       title: Text(l10n.adminAssignCityAdmin),
       content: SizedBox(
         width: 420,
