@@ -251,6 +251,7 @@ class _DonationPlannerPageState extends ConsumerState<DonationPlannerPage> {
     final causesAsync = ref.watch(causesProvider(languageCode));
     final plan = _savedState.plan;
     final monthlyEstimate = _monthlyEstimatePaise;
+    final validationMessage = _validationMessage(l10n);
 
     return Scaffold(
       appBar: AppBar(
@@ -360,9 +361,9 @@ class _DonationPlannerPageState extends ConsumerState<DonationPlannerPage> {
                         color: _allocationTotal == 100 ? Colors.green.shade700 : Colors.red.shade700,
                       ),
                     ),
-                    if (_validationMessage(l10n) case final message?) ...[
+                    if (validationMessage != null) ...[
                       const SizedBox(height: 8),
-                      Text(message, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error)),
+                      Text(validationMessage, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error)),
                     ],
                     const SizedBox(height: 16),
                     if (plan != null)
