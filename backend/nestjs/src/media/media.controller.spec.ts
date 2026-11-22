@@ -41,8 +41,12 @@ describe('MediaController', () => {
     });
 
     it('propagates storage verification failures', async () => {
+      const previousBaseUrl = process.env.R2_PUBLIC_BASE_URL;
+      process.env.R2_PUBLIC_BASE_URL = 'https://cdn.avijitsarthi.example';
       storageService.verifyConnection.mockRejectedValue(new Error('Storage unavailable'));
       await expect(controller.verifyConnection()).rejects.toThrow('Storage unavailable');
+      if (previousBaseUrl === undefined) delete process.env.R2_PUBLIC_BASE_URL;
+      else process.env.R2_PUBLIC_BASE_URL = previousBaseUrl;
     });
   });
 
