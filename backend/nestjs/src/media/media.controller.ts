@@ -10,6 +10,7 @@ import { AuthService } from '../auth/auth.service';
 import { Request } from 'express';
 import { MediaService } from './media.service';
 import { R2StorageService } from './r2-storage.service';
+import { FirebaseStorageService } from './firebase-storage.service';
 
 @Controller('admin/media')
 @UseGuards(AdminGuard)
@@ -17,6 +18,7 @@ export class MediaController {
   constructor(
     private readonly mediaService: MediaService,
     private readonly storageService: R2StorageService,
+    private readonly privateStorageService: FirebaseStorageService,
   ) {}
 
   @Get('verify')
@@ -25,11 +27,16 @@ export class MediaController {
     if (!publicBaseUrl || !publicBaseUrl.startsWith('https://')) {
       throw new InternalServerErrorException('R2_PUBLIC_BASE_URL must be configured as an HTTPS URL.');
     }
-    await this.storageService.verifyConnection();
+    await Promise.all([
+      this.storageService.verifyConnection(),
+      this.privateStorageService.verifyConnection(),
+    ]);
     return {
       status: 'ok',
       storage: 'cloudflare-r2',
       bucket: process.env.R2_BUCKET_NAME,
+      privateStorage: 'firebase-storage',
+      privateBucket: process.env.FIREBASE_STORAGE_BUCKET,
     };
   }
 
