@@ -24,14 +24,36 @@ void expectLiveRegion(WidgetTester tester, String label) {
   }
 }
 
+Widget _dialogLauncher() => Builder(
+      builder: (context) => Scaffold(
+        body: Center(
+          child: TextButton(
+            onPressed: () {
+              showDialog<void>(
+                context: context,
+                builder: (_) => const CityAdminAssignmentDialog(
+                  userLabel: 'Nikita Manoriya',
+                ),
+              );
+            },
+            child: const Text('Open city assignment'),
+          ),
+        ),
+      ),
+    );
+
 Widget _dialogApp() => MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       locale: const Locale('en'),
-      home: const Scaffold(
-        body: CityAdminAssignmentDialog(userLabel: 'Nikita Manoriya'),
-      ),
+      home: _dialogLauncher(),
     );
+
+Future<void> _openDialog(WidgetTester tester) async {
+  await tester.tap(find.text('Open city assignment'));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 300));
+}
 
 void main() {
   testWidgets('announces city catalogue loading for Super Admin assignment', (tester) async {
@@ -44,6 +66,7 @@ void main() {
         child: _dialogApp(),
       ),
     );
+    await _openDialog(tester);
     await tester.pump();
 
     expectLiveRegion(tester, 'Loading cities for assignment.');
@@ -62,6 +85,7 @@ void main() {
         child: _dialogApp(),
       ),
     );
+    await _openDialog(tester);
     await tester.pumpAndSettle();
 
     expect(find.text('Unable to load cities for assignment.'), findsOneWidget);
@@ -84,6 +108,7 @@ void main() {
         child: _dialogApp(),
       ),
     );
+    await _openDialog(tester);
     await tester.pumpAndSettle();
 
     expect(find.text('No cities are available for assignment.'), findsOneWidget);
@@ -101,6 +126,7 @@ void main() {
         child: _dialogApp(),
       ),
     );
+    await _openDialog(tester);
     await tester.pumpAndSettle();
 
     final semantics = tester.ensureSemantics();
@@ -151,4 +177,63 @@ void main() {
       expect(l10n.adminCityAssignmentNoCities, values['empty']);
     }
   });
+
+  testWidgets('keeps city assignment usable on a compact screen at 200% text scale', (tester) async {
+    tester.view.physicalSize = const Size(320, 480);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          cityCatalogueProvider('en').overrideWith(
+            (ref) async => const [City(id: 'pune', name: 'Pune')],
+          ),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('en'),
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: const TextScaler.linear(2),
+            ),
+            child: child!,
+          ),
+          home: _dialogLauncher(),
+        ),
+      ),
+    );
+    await _openDialog(tester);
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    final cityList = find.byType(ListView);
+    expect(cityList, findsOneWidget);
+    final cityListScrollable = find.descendant(
+      of: cityList,
+      matching: find.byType(Scrollable),
+    );
+    await tester.scrollUntilVisible(
+      find.text('Pune'),
+      100,
+      scrollable: cityListScrollable,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Pune'), findsOneWidget);
+    final cityListRect = tester.getRect(cityList);
+    final cityRect = tester.getRect(find.text('Pune'));
+    expect(cityRect.top, greaterThanOrEqualTo(cityListRect.top));
+    expect(cityRect.bottom, lessThanOrEqualTo(cityListRect.bottom));
+    expect(tester.takeException(), isNull);
+    final saveAction = find.text('Save assignments');
+    expect(saveAction, findsOneWidget);
+    expect(
+      tester.getRect(saveAction).bottom,
+      lessThanOrEqualTo(tester.view.physicalSize.height),
+      reason: 'The save action should remain inside the compact viewport.',
+    );
+  });
+
 }
