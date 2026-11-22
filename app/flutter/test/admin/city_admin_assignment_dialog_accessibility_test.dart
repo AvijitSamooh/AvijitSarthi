@@ -209,10 +209,23 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.byType(ListView), findsOneWidget);
-    expect(find.text('Pune'), findsOneWidget);
-    await tester.drag(find.byType(ListView), const Offset(0, -200));
+    final cityList = find.byType(ListView);
+    expect(cityList, findsOneWidget);
+    final cityListScrollable = find.descendant(
+      of: cityList,
+      matching: find.byType(Scrollable),
+    );
+    await tester.scrollUntilVisible(
+      find.text('Pune'),
+      100,
+      scrollable: cityListScrollable,
+    );
     await tester.pumpAndSettle();
+    expect(find.text('Pune'), findsOneWidget);
+    final cityListRect = tester.getRect(cityList);
+    final cityRect = tester.getRect(find.text('Pune'));
+    expect(cityRect.top, greaterThanOrEqualTo(cityListRect.top));
+    expect(cityRect.bottom, lessThanOrEqualTo(cityListRect.bottom));
     expect(tester.takeException(), isNull);
     final saveAction = find.text('Save assignments');
     expect(saveAction, findsOneWidget);
