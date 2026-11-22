@@ -146,16 +146,6 @@ class ApiClient {
     return (jsonDecode(response.body) as List<dynamic>).cast<Map<String, dynamic>>();
   }
 
-  Future<Map<String, dynamic>> createDonation(Map<String, dynamic> payload) async {
-    final response = await _client.post(
-      Uri.parse('$baseUrl/donations'),
-      headers: const {'Content-Type': 'application/json'},
-      body: jsonEncode(payload),
-    );
-    _ensureSuccess(response, 'Creating donation');
-    return jsonDecode(response.body) as Map<String, dynamic>;
-  }
-
   Future<Map<String, dynamic>> uploadAdminImage(String path) async {
     final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/admin/media/upload'))
       ..headers.addAll(await _headers())
