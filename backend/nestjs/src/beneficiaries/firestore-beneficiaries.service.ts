@@ -1,10 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { FirebaseService } from '../firebase/firebase.service';
+import { MediaService } from '../media/media.service';
 
 interface MediaDocument {
   id: string;
   storageKey: string;
+  storageProvider?: 'R2' | 'FIREBASE_STORAGE';
   mimeType: string;
   width: number | null;
   height: number | null;
@@ -38,7 +40,10 @@ interface BeneficiaryDocument {
 
 @Injectable()
 export class FirestoreBeneficiariesService {
-  constructor(private readonly firebase: FirebaseService) {}
+  constructor(
+    private readonly firebase: FirebaseService,
+    private readonly mediaService: MediaService,
+  ) {}
 
   async syncBeneficiary(document: {
     id: string;
@@ -134,12 +139,14 @@ export class FirestoreBeneficiariesService {
     const organisationById = new Map(organisations.map((item) => [item.id, item]));
     const mediaById = new Map(media.map((item) => [item.id, item]));
 
-    return items.map((item) => {
+    return Promise.all(items.map(async (item) => {
       const relations = (item.media ?? [])
         .map((relation) => ({ ...relation, media: mediaById.get(relation.mediaId) }))
         .filter((relation) => relation.media);
-      const profile = this.primaryMedia(relations, 'PROFILE');
-      const gallery = this.galleryMedia(relations, 'GALLERY');
+      const [profile, gallery] = await Promise.all([
+        this.primaryMedia(relations, 'PROFILE'),
+        this.galleryMedia(relations, 'GALLERY'),
+      ]);
 
       return {
         id: item.id,
@@ -153,7 +160,7 @@ export class FirestoreBeneficiariesService {
         cause: this.related(causeById.get(item.causeId)),
         organisation: item.organisationId ? this.related(organisationById.get(item.organisationId)) : null,
       };
-    });
+    }));
   }
 
   private related(item?: RelatedDocument) {
@@ -197,11 +204,10 @@ export class FirestoreBeneficiariesService {
   }
 
   private mediaUrl(media: MediaDocument) {
-    const base = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '');
-    return base ? `${base}/${media.storageKey}` : media.storageKey;
+    return this.mediaService.getReadUrl(media);
   }
 
-  private primaryMedia(relations: Array<{ purpose: string; isPrimary: boolean; media?: MediaDocument }>, purpose: string) {
+  private async primaryMedia(relations: Array<{ purpose: string; isPrimary: boolean; media?: MediaDocument }>, purpose: string) {
     const relation = relations.find((item) => item.purpose === purpose && item.isPrimary)
       ?? relations.find((item) => item.purpose === purpose);
     if (!relation?.media) return null;
@@ -214,16 +220,16 @@ export class FirestoreBeneficiariesService {
     };
   }
 
-  private galleryMedia(relations: Array<{ purpose: string; displayOrder: number; media?: MediaDocument }>, purpose: string) {
-    return relations
+  private async galleryMedia(relations: Array<{ purpose: string; displayOrder: number; media?: MediaDocument }>, purpose: string) {
+    return Promise.all(relations
       .filter((item) => item.purpose === purpose && item.media)
       .sort((a, b) => a.displayOrder - b.displayOrder)
-      .map((item) => ({
+      .map(async (item) => ({
         id: item.media!.id,
-        url: this.mediaUrl(item.media!),
+        url: await this.mediaUrl(item.media!),
         mimeType: item.media!.mimeType,
         width: item.media!.width,
         height: item.media!.height,
-      }));
+      })));
   }
 }
