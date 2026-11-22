@@ -75,7 +75,7 @@ class _DonationPlannerPageState extends ConsumerState<DonationPlannerPage> {
 
   void _restorePlan(DonationPlan? plan) {
     if (plan == null) return;
-    _amountController.text = (plan.amountPaise / 100).toStringAsFixed(2);
+    _amountController.text = formatRupees(plan.amountPaise).replaceFirst('₹', '');
     _frequency = plan.frequency;
     _customDaysController.text = plan.customIntervalDays.toString();
     _selectedCauseIds
