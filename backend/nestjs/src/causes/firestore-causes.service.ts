@@ -133,6 +133,14 @@ export class FirestoreCausesService {
     if (parent.parentId) {
       throw new BadRequestException('Only top-level causes can contain child causes.');
     }
+    const assignedBeneficiaries = await this.firebase.db
+      .collection('beneficiaries')
+      .where('causeId', '==', parentId)
+      .limit(1)
+      .get();
+    if (!assignedBeneficiaries.empty) {
+      throw new BadRequestException('Move existing beneficiaries to a leaf cause before adding child causes.');
+    }
   }
 
   private adminResponse(cause:CauseDocument,byId:Map<string,CauseDocument>){return {...cause,hasChildren:(cause.childIds??[]).length>0,translations:Object.entries(cause.translations??{}).map(([language,t])=>({language,text:t.name??'',name:t.name??'',description:t.description??null})),parent:cause.parentId?{id:cause.parentId,slug:byId.get(cause.parentId)?.slug??null}:null,children:(cause.childIds??[]).map(id=>byId.get(id)).filter(Boolean).sort((a:any,b:any)=>a.displayOrder-b.displayOrder).map((x:any)=>this.adminResponse(x,byId))};}
