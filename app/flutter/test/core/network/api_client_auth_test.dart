@@ -190,8 +190,8 @@ void main() {
       authTokenProvider: () async => 'donor-token',
     );
 
-    await expect(api.getMyDonations(), completion(isEmpty));
-    await expect(api.getMyDonation('donation-1'), completion(containsPair('id', 'donation-1')));
+    expect(await api.getMyDonations(), isEmpty);
+    expect(await api.getMyDonation('donation-1'), containsPair('id', 'donation-1'));
     final receipt = await api.issueMyDonationReceipt('donation-1', languageCode: 'hi');
     expect(receipt['language'], 'hi');
     expect(calls, 3);
