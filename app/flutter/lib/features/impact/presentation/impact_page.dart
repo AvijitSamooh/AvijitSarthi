@@ -12,22 +12,18 @@ Widget beneficiaryImage(
   required String semanticLabel,
   double iconSize = 64,
 }) {
-  final image = photoUrl != null && photoUrl.trim().isNotEmpty
-      ? Image.network(
-          photoUrl,
-          fit: BoxFit.cover,
-          semanticLabel: semanticLabel,
-          errorBuilder: (_, _, _) => Semantics(
-            label: semanticLabel,
-            image: true,
-            child: _beneficiaryPlaceholder(iconSize),
-          ),
-        )
-      : Semantics(
-          label: semanticLabel,
-          image: true,
-          child: _beneficiaryPlaceholder(iconSize),
-        );
+  final image = Semantics(
+    label: semanticLabel,
+    image: true,
+    child: photoUrl != null && photoUrl.trim().isNotEmpty
+        ? Image.network(
+            photoUrl,
+            fit: BoxFit.cover,
+            excludeFromSemantics: true,
+            errorBuilder: (_, _, _) => _beneficiaryPlaceholder(iconSize),
+          )
+        : _beneficiaryPlaceholder(iconSize),
+  );
 
   return ClipRRect(
     borderRadius: borderRadius,
@@ -38,7 +34,6 @@ Widget beneficiaryImage(
     ),
   );
 }
-
 Widget _beneficiaryPlaceholder(double iconSize) => Builder(
   builder: (context) => Container(
     color: Theme.of(context).colorScheme.surfaceContainerHighest,
