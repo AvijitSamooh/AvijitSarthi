@@ -76,7 +76,7 @@ Each administrator has one vote per application and can update that vote. The ad
 
 ## Media
 
-Authenticated users can upload JPEG, PNG and WebP evidence through the private Firebase Storage media path. R2 is reserved for public admin-managed content images. Uploads are validated from image bytes rather than trusting the multipart MIME type. Uploaded media is linked to the application through explicit foreign-key relations.
+Authenticated users can upload JPEG, PNG and WebP evidence through the private Firebase Storage media path. R2 is reserved for public admin-managed content images. Uploads are validated from image bytes rather than trusting the multipart MIME type. Uploaded media is linked through Firestore `mediaId` references in the application document; face and certificate photo IDs are stored in their dedicated fields.
 
 The upload and submission steps are intentionally separate so storage failures do not create a partially persisted application record. Before private Firebase Storage upload, every accepted image is auto-rotated, resized to at most 1600px on either axis, converted to WebP, and progressively re-encoded when the processed object exceeds 1.5 MB. The original camera file is never stored. An application cannot be submitted without at least one evidence image.
 
