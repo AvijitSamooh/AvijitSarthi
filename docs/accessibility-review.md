@@ -9,6 +9,9 @@ This review tracks accessible interaction and content descriptions in Avijit Sar
 - Organisation logos are excluded from the accessibility tree where the organisation name is already announced as adjacent text, avoiding duplicate announcements.
 - Widget tests assert the image semantics and verify all four localized descriptions.
 
+- Public city-discovery loading, empty and error states expose localized live-region announcements; retry remains a separate, actionable control.
+- Widget tests verify loading, empty and error announcements plus all four loading-message translations.
+
 ## Remaining manual review
 
 - Verify screen-reader focus order and action announcements across Home, Causes, Applications, Impact, City Discovery and Admin flows with TalkBack and VoiceOver.
