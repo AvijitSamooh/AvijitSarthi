@@ -130,10 +130,11 @@ void main() {
     WidgetTester tester, {
     List<Cause> causes = const [_cause],
     List<Override> overrides = const [],
+    String? initialCauseId = 'cause-1',
   }) async {
     await pumpApp(
       tester,
-      home: const DonationPage(initialCauseId: 'cause-1'),
+      home: DonationPage(initialCauseId: initialCauseId),
       overrides: [
         causesProvider('en').overrideWith((ref) async => causes),
         ...overrides,
@@ -1185,7 +1186,7 @@ void main() {
     expect(find.byKey(const ValueKey('cause_support_education')), findsNothing);
     expect(find.byKey(const ValueKey('cause_apply_EDUCATION_ASSISTANCE')), findsNothing);
 
-    await tester.tap(find.byKey(const ValueKey('cause_child_card_education-assistance')));
+    await tapVisible(tester, find.text('Education Assistance').last);
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('cause_apply_EDUCATION_ASSISTANCE')), findsOneWidget);
 
@@ -1351,12 +1352,10 @@ void main() {
       hasChildren: true,
       children: [educationAssistance, pratibhaSamman],
     );
-    await pumpApp(
+    await pumpDonationPage(
       tester,
-      home: const DonationPage(initialCauseId: 'education'),
-      overrides: [
-        causesProvider('en').overrideWith((ref) async => [education]),
-      ],
+      causes: [education],
+      initialCauseId: 'education',
     );
 
     expect(find.byKey(const ValueKey('donation_cause_education')), findsNothing);
