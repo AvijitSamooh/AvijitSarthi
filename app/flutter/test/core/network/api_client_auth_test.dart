@@ -167,7 +167,7 @@ void main() {
     api.dispose();
   });
 
-  test('tracks every in-flight backend request and clears after completion', () async {
+  test('tracks in-flight mutations and clears after completion', () async {
     final completer = Completer<http.Response>();
     final client = MockClient((request) {
       expect(request.method, 'POST');
