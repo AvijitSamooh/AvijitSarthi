@@ -13,16 +13,16 @@ describe('MediaController', () => {
 
   describe('verifyConnection', () => {
     it('verifies Firebase Storage connectivity', async () => {
-      const previousBucket = process.env.FIREBASE_STORAGE_BUCKET;
-      process.env.FIREBASE_STORAGE_BUCKET = 'avijit-sahyog.firebasestorage.app';
+      const previousBucket = process.env.R2_BUCKET_NAME;
+      process.env.R2_BUCKET_NAME = 'avijit-sahyog-public';
       await expect(controller.verifyConnection()).resolves.toEqual({
         status: 'ok',
-        storage: 'firebase-storage',
-        bucket: 'avijit-sahyog.firebasestorage.app',
+        storage: 'cloudflare-r2',
+        bucket: 'avijit-sahyog-public',
       });
       expect(storageService.verifyConnection).toHaveBeenCalledTimes(1);
-      if (previousBucket === undefined) delete process.env.FIREBASE_STORAGE_BUCKET;
-      else process.env.FIREBASE_STORAGE_BUCKET = previousBucket;
+      if (previousBucket === undefined) delete process.env.R2_BUCKET_NAME;
+      else process.env.R2_BUCKET_NAME = previousBucket;
     });
 
     it('propagates storage verification failures', async () => {
