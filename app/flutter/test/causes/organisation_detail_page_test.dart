@@ -51,17 +51,20 @@ void main() {
 
   testWidgets('provides meaningful semantics for organisation gallery images', (tester) async {
     final semantics = tester.ensureSemantics();
-    addTearDown(semantics.dispose);
-    await pumpSubject(tester);
+    try {
+      await pumpSubject(tester);
 
-    expect(
-      find.bySemanticsLabel("Photo 1 in Seva Trust's gallery"),
-      findsOneWidget,
-    );
-    expect(
-      find.bySemanticsLabel("Photo 2 in Seva Trust's gallery"),
-      findsOneWidget,
-    );
+      expect(
+        find.bySemanticsLabel("Photo 1 in Seva Trust's gallery"),
+        findsOneWidget,
+      );
+      expect(
+        find.bySemanticsLabel("Photo 2 in Seva Trust's gallery"),
+        findsOneWidget,
+      );
+    } finally {
+      semantics.dispose();
+    }
   });
 
   testWidgets('opens the selected gallery image in the full-screen viewer', (tester) async {
