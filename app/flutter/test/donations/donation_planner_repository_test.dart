@@ -133,5 +133,6 @@ void main() {
     expect(parseRupeesToPaise('10.999'), isNull);
     expect(parseRupeesToPaise('12,34'), isNull);
     expect(parseRupeesToPaise('-5'), isNull);
+    expect(formatRupees(9007199254740991), '₹90071992547409.91');
   });
 }
