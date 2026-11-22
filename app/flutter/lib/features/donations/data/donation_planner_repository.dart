@@ -111,7 +111,7 @@ class SharedPreferencesDonationPlannerRepository implements DonationPlannerRepos
       throw ArgumentError.value(customIntervalDays, 'customIntervalDays');
     }
     if (allocations.isEmpty ||
-        allocations.any((item) => item.causeId.trim().isEmpty || item.percentage < 0 || item.percentage > 100) ||
+        allocations.any((item) => item.causeId.trim().isEmpty || item.percentage <= 0 || item.percentage > 100) ||
         allocations.fold<int>(0, (sum, item) => sum + item.percentage) != 100 ||
         allocations.map((item) => item.causeId).toSet().length != allocations.length) {
       throw ArgumentError.value(allocations, 'allocations', 'Cause allocations must be unique and total 100%.');
