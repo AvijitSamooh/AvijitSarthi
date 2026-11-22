@@ -1360,9 +1360,21 @@ void main() {
 
     expect(find.byKey(const ValueKey('donation_cause_education')), findsNothing);
     final leaf = find.byKey(const ValueKey('donation_cause_education-assistance'));
+    await tester.scrollUntilVisible(
+      leaf,
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(leaf, findsOneWidget);
     expect(tester.widget<CheckboxListTile>(leaf).value, isFalse);
-    expect(tester.widget<FilledButton>(find.byKey(const ValueKey('donation_submit'))).onPressed, isNull);
+
+    final submit = find.byKey(const ValueKey('donation_submit'));
+    await tester.scrollUntilVisible(
+      submit,
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
   });
 
   testWidgets('donation defaults a single selected cause to 100 percent', (tester) async {
