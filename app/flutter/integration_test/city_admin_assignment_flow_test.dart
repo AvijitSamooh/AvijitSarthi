@@ -131,7 +131,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final saveButton = find.descendant(
-      of: find.byType(AlertDialog).last,
+      of: find.byType(Dialog).last,
       matching: find.byType(FilledButton),
     );
     await tester.tap(saveButton);
