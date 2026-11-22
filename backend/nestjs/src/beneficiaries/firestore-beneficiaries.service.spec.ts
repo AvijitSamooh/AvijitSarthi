@@ -116,11 +116,16 @@ describe('FirestoreBeneficiariesService', () => {
     expect(ref.set).not.toHaveBeenCalled();
   });
 
-  it('rejects changing a beneficiary to a parent cause', async () => {
-    const { d } = db({ id: 'c1', slug: 'education', isActive: true, childIds: ['child-1'] });
+  it('rejects changing or reactivating a beneficiary with a parent cause', async () => {
+    const { d, ref } = db({ id: 'c1', slug: 'education', isActive: true, childIds: ['child-1'] });
     const service = new FirestoreBeneficiariesService({ db: d } as any, mediaService as any);
     await expect(service.update('b1', { causeId: 'c1' }))
       .rejects.toThrow('leaf cause');
+    await expect(service.update('b1', { story: 'updated story' }))
+      .rejects.toThrow('leaf cause');
+    await expect(service.setActive('b1', true))
+      .rejects.toThrow('leaf cause');
+    expect(ref.update).not.toHaveBeenCalled();
   });
 
   it('covers sorting and provider-aware media helpers', async () => {
