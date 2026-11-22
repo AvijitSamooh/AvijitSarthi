@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -208,7 +209,11 @@ void main() {
     await _openDialog(tester);
     await tester.pumpAndSettle();
 
-    expect(tester.takeException(), isNull);
+    final layoutException = tester.takeException();
+    if (layoutException != null) {
+      debugDumpRenderTree();
+    }
+    expect(layoutException, isNull);
     expect(find.text('Pune'), findsOneWidget);
     final saveAction = find.text('Save assignments');
     expect(saveAction, findsOneWidget);
