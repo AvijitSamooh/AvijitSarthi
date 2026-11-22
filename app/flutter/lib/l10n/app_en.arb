@@ -698,5 +698,8 @@
   "donationStatusSuccessful": "Successful",
   "donationStatusPending": "Pending",
   "donationStatusFailed": "Failed",
-  "donationStatusCancelled": "Cancelled"
+  "donationStatusCancelled": "Cancelled",
+  "causeChildrenTitle": "Specific causes",
+  "causeChooseChild": "Choose a specific cause below to support this area.",
+  "causeNoActiveChildren": "No active causes are available here right now."
 }
