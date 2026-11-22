@@ -146,6 +146,37 @@ class ApiClient {
     return (jsonDecode(response.body) as List<dynamic>).cast<Map<String, dynamic>>();
   }
 
+  Future<List<Map<String, dynamic>>> getMyDonations() async {
+    final response = await _client.get(
+      Uri.parse('$baseUrl/donations/mine'),
+      headers: await _headers(),
+    );
+    _ensureSuccess(response, 'Loading donation history');
+    return (jsonDecode(response.body) as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> getMyDonation(String id) async {
+    final response = await _client.get(
+      Uri.parse('$baseUrl/donations/mine/${Uri.encodeComponent(id)}'),
+      headers: await _headers(),
+    );
+    _ensureSuccess(response, 'Loading donation');
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> issueMyDonationReceipt(
+    String id, {
+    required String languageCode,
+  }) async {
+    final response = await _client.post(
+      Uri.parse('$baseUrl/donations/mine/${Uri.encodeComponent(id)}/receipt'),
+      headers: await _headers(json: true),
+      body: jsonEncode({'language': languageCode}),
+    );
+    _ensureSuccess(response, 'Creating donation receipt');
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> uploadAdminImage(String path) async {
     final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/admin/media/upload'))
       ..headers.addAll(await _headers())
