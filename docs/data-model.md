@@ -36,6 +36,11 @@ Represents a donation bucket/cause.
 - `slug` — stable API-friendly identifier
 - `isActive` — public availability
 - `displayOrder` — UI ordering
+- `parentId` — optional reference to a top-level parent cause
+- `childIds` — child-cause IDs maintained by the backend
+- `hasChildren` — API response flag that preserves parent state even when all children are inactive
+
+Cause hierarchy is limited to one parent/child level. Public discovery returns active roots and their active children; a parent with no active children is omitted from the list but remains identifiable as a parent on direct lookup. Donation allocations and Beneficiary records must reference an active leaf cause. The backend enforces this invariant and prevents a cause already assigned to a beneficiary from being converted into a parent.
 
 Names and descriptions are stored in the Firestore document's `translations` map, keyed by language code.
 
