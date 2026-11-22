@@ -22,15 +22,13 @@ class _DonationPageState extends ConsumerState<DonationPage> {
   final Map<String, int> _allocationPercentages = {};
   final Map<String, TextEditingController> _percentageControllers = {};
   int? _selectedAmount;
+  bool _initialCauseResolved = false;
   static const _amounts = [100, 500, 1000, 2000];
 
   @override
   void initState() {
     super.initState();
-    if (widget.initialCauseId != null) {
-      _selectedCauseIds.add(widget.initialCauseId!);
-      _allocationPercentages[widget.initialCauseId!] = 100;
-    }
+    _initialCauseResolved = widget.initialCauseId == null;
   }
 
   @override
@@ -127,6 +125,21 @@ class _DonationPageState extends ConsumerState<DonationPage> {
           error: (_, _) => Text(l10n.causesLoadError),
           data: (causes) {
             final selectableCauses = causes.expand((cause) => cause.leafCauses).toList(growable: false);
+            if (!_initialCauseResolved) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted || _initialCauseResolved) return;
+                final initialCause = selectableCauses.where((cause) => cause.id == widget.initialCauseId).firstOrNull;
+                if (initialCause == null) {
+                  _initialCauseResolved = true;
+                  return;
+                }
+                setState(() {
+                  _initialCauseResolved = true;
+                  _selectedCauseIds.add(initialCause.id);
+                  _allocationPercentages[initialCause.id] = 100;
+                });
+              });
+            }
             return Column(children: selectableCauses.map((cause) {
             final selected = _selectedCauseIds.contains(cause.id);
             final percentage = _allocationPercentages[cause.id] ?? 0;
