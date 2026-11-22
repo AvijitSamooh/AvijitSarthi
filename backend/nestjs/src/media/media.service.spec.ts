@@ -27,9 +27,11 @@ describe('MediaService', () => {
     firebase = {
       db: {
         collection: jest.fn((name: string) => ({
-          get: jest.fn().mockResolvedValue({
-            docs: (referenceDocs[name] ?? []).map((data) => ({ data: () => data })),
-          }),
+          select: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({
+              docs: (referenceDocs[name] ?? []).map((data) => ({ data: () => data })),
+            }),
+          })),
         })),
       },
     };
