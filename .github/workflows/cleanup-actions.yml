@@ -146,6 +146,17 @@ jobs:
             fi
           done
 
+          # Keep diagnostics and coverage artifacts for retained runs, while the
+          # five-artifact cap continues to apply specifically to release AABs.
+          for artifact in "${ARTIFACTS[@]}"; do
+            IFS=$'\t' read -r artifact_id artifact_run_id artifact_name artifact_expired artifact_created_at <<< "$artifact"
+            [[ "$artifact_expired" == "true" ]] && continue
+            [[ "$artifact_name" == "${ANDROID_ARTIFACT_PREFIX}"* ]] && continue
+            if [[ -n "${KEEP_RUN[$artifact_run_id]:-}" ]]; then
+              KEEP_ARTIFACT["$artifact_id"]=1
+            fi
+          done
+
           for retained_run_id in "${!KEEP_RUN[@]}"; do
             if [[ -z "${KNOWN_RUN[$retained_run_id]:-}" ]]; then
               echo "ERROR: Protected run ${retained_run_id} is missing from the run snapshot. NOTHING WILL BE DELETED."
