@@ -44,17 +44,17 @@ void main() {
 
     await tester.enterText(find.byKey(const ValueKey('donation_plan_amount')), '5');
     await tester.pump();
-    await tester.scrollUntilVisible(find.byKey(const ValueKey('donation_plan_save')), 300);
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('donation_plan_save')), 300, scrollable: find.byType(Scrollable).first);
     await tester.tap(find.byKey(const ValueKey('donation_plan_save')));
     await tester.pumpAndSettle();
 
     expect(find.text('Your giving plan is saved on this device.'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('Estimated monthly giving'), -300);
+    await tester.scrollUntilVisible(find.text('Estimated monthly giving'), -300, scrollable: find.byType(Scrollable).first);
     expect(find.text('Estimated monthly giving'), findsOneWidget);
     expect(find.text('₹150.00'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('Plan created'), 300);
+    await tester.scrollUntilVisible(find.text('Plan created'), 300, scrollable: find.byType(Scrollable).first);
     expect(find.text('Plan created'), findsOneWidget);
-    await tester.scrollUntilVisible(find.byKey(const ValueKey('donation_plan_active')), -300);
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('donation_plan_active')), -300, scrollable: find.byType(Scrollable).first);
     expect(find.byKey(const ValueKey('donation_plan_active')), findsOneWidget);
   });
 
@@ -87,11 +87,11 @@ void main() {
     await tester.enterText(find.byKey(const ValueKey('donation_plan_custom_days')), '10');
     await tester.pump();
     expect(find.text('₹30.00'), findsOneWidget);
-    await tester.scrollUntilVisible(find.byKey(const ValueKey('donation_plan_save')), 300);
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('donation_plan_save')), 300, scrollable: find.byType(Scrollable).first);
     await tester.tap(find.byKey(const ValueKey('donation_plan_save')));
     await tester.pumpAndSettle();
 
-    await tester.scrollUntilVisible(find.byKey(const ValueKey('donation_plan_active')), -300);
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('donation_plan_active')), -300, scrollable: find.byType(Scrollable).first);
     final activeSwitch = find.descendant(
       of: find.byKey(const ValueKey('donation_plan_active')),
       matching: find.byType(Switch),
