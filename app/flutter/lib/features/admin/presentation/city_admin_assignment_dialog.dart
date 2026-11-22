@@ -27,7 +27,7 @@ class _CityAdminAssignmentDialogState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final dialogHeight =
-        (MediaQuery.sizeOf(context).height * 0.30).clamp(120.0, 420.0).toDouble();
+        (MediaQuery.sizeOf(context).height * 0.33).clamp(120.0, 420.0).toDouble();
     final languageCode = Localizations.localeOf(context).languageCode;
     final cities = ref.watch(cityCatalogueProvider(languageCode));
     final availableCityIds = cities.maybeWhen(
@@ -39,75 +39,78 @@ class _CityAdminAssignmentDialogState
     final hasChanges = selectedCityIds.join('|') != initialCityIds.join('|');
 
     return AlertDialog(
-      scrollable: true,
       title: Text(l10n.adminAssignCityAdmin),
       content: SizedBox(
         width: 420,
         height: dialogHeight,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
+          padding: EdgeInsets.zero,
           children: [
             Text(l10n.adminCityAssignmentFor(widget.userLabel)),
             const SizedBox(height: 8),
-            Expanded(
-              child: cities.when(
-                loading: () => Center(
+            cities.when(
+              loading: () => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Center(
                   child: Semantics(
                     container: true,
                     liveRegion: true,
                     label: l10n.adminCityAssignmentLoadingCities,
-                    child: const ExcludeSemantics(child: CircularProgressIndicator()),
+                    child: const ExcludeSemantics(
+                      child: CircularProgressIndicator(),
+                    ),
                   ),
                 ),
-                error: (_, _) => Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Semantics(
+              ),
+              error: (_, _) => Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Semantics(
+                    container: true,
+                    liveRegion: true,
+                    label: l10n.adminCityAssignmentLoadError,
+                    child: ExcludeSemantics(
+                      child: Text(l10n.adminCityAssignmentLoadError),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () =>
+                        ref.invalidate(cityCatalogueProvider(languageCode)),
+                    child: Text(l10n.retry),
+                  ),
+                ],
+              ),
+              data: (items) => items.isEmpty
+                  ? Center(
+                      child: Semantics(
                         container: true,
                         liveRegion: true,
-                        label: l10n.adminCityAssignmentLoadError,
+                        label: l10n.adminCityAssignmentNoCities,
                         child: ExcludeSemantics(
-                          child: Text(l10n.adminCityAssignmentLoadError),
+                          child: Text(l10n.adminCityAssignmentNoCities),
                         ),
                       ),
-                      TextButton(
-                        onPressed: () => ref.invalidate(cityCatalogueProvider(languageCode)),
-                        child: Text(l10n.retry),
-                      ),
-                    ],
-                  ),
-                ),
-                data: (items) => items.isEmpty
-                    ? Center(
-                        child: Semantics(
-                          container: true,
-                          liveRegion: true,
-                          label: l10n.adminCityAssignmentNoCities,
-                          child: ExcludeSemantics(
-                            child: Text(l10n.adminCityAssignmentNoCities),
+                    )
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (final city in items)
+                          CheckboxListTile(
+                            key: ValueKey('city_assignment_${city.id}'),
+                            value: _selectedCityIds.contains(city.id),
+                            title: Text(city.name),
+                            controlAffinity: ListTileControlAffinity.leading,
+                            onChanged: (selected) => setState(() {
+                              if (selected == true) {
+                                _selectedCityIds.add(city.id);
+                              } else {
+                                _selectedCityIds.remove(city.id);
+                              }
+                            }),
                           ),
-                        ),
-                      )
-                    : ListView(
-                        children: [
-                          for (final city in items)
-                            CheckboxListTile(
-                              key: ValueKey('city_assignment_${city.id}'),
-                              value: _selectedCityIds.contains(city.id),
-                              title: Text(city.name),
-                              controlAffinity: ListTileControlAffinity.leading,
-                              onChanged: (selected) => setState(() {
-                                if (selected == true) {
-                                  _selectedCityIds.add(city.id);
-                                } else {
-                                  _selectedCityIds.remove(city.id);
-                                }
-                              }),
-                            ),
-                        ],
-                      ),
-              ),
+                      ],
+                    ),
             ),
           ],
         ),
