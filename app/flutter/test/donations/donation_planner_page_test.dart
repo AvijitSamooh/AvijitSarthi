@@ -58,6 +58,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authProvider.overrideWith((ref) => AuthController(_GuestAuthRepository())),
           causesProvider('en').overrideWith(
             (ref) async => const [
               Cause(id: 'jeev-daya', slug: 'jeev-daya', name: 'Jeev Daya'),
