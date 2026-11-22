@@ -131,6 +131,34 @@ jobs:
             exit 1
           fi
 
+      - name: Verify Render service belongs to this repository
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ vars.RENDER_SERVICE_ID }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if ! SERVICE_JSON=$(curl --fail-with-body --silent --show-error \\
+            --url "https://api.render.com/v1/services/$RENDER_SERVICE_ID" \\
+            --header "Authorization: Bearer $RENDER_API_KEY" \\
+            --header "Accept: application/json"); then
+            echo "::error::Render service $RENDER_SERVICE_ID could not be found or accessed. Set RENDER_SERVICE_ID to the Avijit Sarthi web service before deploying. No deployment was requested."
+            exit 1
+          fi
+          SERVICE_REPO=$(jq -r '.repo // empty' <<< "$SERVICE_JSON" | sed -E 's#\\.git$##; s#/$##' | tr '[:upper:]' '[:lower:]')
+          EXPECTED_REPO=$(printf 'https://github.com/%s' "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')
+          SERVICE_BRANCH=$(jq -r '.branch // empty' <<< "$SERVICE_JSON")
+          SERVICE_TYPE=$(jq -r '.type // empty' <<< "$SERVICE_JSON")
+          if [ "$SERVICE_REPO" != "$EXPECTED_REPO" ]; then
+            echo "::error::Render service $RENDER_SERVICE_ID is connected to an unexpected repository. Expected $EXPECTED_REPO; no deployment was requested."
+            exit 1
+          fi
+          if [ "$SERVICE_BRANCH" != "master" ] || [ "$SERVICE_TYPE" != "web_service" ]; then
+            echo "::error::Render service $RENDER_SERVICE_ID must be a master-branch web service (found branch: ${SERVICE_BRANCH:-missing}, type: ${SERVICE_TYPE:-missing}). No deployment was requested."
+            exit 1
+          fi
+          echo "Render service target verified for $GITHUB_REPOSITORY on master."
+
       - name: Request Render deployment
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
