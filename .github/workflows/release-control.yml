@@ -138,14 +138,11 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           set -euo pipefail
-          if ! SERVICE_JSON=$(curl --fail-with-body --silent --show-error \\
-            --url "https://api.render.com/v1/services/$RENDER_SERVICE_ID" \\
-            --header "Authorization: Bearer $RENDER_API_KEY" \\
-            --header "Accept: application/json"); then
+          if ! SERVICE_JSON=$(curl --fail-with-body --silent --show-error --url "https://api.render.com/v1/services/$RENDER_SERVICE_ID" --header "Authorization: Bearer $RENDER_API_KEY" --header "Accept: application/json"); then
             echo "::error::Render service $RENDER_SERVICE_ID could not be found or accessed. Set RENDER_SERVICE_ID to the Avijit Sarthi web service before deploying. No deployment was requested."
             exit 1
           fi
-          SERVICE_REPO=$(jq -r '.repo // empty' <<< "$SERVICE_JSON" | sed -E 's#\\.git$##; s#/$##' | tr '[:upper:]' '[:lower:]')
+          SERVICE_REPO=$(jq -r '.repo // empty' <<< "$SERVICE_JSON" | sed -E 's#\.git$##; s#/$##' | tr '[:upper:]' '[:lower:]')
           EXPECTED_REPO=$(printf 'https://github.com/%s' "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')
           SERVICE_BRANCH=$(jq -r '.branch // empty' <<< "$SERVICE_JSON")
           SERVICE_TYPE=$(jq -r '.type // empty' <<< "$SERVICE_JSON")
