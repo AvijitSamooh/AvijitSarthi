@@ -241,8 +241,8 @@ export class FirestoreDonationsService {
     return `AS-${createdAt.getUTCFullYear()}-${suffix}`;
   }
 
-  private receiptLanguage(language?: string) {
-    const normalized = language?.trim().toLowerCase();
+  private receiptLanguage(language?: unknown) {
+    const normalized = typeof language === 'string' ? language.trim().toLowerCase() : undefined;
     return normalized && RECEIPT_LANGUAGES.has(normalized) ? normalized : 'en';
   }
 
