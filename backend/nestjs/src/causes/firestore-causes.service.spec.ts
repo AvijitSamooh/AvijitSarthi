@@ -72,6 +72,53 @@ describe('FirestoreCausesService',()=>{
     })).rejects.toThrow('Move existing beneficiaries to a leaf cause');
   });
 
+  it('prevents deactivating a cause while beneficiaries still reference it', async () => {
+    const causes = firebase.db.collection('causes');
+    const beneficiaries = firebase.db.collection('beneficiaries');
+    const current = cause({ id: 'education-assistance', parentId: 'education' });
+    const ref: any = {
+      id: current.id,
+      get: jest.fn().mockResolvedValue({ exists: true, data: () => current }),
+      set: jest.fn(),
+      update: jest.fn(),
+    };
+    causes.doc.mockReturnValue(ref);
+    beneficiaries.get.mockResolvedValue({
+      empty: false,
+      docs: [{ id: 'b1', data: () => ({ id: 'b1', isActive: true }) }],
+    });
+
+    await expect(service.setActive(current.id, false))
+      .rejects.toThrow('Reassign or remove beneficiaries');
+    expect(ref.update).not.toHaveBeenCalled();
+
+    jest.spyOn(service, 'findOneForAdmin').mockResolvedValue(current);
+    await expect(service.update(current.id, { isActive: false }))
+      .rejects.toThrow('Reassign or remove beneficiaries');
+  });
+
+  it('prevents deactivating a parent while any child cause remains active', async () => {
+    const causes = firebase.db.collection('causes');
+    const beneficiaries = firebase.db.collection('beneficiaries');
+    const parent = cause({ id: 'education', childIds: ['education-assistance'] });
+    const ref: any = {
+      id: parent.id,
+      get: jest.fn().mockResolvedValue({ exists: true, data: () => parent }),
+      update: jest.fn(),
+    };
+    causes.doc.mockReturnValue(ref);
+    beneficiaries.get.mockResolvedValue({ empty: true, docs: [] });
+    firebase.db.getAll.mockResolvedValue([{
+      id: 'education-assistance',
+      exists: true,
+      data: () => cause({ id: 'education-assistance', parentId: 'education' }),
+    }]);
+
+    await expect(service.setActive(parent.id, false))
+      .rejects.toThrow('Deactivate active child causes');
+    expect(ref.update).not.toHaveBeenCalled();
+  });
+
   it('covers updates, parent relations and conflicts',async()=>{
     const causes=firebase.db.collection('causes'); const ref:any={id:'c1',get:jest.fn().mockResolvedValue({exists:true,data:()=>cause({parentId:'old'})}),set:jest.fn(),update:jest.fn()};
     causes.doc.mockImplementation((id:string)=> id==='c1'?ref:{id,get:jest.fn().mockResolvedValue({exists:true,data:()=>cause({id,parentId:null})}),set:jest.fn(),update:jest.fn()});
