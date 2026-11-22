@@ -7,6 +7,7 @@ import '../../../core/widgets/app_navigation_bar.dart';
 import '../../../core/widgets/app_settings_menu.dart';
 import '../../causes/providers/causes_providers.dart';
 import 'donation_planner_page.dart';
+import 'donation_history_page.dart';
 
 class DonationPage extends ConsumerStatefulWidget {
   const DonationPage({super.key, this.initialCauseId});
@@ -159,6 +160,15 @@ class _DonationPageState extends ConsumerState<DonationPage> {
           ),
           icon: const Icon(Icons.calendar_month_rounded),
           label: Text(l10n.donationPlannerEntry),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          key: const ValueKey('donation_history_entry'),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const DonationHistoryPage()),
+          ),
+          icon: const Icon(Icons.receipt_long_rounded),
+          label: Text(l10n.donationHistoryEntry),
         ),
       ]),
       bottomNavigationBar: AppNavigationBar(
