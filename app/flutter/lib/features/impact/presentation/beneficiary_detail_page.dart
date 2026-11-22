@@ -39,14 +39,19 @@ class BeneficiaryDetailPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   child: AspectRatio(
                     aspectRatio: 1,
-                    child: Image.network(
-                      beneficiary.gallery[index],
-                      fit: BoxFit.cover,
-                      semanticLabel: l10n.accessibilityBeneficiaryGalleryImage(
+                    child: Semantics(
+                      container: true,
+                      label: l10n.accessibilityBeneficiaryGalleryImage(
                         beneficiary.name,
                         index + 1,
                       ),
-                      errorBuilder: (_, _, _) => const Icon(Icons.image_not_supported_rounded),
+                      image: true,
+                      child: Image.network(
+                        beneficiary.gallery[index],
+                        fit: BoxFit.cover,
+                        excludeFromSemantics: true,
+                        errorBuilder: (_, _, _) => const Icon(Icons.image_not_supported_rounded),
+                      ),
                     ),
                   ),
                 ),
