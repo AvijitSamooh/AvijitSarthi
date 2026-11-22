@@ -48,12 +48,26 @@ class _CityAdminAssignmentDialogState
             const SizedBox(height: 8),
             Expanded(
               child: cities.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => Center(
+                  child: Semantics(
+                    container: true,
+                    liveRegion: true,
+                    label: l10n.adminCityAssignmentLoadingCities,
+                    child: const ExcludeSemantics(child: CircularProgressIndicator()),
+                  ),
+                ),
                 error: (_, _) => Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(l10n.communityCityCatalogueError),
+                      Semantics(
+                        container: true,
+                        liveRegion: true,
+                        label: l10n.adminCityAssignmentLoadError,
+                        child: ExcludeSemantics(
+                          child: Text(l10n.adminCityAssignmentLoadError),
+                        ),
+                      ),
                       TextButton(
                         onPressed: () => ref.invalidate(cityCatalogueProvider(languageCode)),
                         child: Text(l10n.retry),
@@ -61,24 +75,35 @@ class _CityAdminAssignmentDialogState
                     ],
                   ),
                 ),
-                data: (items) => ListView(
-                  children: [
-                    for (final city in items)
-                      CheckboxListTile(
-                        key: ValueKey('city_assignment_${city.id}'),
-                        value: _selectedCityIds.contains(city.id),
-                        title: Text(city.name),
-                        controlAffinity: ListTileControlAffinity.leading,
-                        onChanged: (selected) => setState(() {
-                          if (selected == true) {
-                            _selectedCityIds.add(city.id);
-                          } else {
-                            _selectedCityIds.remove(city.id);
-                          }
-                        }),
+                data: (items) => items.isEmpty
+                    ? Center(
+                        child: Semantics(
+                          container: true,
+                          liveRegion: true,
+                          label: l10n.adminCityAssignmentNoCities,
+                          child: ExcludeSemantics(
+                            child: Text(l10n.adminCityAssignmentNoCities),
+                          ),
+                        ),
+                      )
+                    : ListView(
+                        children: [
+                          for (final city in items)
+                            CheckboxListTile(
+                              key: ValueKey('city_assignment_${city.id}'),
+                              value: _selectedCityIds.contains(city.id),
+                              title: Text(city.name),
+                              controlAffinity: ListTileControlAffinity.leading,
+                              onChanged: (selected) => setState(() {
+                                if (selected == true) {
+                                  _selectedCityIds.add(city.id);
+                                } else {
+                                  _selectedCityIds.remove(city.id);
+                                }
+                              }),
+                            ),
+                        ],
                       ),
-                  ],
-                ),
               ),
             ),
           ],

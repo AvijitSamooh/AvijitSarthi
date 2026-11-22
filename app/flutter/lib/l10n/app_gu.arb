@@ -626,6 +626,9 @@
       "user": {}
     }
   },
+  "adminCityAssignmentLoadingCities": "ફાળવણી માટે શહેરો લોડ થઈ રહ્યા છે.",
+  "adminCityAssignmentLoadError": "ફાળવણી માટે શહેરો લોડ થઈ શક્યા નથી.",
+  "adminCityAssignmentNoCities": "ફાળવણી માટે કોઈ શહેર ઉપલબ્ધ નથી.",
   "adminCityAssignmentSave": "ફાળવણી સાચવો",
   "adminCityAssignmentSaved": "શહેરની ફાળવણી સાચવાઈ અને ઓડિટ ઇતિહાસમાં નોંધાઈ.",
   "@adminBeneficiaryCreatedImageUploadFailed": {
