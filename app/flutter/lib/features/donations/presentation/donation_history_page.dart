@@ -3,13 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/widgets/app_settings_menu.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../../causes/models/cause.dart';
 import '../../causes/providers/causes_providers.dart';
 import '../data/donation_history_repository.dart';
 import '../models/donation_history.dart';
 import '../providers/donation_history_providers.dart';
-import '../../../l10n/app_localizations.dart';
 
 class DonationHistoryPage extends ConsumerWidget {
   const DonationHistoryPage({super.key});
@@ -61,7 +61,7 @@ class DonationHistoryPage extends ConsumerWidget {
                     data: (donations) => donations.isEmpty
                         ? _HistoryMessage(message: l10n.donationHistoryEmpty)
                         : RefreshIndicator(
-                            onRefresh: () => ref.refresh(myDonationsProvider.future),
+                            onRefresh: () async { await ref.refresh(myDonationsProvider.future); },
                             child: ListView.separated(
                               padding: const EdgeInsets.all(16),
                               itemCount: donations.length,
