@@ -119,6 +119,7 @@ class _DonationPlannerPageState extends ConsumerState<DonationPlannerPage> {
       !_loadFailed &&
       (_amountPaise ?? 0) > 0 &&
       _selectedCauseIds.isNotEmpty &&
+      _selectedCauseIds.every((id) => (_allocationPercentages[id] ?? 0) > 0) &&
       _allocationTotal == 100 &&
       (_frequency != DonationPlanFrequency.custom ||
           ((_customIntervalDays ?? 0) >= 1 && (_customIntervalDays ?? 0) <= 365));
@@ -184,7 +185,8 @@ class _DonationPlannerPageState extends ConsumerState<DonationPlannerPage> {
   Future<void> _savePlan() async {
     final amount = _amountPaise;
     final interval = _customIntervalDays ?? 0;
-    if (amount == null || amount <= 0 || _selectedCauseIds.isEmpty || _allocationTotal != 100) return;
+    if (amount == null || amount <= 0 || _selectedCauseIds.isEmpty || _allocationTotal != 100 ||
+        _selectedCauseIds.any((id) => (_allocationPercentages[id] ?? 0) <= 0)) return;
     if (_frequency == DonationPlanFrequency.custom && (interval < 1 || interval > 365)) return;
 
     setState(() => _saving = true);
@@ -237,7 +239,9 @@ class _DonationPlannerPageState extends ConsumerState<DonationPlannerPage> {
         ((_customIntervalDays ?? 0) < 1 || (_customIntervalDays ?? 0) > 365)) {
       return l10n.donationPlannerValidationFrequency;
     }
-    if (_selectedCauseIds.isEmpty || _allocationTotal != 100) {
+    if (_selectedCauseIds.isEmpty ||
+        _selectedCauseIds.any((id) => (_allocationPercentages[id] ?? 0) <= 0) ||
+        _allocationTotal != 100) {
       return l10n.donationPlannerValidationAllocation;
     }
     return null;
