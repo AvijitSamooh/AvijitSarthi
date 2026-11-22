@@ -14,6 +14,7 @@
 - [x] Education Assistance / Pratibha Samman application split — separate types, Firestore rules/windows and administration/client workflows; production data recovery remains in progress.
 - [x] City Activities and Accomplishments — published-only public discovery, city filtering, localized city catalogue, Super Admin City Admin assignment UI, canonical city validation, and Flutter/API/backend coverage.
 - [x] Android Firestore-backed guest discovery E2E — isolated Auth/Firestore emulators, local NestJS API, published-versus-draft visibility and city filtering.
+- [x] First-release donation planning — cause-only allocation UI and local giving plans with daily, weekly, monthly or custom intervals, paise-safe monthly estimates, activate/pause controls and revision history. Actual donation submission and payment collection remain disabled.
 
 # Iteration 0 --- Foundation
 
