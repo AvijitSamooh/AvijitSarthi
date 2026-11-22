@@ -45,6 +45,7 @@ void main() {
     expect(reloaded.plan?.allocations.map((item) => item.percentage), [70, 30]);
     expect(reloaded.plan?.isActive, isFalse);
     expect(reloaded.history.length, 3);
+    expect(reloaded.history[1].allocations.map((item) => item.percentage), [70, 30]);
   });
 
   test('calculates monthly estimates for each frequency using integer paise', () {
