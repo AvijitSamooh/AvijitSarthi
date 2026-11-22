@@ -151,4 +151,47 @@ void main() {
       expect(l10n.adminCityAssignmentNoCities, values['empty']);
     }
   });
+
+  testWidgets('keeps city assignment usable on a compact screen at 200% text scale', (tester) async {
+    tester.view.physicalSize = const Size(320, 480);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          cityCatalogueProvider('en').overrideWith(
+            (ref) async => const [City(id: 'pune', name: 'Pune')],
+          ),
+        ],
+        child: _dialogApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.binding.setSurfaceSize(const Size(320, 480));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          cityCatalogueProvider('en').overrideWith(
+            (ref) async => const [City(id: 'pune', name: 'Pune')],
+          ),
+        ],
+        child: MediaQuery(
+          data: const MediaQueryData(
+            size: Size(320, 480),
+            textScaler: TextScaler.linear(2),
+          ),
+          child: _dialogApp(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Pune'), findsOneWidget);
+    expect(find.text('Save assignments'), findsOneWidget);
+  });
+
 }
