@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID as cryptoRandomUUID } from 'node:crypto';
 import { FirebaseService } from '../firebase/firebase.service';
+import { MediaService } from '../media/media.service';
 
 interface Translation {
   name?: string | null;
@@ -44,6 +45,7 @@ interface CauseDocument {
 interface MediaDocument {
   id: string;
   storageKey: string;
+  storageProvider?: 'R2' | 'FIREBASE_STORAGE';
   mimeType: string;
   width: number | null;
   height: number | null;
@@ -51,7 +53,10 @@ interface MediaDocument {
 
 @Injectable()
 export class FirestoreOrganisationsService {
-  constructor(private readonly firebase: FirebaseService) {}
+  constructor(
+    private readonly firebase: FirebaseService,
+    private readonly mediaService: MediaService,
+  ) {}
 
   async syncOrganisation(document: {
     id: string;
@@ -142,7 +147,7 @@ export class FirestoreOrganisationsService {
     const media = await this.getByIds<MediaDocument>('media', mediaIds);
     const mediaById = new Map(media.map((item) => [item.id, item]));
 
-    return organisations.map((organisation) => {
+    return Promise.all(organisations.map(async (organisation) => {
       const relations = (organisation.media ?? [])
         .map((relation) => ({ ...relation, media: mediaById.get(relation.mediaId) }))
         .filter((relation) => relation.media);
@@ -150,8 +155,8 @@ export class FirestoreOrganisationsService {
       return {
         id: organisation.id,
         slug: organisation.slug,
-        logoUrl: this.primaryMediaUrl(relations, 'LOGO') ?? organisation.logoUrl ?? null,
-        gallery: this.galleryMedia(relations, 'GALLERY'),
+        logoUrl: (await this.primaryMediaUrl(relations, 'LOGO')) ?? organisation.logoUrl ?? null,
+        gallery: await this.galleryMedia(relations, 'GALLERY'),
         websiteUrl: organisation.websiteUrl ?? null,
         phone: organisation.phone ?? null,
         mobileNumber: organisation.mobileNumber ?? null,
@@ -175,7 +180,7 @@ export class FirestoreOrganisationsService {
             ...this.translation(cause.translations, languageCode),
           })),
       };
-    });
+    }));
   }
 
   private async getByIds<T extends CauseDocument | MediaDocument>(
@@ -216,11 +221,10 @@ export class FirestoreOrganisationsService {
   }
 
   private mediaUrl(media: MediaDocument) {
-    const base = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '');
-    return base ? `${base}/${media.storageKey}` : media.storageKey;
+    return this.mediaService.getReadUrl(media);
   }
 
-  private primaryMediaUrl(relations: Array<{
+  private async primaryMediaUrl(relations: Array<{
     purpose: string;
     isPrimary: boolean;
     media?: MediaDocument;
@@ -231,20 +235,20 @@ export class FirestoreOrganisationsService {
     return relation?.media ? this.mediaUrl(relation.media) : null;
   }
 
-  private galleryMedia(relations: Array<{
+  private async galleryMedia(relations: Array<{
     purpose: string;
     displayOrder: number;
     media?: MediaDocument;
   }>, purpose: string) {
-    return relations
+    return Promise.all(relations
       .filter((item) => item.purpose === purpose && item.media)
       .sort((a, b) => a.displayOrder - b.displayOrder)
-      .map((item) => ({
+      .map(async (item) => ({
         id: item.media!.id,
-        url: this.mediaUrl(item.media!),
+        url: await this.mediaUrl(item.media!),
         mimeType: item.media!.mimeType,
         width: item.media!.width,
         height: item.media!.height,
-      }));
+      })));
   }
 }

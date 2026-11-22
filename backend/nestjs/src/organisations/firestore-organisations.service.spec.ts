@@ -15,7 +15,11 @@ describe('FirestoreOrganisationsService', () => {
         collections.set(name,c);
       } return collections.get(name);
     }),getAll:jest.fn().mockResolvedValue([])}};
-    service=new FirestoreOrganisationsService(firebase);
+    const mediaService = { getReadUrl: jest.fn(async (media: any) => {
+      if (media.storageProvider === 'R2') return `${process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '')}/${media.storageKey}`;
+      return `https://signed.example/${media.storageKey}`;
+    }) };
+    service=new FirestoreOrganisationsService(firebase, mediaService as any);
     delete process.env.R2_PUBLIC_BASE_URL;
   });
 
@@ -66,13 +70,13 @@ describe('FirestoreOrganisationsService', () => {
     await expect(service.removeOrDeactivate('org-1')).resolves.toEqual(expect.objectContaining({deleted:true}));
     jest.spyOn(service,'findOneForAdmin').mockResolvedValue(org());
     await expect(service.setActive('org-1',false)).resolves.toEqual(org());
-    const media={id:'m1',storageKey:'x.jpg',mimeType:'image/jpeg',width:10,height:20};
+    const media={id:'m1',storageKey:'x.jpg',storageProvider:'R2',mimeType:'image/jpeg',width:10,height:20};
     expect(service.translation(undefined,'en')).toEqual({name:null,description:null});
     expect(service.translation({en:{name:'E'},hi:{name:'H'}},'hi')).toEqual({name:'H',description:null});
     process.env.R2_PUBLIC_BASE_URL='https://cdn.example/';
-    expect(service.mediaUrl(media)).toBe('https://cdn.example/x.jpg');
-    expect(service.primaryMediaUrl([{purpose:'LOGO',isPrimary:false,media}], 'LOGO')).toBe('https://cdn.example/x.jpg');
-    expect(service.galleryMedia([{purpose:'GALLERY',displayOrder:2,media},{purpose:'GALLERY',displayOrder:1,media}], 'GALLERY')[0].id).toBe('m1');
+    expect(await service.mediaUrl(media)).toBe('https://cdn.example/x.jpg');
+    expect(await service.primaryMediaUrl([{purpose:'LOGO',isPrimary:false,media}], 'LOGO')).toBe('https://cdn.example/x.jpg');
+    expect((await service.galleryMedia([{purpose:'GALLERY',displayOrder:2,media},{purpose:'GALLERY',displayOrder:1,media}], 'GALLERY'))[0].id).toBe('m1');
     await expect(service.getByIds('media',[])).resolves.toEqual([]);
     firebase.db.getAll.mockResolvedValue([[{id:'m1',exists:true,data:()=>media}]].flat());
     await expect(service.getByIds('media',['m1','m1','missing'])).resolves.toHaveLength(1);

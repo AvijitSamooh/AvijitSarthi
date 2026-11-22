@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { randomUUID } from 'node:crypto';
 import { FieldValue } from 'firebase-admin/firestore';
 import { FirebaseService } from '../firebase/firebase.service';
+import { MediaService } from '../media/media.service';
 
 interface Translation {
   name?: string | null;
@@ -48,6 +49,7 @@ interface OrganisationDocument {
 interface MediaDocument {
   id: string;
   storageKey: string;
+  storageProvider?: 'R2' | 'FIREBASE_STORAGE';
   mimeType: string;
   width: number | null;
   height: number | null;
@@ -55,7 +57,10 @@ interface MediaDocument {
 
 @Injectable()
 export class FirestoreCausesService {
-  constructor(private readonly firebase: FirebaseService) {}
+  constructor(
+    private readonly firebase: FirebaseService,
+    private readonly mediaService: MediaService,
+  ) {}
 
   async syncCauses(documents: Array<{
     id: string;
@@ -239,8 +244,8 @@ export class FirestoreCausesService {
     return {
       id: organisation.id,
       slug: organisation.slug,
-      logoUrl: this.primaryMediaUrl(relations, 'LOGO') ?? organisation.logoUrl ?? null,
-      gallery: this.galleryMedia(relations, 'GALLERY'),
+      logoUrl: (await this.primaryMediaUrl(relations, 'LOGO')) ?? organisation.logoUrl ?? null,
+      gallery: await this.galleryMedia(relations, 'GALLERY'),
       websiteUrl: organisation.websiteUrl ?? null,
       phone: organisation.phone ?? null,
       mobileNumber: organisation.mobileNumber ?? null,
@@ -290,26 +295,25 @@ export class FirestoreCausesService {
   }
 
   private mediaUrl(media: MediaDocument) {
-    const base = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '');
-    return base ? `${base}/${media.storageKey}` : media.storageKey;
+    return this.mediaService.getReadUrl(media);
   }
 
-  private primaryMediaUrl(relations: Array<{ purpose: string; isPrimary: boolean; media?: MediaDocument }>, purpose: string) {
+  private async primaryMediaUrl(relations: Array<{ purpose: string; isPrimary: boolean; media?: MediaDocument }>, purpose: string) {
     const relation = relations.find((item) => item.purpose === purpose && item.isPrimary)
       ?? relations.find((item) => item.purpose === purpose);
     return relation?.media ? this.mediaUrl(relation.media) : null;
   }
 
-  private galleryMedia(relations: Array<{ purpose: string; displayOrder: number; media?: MediaDocument }>, purpose: string) {
-    return relations
+  private async galleryMedia(relations: Array<{ purpose: string; displayOrder: number; media?: MediaDocument }>, purpose: string) {
+    return Promise.all(relations
       .filter((item) => item.purpose === purpose && item.media)
       .sort((a, b) => a.displayOrder - b.displayOrder)
-      .map((item) => ({
+      .map(async (item) => ({
         id: item.media!.id,
-        url: this.mediaUrl(item.media!),
+        url: await this.mediaUrl(item.media!),
         mimeType: item.media!.mimeType,
         width: item.media!.width,
         height: item.media!.height,
-      }));
+      })));
   }
 }

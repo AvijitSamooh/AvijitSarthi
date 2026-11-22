@@ -7,7 +7,11 @@ describe('FirestoreCausesService',()=>{
   beforeEach(()=>{
     jest.clearAllMocks(); collections=new Map();
     firebase={db:{collection:jest.fn((name:string)=>{if(!collections.has(name)){const c:any={where:jest.fn().mockReturnThis(),orderBy:jest.fn().mockReturnThis(),limit:jest.fn().mockReturnThis(),get:jest.fn().mockResolvedValue({empty:true,docs:[]}),doc:jest.fn((id:string)=>({id,get:jest.fn().mockResolvedValue({exists:false}),set:jest.fn(),update:jest.fn(),delete:jest.fn()}))};collections.set(name,c);}return collections.get(name)}),getAll:jest.fn().mockResolvedValue([]),batch:jest.fn(()=>({set:jest.fn(),update:jest.fn(),delete:jest.fn(),commit:jest.fn()}))}};
-    service=new FirestoreCausesService(firebase);
+    const mediaService = { getReadUrl: jest.fn(async (media: any) => {
+      if (media.storageProvider === 'R2') return `${process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '')}/${media.storageKey}`;
+      return `https://signed.example/${media.storageKey}`;
+    }) };
+    service=new FirestoreCausesService(firebase, mediaService as any);
     delete process.env.R2_PUBLIC_BASE_URL;
   });
 
@@ -61,9 +65,10 @@ describe('FirestoreCausesService',()=>{
     causes.get.mockResolvedValueOnce({empty:true,docs:[]}); await expect(service.findOne('missing','en')).rejects.toThrow(NotFoundException);
     expect(service.displayOrderForOrganisation([{id:'o',displayOrder:3}],'x')).toBe(Number.MAX_SAFE_INTEGER);
     expect(service.translation(undefined,'en')).toEqual({name:null,description:null});
-    process.env.R2_PUBLIC_BASE_URL='https://cdn.example/'; expect(service.mediaUrl({storageKey:'x'})).toBe('https://cdn.example/x');
-    expect(service.primaryMediaUrl([{purpose:'LOGO',isPrimary:false,media:{id:'m',storageKey:'x'}}],'LOGO')).toBe('https://cdn.example/x');
-    expect(service.galleryMedia([{purpose:'GALLERY',displayOrder:2,media:{id:'m2',storageKey:'y',mimeType:'image/jpeg',width:1,height:2}},{purpose:'GALLERY',displayOrder:1,media:{id:'m1',storageKey:'x',mimeType:'image/png',width:3,height:4}}],'GALLERY')).toHaveLength(2);
+    process.env.R2_PUBLIC_BASE_URL='https://cdn.example/'; const publicMedia={id:'m',storageKey:'x',storageProvider:'R2',mimeType:'image/jpeg',width:1,height:2};
+    expect(await service.mediaUrl(publicMedia)).toBe('https://cdn.example/x');
+    expect(await service.primaryMediaUrl([{purpose:'LOGO',isPrimary:false,media:publicMedia}],'LOGO')).toBe('https://cdn.example/x');
+    expect(await service.galleryMedia([{purpose:'GALLERY',displayOrder:2,media:{...publicMedia,id:'m2',storageKey:'y'}},{purpose:'GALLERY',displayOrder:1,media:{...publicMedia,id:'m1'}}],'GALLERY')).toHaveLength(2);
     await expect(service.getByIds('causes',[])).resolves.toEqual([]);
     firebase.db.getAll.mockResolvedValue([{id:'a',exists:true,data:()=>cause({id:'a'})},{id:'missing',exists:false,data:()=>undefined}]);
     await expect(service.getByIds('causes',['a','a','missing'])).resolves.toHaveLength(1);
