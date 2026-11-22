@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -209,12 +208,12 @@ void main() {
     await _openDialog(tester);
     await tester.pumpAndSettle();
 
-    final layoutException = tester.takeException();
-    if (layoutException != null) {
-      debugDumpRenderTree();
-    }
-    expect(layoutException, isNull);
+    expect(tester.takeException(), isNull);
+    expect(find.byType(ListView), findsOneWidget);
     expect(find.text('Pune'), findsOneWidget);
+    await tester.drag(find.byType(ListView), const Offset(0, -200));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
     final saveAction = find.text('Save assignments');
     expect(saveAction, findsOneWidget);
     expect(

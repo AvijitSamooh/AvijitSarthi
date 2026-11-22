@@ -46,20 +46,22 @@ class _CityAdminAssignmentDialogState
           maxHeight: viewportSize.height * 0.9,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(
+            viewportSize.width < 400 || viewportSize.height < 560 ? 16 : 24,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                l10n.adminAssignCityAdmin,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 16),
               Flexible(
                 child: ListView(
                   padding: EdgeInsets.zero,
                   children: [
+                    Text(
+                      l10n.adminAssignCityAdmin,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 16),
                     Text(l10n.adminCityAssignmentFor(widget.userLabel)),
                     const SizedBox(height: 8),
                     cities.when(
