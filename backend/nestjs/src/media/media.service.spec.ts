@@ -141,7 +141,7 @@ describe('MediaService', () => {
 
   it('downloads using the recorded provider and defaults legacy records to Firebase Storage', async () => {
     await expect(service.downloadImage({ storageKey: 'uploads/new.webp', storageProvider: 'R2' })).resolves.toEqual(Buffer.from('r2-image'));
-    await expect(service.downloadImage({ storageKey: 'applications/old.webp', storageProvider: 'FIREBASE_STORAGE' })).resolves.toEqual(Buffer.from('private-image'));
+    await expect(service.downloadImage({ storageKey: 'applications/old.webp' })).resolves.toEqual(Buffer.from('private-image'));
     expect(r2.download).toHaveBeenCalledWith('uploads/new.webp');
     expect(firebaseStorage.download).toHaveBeenCalledWith('applications/old.webp');
   });
@@ -150,7 +150,7 @@ describe('MediaService', () => {
     const previous = process.env.R2_PUBLIC_BASE_URL;
     process.env.R2_PUBLIC_BASE_URL = 'https://cdn.example/';
     await expect(service.getReadUrl({ storageKey: 'uploads/a file.webp', storageProvider: 'R2' })).resolves.toBe('https://cdn.example/uploads/a%20file.webp');
-    await expect(service.getReadUrl({ storageKey: 'applications/private.webp', storageProvider: 'FIREBASE_STORAGE' })).resolves.toBe('https://signed.example/private-image');
+    await expect(service.getReadUrl({ storageKey: 'applications/private.webp' })).resolves.toBe('https://signed.example/private-image');
     expect(firebaseStorage.getSignedUrl).toHaveBeenCalledWith('applications/private.webp');
     if (previous === undefined) delete process.env.R2_PUBLIC_BASE_URL;
     else process.env.R2_PUBLIC_BASE_URL = previous;
