@@ -11,7 +11,7 @@ const MAX_UPLOAD_SIZE = 10 * 1024 * 1024;
 const MAX_DIMENSION = 1600;
 const MAX_PROCESSED_SIZE = 1.5 * 1024 * 1024;
 
-type MediaLocation = Pick<FirestoreMedia, 'storageKey' | 'storageProvider'>;
+type MediaLocation = Pick<FirestoreMedia, 'storageKey'> & { storageProvider?: FirestoreMedia['storageProvider'] };
 
 @Injectable()
 export class MediaService {
