@@ -50,7 +50,7 @@ describe('FirestoreHelpApplicationsService coverage', () => {
         getById: jest.fn().mockResolvedValue({ id: 'u1', displayName: 'Admin', email: 'a@x' }),
       },
       media: { getById: jest.fn().mockResolvedValue({ id: 'm1', storageKey: 'x.jpg', mimeType: 'image/jpeg', width: 100, height: 100 }) },
-      mediaService: { downloadImage: jest.fn().mockResolvedValue(Buffer.from('bad')), deleteUserImage: jest.fn() },
+      mediaService: { downloadImage: jest.fn().mockResolvedValue(Buffer.from('bad')), getReadUrl: jest.fn().mockResolvedValue('x.jpg'), deleteUserImage: jest.fn() },
       beneficiaries: { syncBeneficiary: jest.fn() },
       windows: { ensureAccepting: jest.fn() },
       rules: { listForAcceptance: jest.fn().mockResolvedValue([{ id: 'r1', text: 'Rule' }]) },
@@ -100,8 +100,7 @@ describe('FirestoreHelpApplicationsService coverage', () => {
     const ref=refs.get('helpApplications:x') || db.collection('helpApplications').doc('x');
     ref.get.mockResolvedValue({exists:false}); await expect(s.application('x')).rejects.toThrow(NotFoundException);
     expect(await s.mediaResponse('m1')).toEqual(expect.objectContaining({url:'x.jpg'}));
-    process.env.R2_PUBLIC_BASE_URL='https://cdn.example/';
-    expect((await s.mediaResponse('m1')).url).toBe('https://cdn.example/x.jpg'); delete process.env.R2_PUBLIC_BASE_URL;
+    expect(deps.mediaService.getReadUrl).toHaveBeenCalledWith(expect.objectContaining({id:'m1'}));
   });
 
   it('lists legacy applications without requiring createdAt ordering or a composite index', async () => {
