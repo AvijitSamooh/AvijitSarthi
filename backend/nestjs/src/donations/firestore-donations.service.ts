@@ -71,6 +71,9 @@ export class FirestoreDonationsService {
       ) {
         throw new BadRequestException('Donation allocations must reference active causes');
       }
+      if (causes.some((snapshot) => (snapshot.data()?.childIds ?? []).length > 0)) {
+        throw new BadRequestException('Donation allocations must reference leaf causes');
+      }
 
       const document = {
         id: donationId,
