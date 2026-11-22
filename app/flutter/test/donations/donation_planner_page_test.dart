@@ -97,6 +97,8 @@ void main() {
       matching: find.byType(Switch),
     );
     expect(activeSwitch, findsOneWidget);
+    await tester.ensureVisible(activeSwitch);
+    await tester.pumpAndSettle();
     await tester.tap(activeSwitch);
     await tester.pumpAndSettle();
     expect(find.text('Plan paused'), findsOneWidget);
