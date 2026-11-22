@@ -642,6 +642,9 @@
       "user": {}
     }
   },
+  "adminCityAssignmentLoadingCities": "Loading cities for assignment.",
+  "adminCityAssignmentLoadError": "Unable to load cities for assignment.",
+  "adminCityAssignmentNoCities": "No cities are available for assignment.",
   "adminCityAssignmentSave": "Save assignments",
   "adminCityAssignmentSaved": "City assignments saved and recorded in audit history.",
   "communityDetailTitle": "Community impact",
