@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:avijit_sahyog/features/auth/data/auth_repository.dart';
+import 'package:avijit_sahyog/features/auth/models/app_user.dart';
+import 'package:avijit_sahyog/features/auth/providers/auth_providers.dart';
+
 import 'package:avijit_sahyog/features/causes/models/cause.dart';
 import 'package:avijit_sahyog/features/causes/providers/causes_providers.dart';
 import 'package:avijit_sahyog/features/donations/presentation/donation_planner_page.dart';
@@ -17,6 +21,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authProvider.overrideWith((ref) => AuthController(_GuestAuthRepository())),
           causesProvider('en').overrideWith(
             (ref) async => const [
               Cause(id: 'jeev-daya', slug: 'jeev-daya', name: 'Jeev Daya'),
@@ -89,4 +94,15 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Plan paused'), findsOneWidget);
   });
+}
+
+class _GuestAuthRepository implements AuthRepository {
+  @override
+  Future<AppUser?> restoreSession() async => null;
+
+  @override
+  Future<AppUser> signInWithGoogle() => throw UnimplementedError();
+
+  @override
+  Future<void> signOut() async {}
 }
