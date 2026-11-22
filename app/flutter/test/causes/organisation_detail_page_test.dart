@@ -49,6 +49,21 @@ void main() {
     expect(find.byType(Image), findsNWidgets(2));
   });
 
+  testWidgets('provides meaningful semantics for organisation gallery images', (tester) async {
+    final semantics = tester.ensureSemantics();
+    addTearDown(semantics.dispose);
+    await pumpSubject(tester);
+
+    expect(
+      find.bySemanticsLabel("Photo 1 in Seva Trust's gallery"),
+      findsOneWidget,
+    );
+    expect(
+      find.bySemanticsLabel("Photo 2 in Seva Trust's gallery"),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('opens the selected gallery image in the full-screen viewer', (tester) async {
     await pumpSubject(tester);
 
