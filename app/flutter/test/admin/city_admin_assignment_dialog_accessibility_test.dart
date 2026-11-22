@@ -24,14 +24,36 @@ void expectLiveRegion(WidgetTester tester, String label) {
   }
 }
 
+Widget _dialogLauncher() => Builder(
+      builder: (context) => Scaffold(
+        body: Center(
+          child: TextButton(
+            onPressed: () {
+              showDialog<void>(
+                context: context,
+                builder: (_) => const CityAdminAssignmentDialog(
+                  userLabel: 'Nikita Manoriya',
+                ),
+              );
+            },
+            child: const Text('Open city assignment'),
+          ),
+        ),
+      ),
+    );
+
 Widget _dialogApp() => MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       locale: const Locale('en'),
-      home: const Scaffold(
-        body: CityAdminAssignmentDialog(userLabel: 'Nikita Manoriya'),
-      ),
+      home: _dialogLauncher(),
     );
+
+Future<void> _openDialog(WidgetTester tester) async {
+  await tester.tap(find.text('Open city assignment'));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 300));
+}
 
 void main() {
   testWidgets('announces city catalogue loading for Super Admin assignment', (tester) async {
@@ -44,6 +66,7 @@ void main() {
         child: _dialogApp(),
       ),
     );
+    await _openDialog(tester);
     await tester.pump();
 
     expectLiveRegion(tester, 'Loading cities for assignment.');
@@ -62,6 +85,7 @@ void main() {
         child: _dialogApp(),
       ),
     );
+    await _openDialog(tester);
     await tester.pumpAndSettle();
 
     expect(find.text('Unable to load cities for assignment.'), findsOneWidget);
@@ -84,6 +108,7 @@ void main() {
         child: _dialogApp(),
       ),
     );
+    await _openDialog(tester);
     await tester.pumpAndSettle();
 
     expect(find.text('No cities are available for assignment.'), findsOneWidget);
@@ -101,6 +126,7 @@ void main() {
         child: _dialogApp(),
       ),
     );
+    await _openDialog(tester);
     await tester.pumpAndSettle();
 
     final semantics = tester.ensureSemantics();
@@ -175,12 +201,11 @@ void main() {
             ),
             child: child!,
           ),
-          home: const Scaffold(
-            body: CityAdminAssignmentDialog(userLabel: 'Nikita Manoriya'),
-          ),
+          home: _dialogLauncher(),
         ),
       ),
     );
+    await _openDialog(tester);
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
