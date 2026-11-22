@@ -36,6 +36,24 @@ describe('FirestoreCausesService',()=>{
     ref.get.mockResolvedValue({exists:false}); await expect(service.setActive('c1',false)).rejects.toThrow(NotFoundException);
   });
 
+  it('rejects creating a child beneath another child', async () => {
+    const causes = firebase.db.collection('causes');
+    causes.doc.mockImplementation((id: string) => ({
+      id,
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: () => ({ id, parentId: id === 'nested-parent' ? 'root' : null }),
+      }),
+      set: jest.fn(),
+      update: jest.fn(),
+    }));
+    await expect(service.create({
+      slug: 'grandchild',
+      parentId: 'nested-parent',
+      translations: [{ languageCode: 'en', name: 'Grandchild' }],
+    })).rejects.toThrow('top-level causes');
+  });
+
   it('covers updates, parent relations and conflicts',async()=>{
     const causes=firebase.db.collection('causes'); const ref:any={id:'c1',get:jest.fn().mockResolvedValue({exists:true,data:()=>cause({parentId:'old'})}),set:jest.fn(),update:jest.fn()};
     causes.doc.mockImplementation((id:string)=> id==='c1'?ref:{id,get:jest.fn().mockResolvedValue({exists:true}),set:jest.fn(),update:jest.fn()});
@@ -48,6 +66,9 @@ describe('FirestoreCausesService',()=>{
     await expect(service.update('c1',{parentId:'c1'})).rejects.toThrow(BadRequestException);
     ref.get.mockResolvedValue({exists:true,data:()=>cause({parentId:null})}); causes.doc.mockImplementation((id:string)=> id==='c1'?ref:{id,get:jest.fn().mockResolvedValue({exists:false}),set:jest.fn(),update:jest.fn()});
     await expect(service.update('c1',{parentId:'missing'})).rejects.toThrow(BadRequestException);
+    ref.get.mockResolvedValue({exists:true,data:()=>cause({parentId:null,childIds:['existing-child']})});
+    jest.spyOn(service,'findOneForAdmin').mockResolvedValue(cause({parentId:null,childIds:['existing-child']}));
+    await expect(service.update('c1',{parentId:'new-parent'})).rejects.toThrow('parent cause cannot be nested');
     void causes;
   });
 
@@ -56,7 +77,7 @@ describe('FirestoreCausesService',()=>{
     const root=cause({childIds:['c2','inactive']}); const child=cause({id:'c2',slug:'child',parentId:'c1',displayOrder:2,translations:{en:{name:'Child'}}}); const inactive=cause({id:'inactive',isActive:false,parentId:'c1'});
     causes.get.mockResolvedValueOnce({docs:[{data:()=>root}]});
     firebase.db.getAll.mockResolvedValueOnce([{id:'c2',exists:true,data:()=>child},{id:'inactive',exists:true,data:()=>inactive}]);
-    await expect(service.findAll('en')).resolves.toEqual([expect.objectContaining({children:[expect.objectContaining({id:'c2'})]})]);
+    await expect(service.findAll('en')).resolves.toEqual([expect.objectContaining({hasChildren:true,children:[expect.objectContaining({id:'c2',hasChildren:false})]})]);
     causes.get.mockResolvedValueOnce({empty:false,docs:[{data:()=>root}]});
     firebase.db.getAll.mockImplementation(async(...refs:any[])=>refs.map(r=>({id:r.id,exists:true,data:()=>r.id==='c2'?child:({id:'o1',slug:'org',isActive:true,displayOrder:1,causeIds:['c1'],translations:{en:{name:'Org'}},media:[{mediaId:'m1',purpose:'LOGO',displayOrder:0,isPrimary:true},{mediaId:'m2',purpose:'GALLERY',displayOrder:1,isPrimary:false}]})})));
     firebase.db.collection('organisations').get.mockResolvedValue({docs:[]});
@@ -80,7 +101,7 @@ describe('FirestoreCausesService',()=>{
   it('covers admin response recursion and organisation media response',async()=>{
     const parent=cause({id:'p',slug:'parent',childIds:['c']}); const child=cause({id:'c',slug:'child',parentId:'p',displayOrder:1,translations:{en:{name:'Child',description:null}}});
     const mapped=service.adminResponse(parent,new Map([['p',parent],['c',child]]));
-    expect(mapped.parent).toBeNull(); expect(mapped.children[0].id).toBe('c'); expect(mapped.children[0].parent.slug).toBe('parent');
+    expect(mapped.parent).toBeNull(); expect(mapped.hasChildren).toBe(true); expect(mapped.children[0].id).toBe('c'); expect(mapped.children[0].parent.slug).toBe('parent');
     firebase.db.getAll.mockResolvedValue([{id:'m1',exists:true,data:()=>({id:'m1',storageKey:'logo.jpg',mimeType:'image/jpeg',width:10,height:10})},{id:'m2',exists:true,data:()=>({id:'m2',storageKey:'g.jpg',mimeType:'image/png',width:20,height:20})}]);
     const r=await service.organisationResponse({id:'o',slug:'org',isActive:true,displayOrder:1,translations:{en:{name:'Org'}},media:[{mediaId:'m1',purpose:'LOGO',displayOrder:0,isPrimary:true},{mediaId:'m2',purpose:'GALLERY',displayOrder:1,isPrimary:false}]},'en');
     expect(r.logoUrl).toContain('logo.jpg'); expect(r.gallery).toHaveLength(1);
