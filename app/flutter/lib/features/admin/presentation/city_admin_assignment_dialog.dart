@@ -58,7 +58,6 @@ class _CityAdminAssignmentDialogState
               const SizedBox(height: 16),
               Flexible(
                 child: ListView(
-                  shrinkWrap: true,
                   padding: EdgeInsets.zero,
                   children: [
                     Text(l10n.adminCityAssignmentFor(widget.userLabel)),
