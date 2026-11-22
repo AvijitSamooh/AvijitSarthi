@@ -119,7 +119,7 @@ jobs:
             IFS=$'\t' read -r run_id workflow_name event head_branch status conclusion created_at <<< "$run"
             [[ "$run_id" == "$CURRENT_RUN_ID" ]] && continue
 
-            if [[ -n "${OPEN_PR_BRANCH[$head_branch]:-}" ]]; then
+            if [[ -n "$head_branch" && -n "${OPEN_PR_BRANCH[$head_branch]:-}" ]]; then
               KEEP_RUN["$run_id"]=1
               open_pr_runs=$((open_pr_runs + 1))
               continue
