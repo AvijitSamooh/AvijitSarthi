@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -18,7 +19,7 @@ void expectLiveRegion(WidgetTester tester, String label) {
   try {
     final node = tester.getSemantics(find.bySemanticsLabel(label));
     expect(
-      node.getSemanticsData().liveRegion,
+      node.getSemanticsData().hasFlag(SemanticsFlag.isLiveRegion),
       isTrue,
       reason: '"$label" should be announced as a live region.',
     );
