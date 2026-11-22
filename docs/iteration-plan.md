@@ -14,6 +14,8 @@
 - [x] Education Assistance / Pratibha Samman application split — separate types, Firestore rules/windows and administration/client workflows; production data recovery remains in progress.
 - [x] City Activities and Accomplishments — published-only public discovery, city filtering, localized city catalogue, Super Admin City Admin assignment UI, canonical city validation, and Flutter/API/backend coverage.
 - [x] Android Firestore-backed guest discovery E2E — isolated Auth/Firestore emulators, local NestJS API, published-versus-draft visibility and city filtering.
+- [x] Local giving planner — device-local daily/weekly/monthly/custom plans, integer-paise amounts, exact cause allocations, pause/activate and bounded history; no payment is collected.
+- [x] Donation history and receipt foundation — authenticated donor-scoped history/detail, allocation snapshots, idempotent receipt records for verified-success donations, and receipt language captured at issue time.
 
 # Iteration 0 --- Foundation
 
@@ -325,12 +327,11 @@ Build the donor record experience.
 
 ### Features
 
--   Donation history
--   Donation detail
--   Allocation breakdown
--   Receipt model
--   Receipt generation abstraction
--   Receipt language captured at generation
+-   [x] Authenticated donor donation history
+-   [x] Donation detail and immutable allocation snapshot display
+-   [x] Receipt model and idempotent receipt-record generation abstraction
+-   [x] Receipt language captured at generation
+-   [x] Test fixture proving a verified donation produces one deterministic receipt record
 
 ### Exit criteria
 
