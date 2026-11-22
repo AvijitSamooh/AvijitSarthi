@@ -125,7 +125,10 @@ export class MediaService {
     // mediaId inside the relation maps used by Organisations, Beneficiaries and
     // Help Applications. Inspect the known reference shapes so a zero-result
     // query cannot allow deletion of an image that is still attached.
-    const snapshot = await this.firebase.db.collection(collection).get();
+    const snapshot = await this.firebase.db
+      .collection(collection)
+      .select('media', 'facePhotoMediaId', 'certificatePhotoMediaId')
+      .get();
     return snapshot.docs.filter((document) => {
       const data = document.data() as Record<string, unknown>;
       const media = data.media;
