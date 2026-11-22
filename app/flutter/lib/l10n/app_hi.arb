@@ -626,6 +626,9 @@
       "user": {}
     }
   },
+  "adminCityAssignmentLoadingCities": "असाइनमेंट के लिए शहर लोड हो रहे हैं।",
+  "adminCityAssignmentLoadError": "असाइनमेंट के लिए शहर लोड नहीं हो सके।",
+  "adminCityAssignmentNoCities": "असाइनमेंट के लिए कोई शहर उपलब्ध नहीं है।",
   "adminCityAssignmentSave": "आवंटन सहेजें",
   "adminCityAssignmentSaved": "शहर आवंटन सहेजा गया और ऑडिट इतिहास में दर्ज किया गया।",
   "@adminBeneficiaryCreatedImageUploadFailed": {
