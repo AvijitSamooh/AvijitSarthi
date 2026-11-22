@@ -102,7 +102,7 @@ void main() {
 
     await expectLater(save(amount: 0), throwsArgumentError);
     await expectLater(save(frequency: DonationPlanFrequency.custom, days: 0), throwsArgumentError);
-    await expect(
+    await expectLater(
       save(allocations: const [
         DonationPlanAllocation(causeId: 'cause-1', percentage: 60),
         DonationPlanAllocation(causeId: 'cause-1', percentage: 40),
@@ -131,6 +131,7 @@ void main() {
     expect(parseRupeesToPaise('1,234.56'), 123456);
     expect(parseRupeesToPaise('0'), isNull);
     expect(parseRupeesToPaise('10.999'), isNull);
+    expect(parseRupeesToPaise('12,34'), isNull);
     expect(parseRupeesToPaise('-5'), isNull);
   });
 }
