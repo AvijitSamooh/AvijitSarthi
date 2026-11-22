@@ -34,6 +34,7 @@ class AdminCause {
     required this.displayOrder,
     required this.translations,
     this.parentId,
+    this.hasChildren = false,
     this.children = const [],
   });
 
@@ -43,7 +44,21 @@ class AdminCause {
   final int displayOrder;
   final List<AdminCauseTranslation> translations;
   final String? parentId;
+  final bool hasChildren;
   final List<AdminCause> children;
+
+  bool get isParent => hasChildren || children.isNotEmpty;
+
+  Iterable<AdminCause> get activeLeafCauses sync* {
+    if (!isActive) return;
+    if (!isParent) {
+      yield this;
+      return;
+    }
+    for (final child in children) {
+      yield* child.activeLeafCauses;
+    }
+  }
 
   factory AdminCause.fromJson(Map<String, dynamic> json) {
     return AdminCause(
@@ -52,6 +67,7 @@ class AdminCause {
       isActive: json['isActive'] as bool? ?? true,
       displayOrder: (json['displayOrder'] as num?)?.toInt() ?? 0,
       parentId: json['parentId'] as String?,
+      hasChildren: json['hasChildren'] as bool? ?? (json['children'] as List<dynamic>? ?? []).isNotEmpty,
       children: (json['children'] as List<dynamic>? ?? [])
           .map((item) => AdminCause.fromJson(item as Map<String, dynamic>))
           .toList(growable: false),
