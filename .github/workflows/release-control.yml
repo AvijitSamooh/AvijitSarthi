@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_android:
-        description: Build and publish Android to Google Play internal and closed testing tracks (internal, alpha)
+        description: Build and publish Android to Google Play Internal testing (qa) and Closed testing (alpha) tracks
         required: true
         type: boolean
         default: true
@@ -107,7 +107,7 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
           packageName: com.avijitsamooh.avijitsahyog
           releaseFiles: publish/app-release.aab
-          tracks: internal,alpha
+          tracks: qa,alpha
           status: completed
 
   render_deploy:
