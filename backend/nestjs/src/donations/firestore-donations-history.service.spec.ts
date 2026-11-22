@@ -59,6 +59,7 @@ describe('FirestoreDonationsService donor history and receipts', () => {
 
   it('creates donor-owned records from a verified Firebase identity', async () => {
     const { service, store } = makeService();
+    store.set('causes/cause-1', { id: 'cause-1', isActive: true });
     const result = await service.createForDonor(identity, {
       amount: '100.00',
       allocations: [{ causeId: 'cause-1', amount: '100.00' }],
