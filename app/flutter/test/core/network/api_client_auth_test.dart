@@ -169,14 +169,18 @@ void main() {
 
   test('tracks every in-flight backend request and clears after completion', () async {
     final completer = Completer<http.Response>();
-    final client = MockClient((request) => completer.future);
+    final client = MockClient((request) {
+      expect(request.method, 'POST');
+      expect(request.url.path, '/applications');
+      return completer.future;
+    });
     final api = ApiClient(client: client, baseUrl: 'https://api.example.com');
 
-    final future = api.getHealth();
+    final future = api.createHelpApplication({'type': 'EDUCATION'});
     await Future<void>.delayed(Duration.zero);
     expect(ApiClient.activeRequests.value, 1);
 
-    completer.complete(http.Response('{"status":"ok"}', 200));
+    completer.complete(http.Response('{"id":"application-1"}', 201));
     await future;
     expect(ApiClient.activeRequests.value, 0);
     api.dispose();
