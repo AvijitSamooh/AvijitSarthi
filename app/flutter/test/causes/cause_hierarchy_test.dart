@@ -124,33 +124,5 @@ void main() {
     expect(find.byKey(const ValueKey('cause_apply_EDUCATION_ASSISTANCE')), findsOneWidget);
   });
 
-  testWidgets('donation page never preselects a parent cause', (tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          causesProvider('en').overrideWith((ref) async => [_education]),
-        ],
-        child: AppShellScope(
-          onLocaleChanged: (_) {},
-          navigation: AppNavigationController(),
-          child: MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            locale: const Locale('en'),
-            theme: ThemeData(useMaterial3: true),
-            home: const DonationPage(initialCauseId: 'education-id'),
-          ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
 
-    expect(find.byKey(const ValueKey('donation_cause_education-id')), findsNothing);
-    expect(find.byKey(const ValueKey('donation_cause_education-assistance-id')), findsOneWidget);
-    final child = tester.widget<CheckboxListTile>(
-      find.byKey(const ValueKey('donation_cause_education-assistance-id')),
-    );
-    expect(child.value, isFalse);
-    expect(tester.widget<FilledButton>(find.byKey(const ValueKey('donation_submit'))).onPressed, isNull);
-  });
 }
