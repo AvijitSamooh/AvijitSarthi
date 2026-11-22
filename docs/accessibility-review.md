@@ -11,6 +11,7 @@ This review tracks accessible interaction and content descriptions in Avijit Sar
 
 - Public city-discovery loading, empty and error states expose localized live-region announcements; retry remains a separate, actionable control.
 - City-content detail and affiliated-Organisation loading, empty and error states expose localized live-region announcements; retry remains independently actionable.
+- Super Admin city-assignment loading, empty and error states expose localized live-region announcements; retry remains actionable and city checkbox selection state is available to assistive technology.
 - Widget tests verify loading, empty and error announcements plus all four loading-message translations.
 
 ## Remaining manual review
