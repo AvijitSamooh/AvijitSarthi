@@ -129,7 +129,7 @@ export class FirestoreCausesService {
     if (parentId === causeId) throw new BadRequestException('A cause cannot be its own parent.');
     const snapshot = await this.firebase.db.collection('causes').doc(parentId).get();
     if (!snapshot.exists) throw new BadRequestException('Parent cause does not exist.');
-    const parent = snapshot.data() as CauseDocument;
+    const parent = (snapshot.data() ?? {}) as CauseDocument;
     if (parent.parentId) {
       throw new BadRequestException('Only top-level causes can contain child causes.');
     }
