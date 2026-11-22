@@ -94,6 +94,28 @@ describe('FirestoreBeneficiariesService', () => {
       .rejects.toThrow('active cause');
   });
 
+  it('rejects publishing a beneficiary under a parent cause', async () => {
+    const { d, ref } = db({ id: 'c1', slug: 'education', isActive: true, childIds: ['child-1'] });
+    const service = new FirestoreBeneficiariesService({ db: d } as any, mediaService as any);
+    await expect(service.syncBeneficiary({
+      id: 'b2',
+      sourceApplicationId: 'application-1',
+      name: 'Student',
+      photoUrl: null,
+      story: null,
+      supportedYear: 2026,
+      contributionAmount: '0',
+      causeId: 'c1',
+      organisationId: null,
+      isActive: true,
+      displayOrder: 0,
+      media: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })).rejects.toThrow('leaf cause');
+    expect(ref.set).not.toHaveBeenCalled();
+  });
+
   it('rejects changing a beneficiary to a parent cause', async () => {
     const { d } = db({ id: 'c1', slug: 'education', isActive: true, childIds: ['child-1'] });
     const service = new FirestoreBeneficiariesService({ db: d } as any, mediaService as any);
