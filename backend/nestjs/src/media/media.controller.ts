@@ -9,14 +9,14 @@ import { AuthenticatedRequest } from '../auth/auth.types';
 import { AuthService } from '../auth/auth.service';
 import { Request } from 'express';
 import { MediaService } from './media.service';
-import { FirebaseStorageService } from './firebase-storage.service';
+import { R2StorageService } from './r2-storage.service';
 
 @Controller('admin/media')
 @UseGuards(AdminGuard)
 export class MediaController {
   constructor(
     private readonly mediaService: MediaService,
-    private readonly storageService: FirebaseStorageService,
+    private readonly storageService: R2StorageService,
   ) {}
 
   @Get('verify')
@@ -24,8 +24,8 @@ export class MediaController {
     await this.storageService.verifyConnection();
     return {
       status: 'ok',
-      storage: 'firebase-storage',
-      bucket: process.env.FIREBASE_STORAGE_BUCKET,
+      storage: 'cloudflare-r2',
+      bucket: process.env.R2_BUCKET_NAME,
     };
   }
 
