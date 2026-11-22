@@ -74,7 +74,7 @@ describe('FirestoreCausesService',()=>{
 
   it('covers updates, parent relations and conflicts',async()=>{
     const causes=firebase.db.collection('causes'); const ref:any={id:'c1',get:jest.fn().mockResolvedValue({exists:true,data:()=>cause({parentId:'old'})}),set:jest.fn(),update:jest.fn()};
-    causes.doc.mockImplementation((id:string)=> id==='c1'?ref:{id,get:jest.fn().mockResolvedValue({exists:true}),set:jest.fn(),update:jest.fn()});
+    causes.doc.mockImplementation((id:string)=> id==='c1'?ref:{id,get:jest.fn().mockResolvedValue({exists:true,data:()=>cause({id,parentId:null})}),set:jest.fn(),update:jest.fn()});
     causes.get.mockResolvedValue({docs:[{data:()=>cause({parentId:'old'})}]});
     jest.spyOn(service,'findOneForAdmin').mockResolvedValue(cause({parentId:'old'}));
     causes.get.mockResolvedValue({empty:true,docs:[]});
