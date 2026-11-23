@@ -57,6 +57,7 @@ jobs:
             exit 1
           fi
           echo "Release Control is running from master."
+
       - name: Require at least one release target
         env:
           RELEASE_ANDROID: ${{ inputs.release_android }}
