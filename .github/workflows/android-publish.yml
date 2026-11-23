@@ -22,6 +22,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - name: Require master branch for Android publishing
+        env:
+          PUBLISH_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          if [[ "$PUBLISH_REF" != "refs/heads/master" ]]; then
+            echo "::error::Android publishing must be dispatched from master. No artifact download or Google Play upload was started."
+            exit 1
+          fi
+          echo "Android publishing is running from master."
+
       - name: Validate build run ID
         env:
           BUILD_RUN_ID: ${{ inputs.build_run_id }}
