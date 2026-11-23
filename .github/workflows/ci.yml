@@ -12,6 +12,19 @@ permissions:
   contents: read
 
 jobs:
+  release_contract:
+    name: Android release workflow contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Validate manual release contract
+        run: node .github/scripts/validate-release-contract.mjs
+
   backend:
     name: Backend - NestJS
     runs-on: ubuntu-latest
