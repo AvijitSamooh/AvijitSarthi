@@ -91,7 +91,7 @@ jobs:
           echo "Selected run is a successful Android Release Bundle with one available AAB artifact."
 
       - name: Download artifact from selected build run
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
