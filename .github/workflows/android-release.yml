@@ -41,7 +41,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Verify merged PR CI
         if: ${{ github.event_name == 'pull_request' }}
@@ -67,10 +67,11 @@ jobs:
           echo "Merged PR CI passed for $PR_HEAD_SHA."
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
+          problem-matcher: true
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -201,7 +202,7 @@ jobs:
           echo "Release merged manifest does not declare AD_ID permission."
 
       - name: Upload AAB artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: avijit-sahyog-release-aab-${{ env.PLAY_VERSION_CODE }}
           path: app/flutter/build/app/outputs/bundle/release/app-release.aab
