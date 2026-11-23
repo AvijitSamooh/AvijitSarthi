@@ -53,6 +53,12 @@ expectContains(
   'Release Control must reject non-master dispatches before any build, upload or deployment job can run',
 );
 
+expectContains(
+  publish,
+  /publish:[\s\S]*?PUBLISH_REF"\s*!=\s*"refs\/heads\/master"[\s\S]*?Validate build run ID/,
+  'Android publishing must reject non-master dispatches before artifact download or Google Play upload',
+);
+
 expectIncludes(release, 'com.avijitsamooh.avijitsahyog', 'Android release package identity must remain unchanged');
 expectIncludes(release, 'avijitsahyog-firebase', 'Android release must validate the production Firebase project');
 for (const secret of [
