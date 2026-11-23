@@ -8,6 +8,7 @@ describe('MediaService', () => {
   let firebaseStorage: { upload: jest.Mock; delete: jest.Mock; download: jest.Mock; getSignedUrl: jest.Mock };
   let firestore: { upsert: jest.Mock; getById: jest.Mock; delete: jest.Mock };
   let firebase: { db: { collection: jest.Mock } };
+  let referenceDocs: Record<string, Array<Record<string, unknown>>>;
 
   beforeEach(() => {
     r2 = { upload: jest.fn(), delete: jest.fn(), download: jest.fn().mockResolvedValue(Buffer.from('r2-image')) };
@@ -18,10 +19,22 @@ describe('MediaService', () => {
       getSignedUrl: jest.fn().mockResolvedValue('https://signed.example/private-image'),
     };
     firestore = { upsert: jest.fn(), getById: jest.fn(), delete: jest.fn() };
-    const query = {
-      count: jest.fn(() => ({ get: jest.fn().mockResolvedValue({ data: () => ({ count: 0 }) }) })),
+    referenceDocs = {
+      organisations: [],
+      beneficiaries: [],
+      helpApplications: [],
     };
-    firebase = { db: { collection: jest.fn(() => ({ where: jest.fn(() => query), get: jest.fn() })) } };
+    firebase = {
+      db: {
+        collection: jest.fn((name: string) => ({
+          select: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({
+              docs: (referenceDocs[name] ?? []).map((data) => ({ data: () => data })),
+            }),
+          })),
+        })),
+      },
+    };
     service = new MediaService(r2 as never, firebaseStorage as never, firestore as never, firebase as never);
   });
 
@@ -164,7 +177,7 @@ describe('MediaService', () => {
     else process.env.R2_PUBLIC_BASE_URL = previous;
   });
 
-  it('enforces owner and reference guards and deletes from the recorded provider', async () => {
+  it('enforces ownership and deletes unreferenced media from its recorded provider', async () => {
     const media: any = { id: 'm1', uploadedById: 'u1', storageKey: 'uploads/m1.webp', storageProvider: 'R2' };
     firestore.getById.mockResolvedValue(media);
     await expect(service.deleteUserImage('m1', 'u2')).rejects.toThrow();
@@ -175,14 +188,44 @@ describe('MediaService', () => {
     firestore.getById.mockResolvedValue({ ...media, storageProvider: undefined });
     await expect(service.deleteUserImage('m1', 'u1')).resolves.toEqual({ id: 'm1', deleted: true });
     expect(firebaseStorage.delete).toHaveBeenCalledWith('uploads/m1.webp');
+  });
 
-    const query = {
-      count: jest.fn(() => ({
-        get: jest.fn().mockResolvedValue({ data: () => ({ count: 2 }) }),
-      })),
-    };
-    firebase.db.collection.mockReturnValue({ where: jest.fn(() => query) });
+  it('blocks deletion when an embedded media relation references the image', async () => {
+    const media: any = { id: 'm1', uploadedById: 'u1', storageKey: 'uploads/m1.webp', storageProvider: 'R2' };
     firestore.getById.mockResolvedValue(media);
-    await expect(service.deleteUserImage('m1', 'u1')).rejects.toThrow(BadRequestException);
+
+    for (const collection of ['organisations', 'beneficiaries', 'helpApplications']) {
+      referenceDocs[collection] = [{
+        media: [{ mediaId: 'm1', purpose: 'GALLERY', displayOrder: 0, isPrimary: false }],
+      }];
+
+      await expect(service.deleteUserImage('m1', 'u1')).rejects.toBeInstanceOf(BadRequestException);
+      expect(r2.delete).not.toHaveBeenCalled();
+      referenceDocs[collection] = [];
+    }
+  });
+
+  it('blocks deletion when a help application references the image as its face or certificate photo', async () => {
+    const media: any = { id: 'm1', uploadedById: 'u1', storageKey: 'applications/m1.webp', storageProvider: 'FIREBASE_STORAGE' };
+    firestore.getById.mockResolvedValue(media);
+    referenceDocs.helpApplications = [
+      { facePhotoMediaId: 'm1' },
+      { certificatePhotoMediaId: 'm1' },
+    ];
+
+    await expect(service.deleteUserImage('m1', 'u1')).rejects.toBeInstanceOf(BadRequestException);
+    expect(firebaseStorage.delete).not.toHaveBeenCalled();
+    expect(firestore.delete).not.toHaveBeenCalled();
+  });
+
+  it('recognizes legacy string references without matching unrelated text', async () => {
+    const media: any = { id: 'm1', uploadedById: 'u1', storageKey: 'applications/m1.webp', storageProvider: 'FIREBASE_STORAGE' };
+    firestore.getById.mockResolvedValue(media);
+    referenceDocs.helpApplications = [{ media: ['m1'] }];
+
+    await expect(service.deleteUserImage('m1', 'u1')).rejects.toBeInstanceOf(BadRequestException);
+
+    referenceDocs.helpApplications = [{ notes: 'm1 is mentioned here but is not a media reference' }];
+    await expect(service.deleteUserImage('m1', 'u1')).resolves.toEqual({ id: 'm1', deleted: true });
   });
 });

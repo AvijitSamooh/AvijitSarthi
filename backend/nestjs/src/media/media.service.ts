@@ -121,10 +121,31 @@ export class MediaService {
   }
 
   private async firebaseCount(collection: string, id: string) {
-    const snap = await this.firebase.db.collection(collection).where('media', 'array-contains', id).count().get().catch(() => null);
-    if (snap) return snap.data().count;
-    const direct = await this.firebase.db.collection(collection).get();
-    return direct.docs.filter((doc) => JSON.stringify(doc.data()).includes(id)).length;
+    // Firestore array-contains compares complete array values; it cannot match
+    // mediaId inside the relation maps used by Organisations, Beneficiaries and
+    // Help Applications. Inspect the known reference shapes so a zero-result
+    // query cannot allow deletion of an image that is still attached.
+    const snapshot = await this.firebase.db
+      .collection(collection)
+      .select('media', 'facePhotoMediaId', 'certificatePhotoMediaId')
+      .get();
+    return snapshot.docs.filter((document) => {
+      const data = document.data() as Record<string, unknown>;
+      const media = data.media;
+      const hasMediaRelation =
+        Array.isArray(media) &&
+        media.some((reference) => {
+          if (typeof reference === 'string') return reference === id;
+          if (!reference || typeof reference !== 'object') return false;
+          return (reference as { mediaId?: unknown }).mediaId === id;
+        });
+
+      return (
+        hasMediaRelation ||
+        data.facePhotoMediaId === id ||
+        data.certificatePhotoMediaId === id
+      );
+    }).length;
   }
 
   private async encode(buffer: Buffer, width: number, quality: number) {
