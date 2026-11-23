@@ -31,7 +31,7 @@ describe('PlatformDowntimeGuard', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
     downtime.get.mockResolvedValue(enabledSettings);
     guard = new PlatformDowntimeGuard(
       downtime as any,
@@ -75,17 +75,18 @@ describe('PlatformDowntimeGuard', () => {
   it('blocks an unauthenticated request during an active maintenance window', async () => {
     const { context } = contextFor('/causes');
 
-    await expect(guard.canActivate(context)).rejects.toBeInstanceOf(
-      ServiceUnavailableException,
-    );
-    await expect(
-      guard.canActivate(context),
-    ).rejects.toMatchObject({
-      response: {
-        statusCode: 503,
-        code: 'PLATFORM_DOWNTIME',
-        message: 'Planned maintenance',
-      },
+    let thrown: unknown;
+    try {
+      await guard.canActivate(context);
+    } catch (error) {
+      thrown = error;
+    }
+
+    expect(thrown).toBeInstanceOf(ServiceUnavailableException);
+    expect((thrown as ServiceUnavailableException).getResponse()).toMatchObject({
+      statusCode: 503,
+      code: 'PLATFORM_DOWNTIME',
+      message: 'Planned maintenance',
     });
   });
 
