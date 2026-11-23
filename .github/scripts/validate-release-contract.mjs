@@ -47,6 +47,12 @@ expectEvents('.github/workflows/android-release.yml', ['workflow_dispatch', 'wor
 expectEvents('.github/workflows/android-publish.yml', ['workflow_dispatch']);
 expectEvents('.github/workflows/release-control.yml', ['workflow_dispatch']);
 
+expectContains(
+  control,
+  /validate_selection:[\s\S]*?RELEASE_REF"\s*!=\s*"refs\/heads\/master"[\s\S]*?android_build:/,
+  'Release Control must reject non-master dispatches before any build, upload or deployment job can run',
+);
+
 expectIncludes(release, 'com.avijitsamooh.avijitsahyog', 'Android release package identity must remain unchanged');
 expectIncludes(release, 'avijitsahyog-firebase', 'Android release must validate the production Firebase project');
 for (const secret of [

@@ -47,6 +47,17 @@ jobs:
     name: Validate release selection
     runs-on: ubuntu-latest
     steps:
+      - name: Require master branch for release control
+        env:
+          RELEASE_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          if [[ "$RELEASE_REF" != "refs/heads/master" ]]; then
+            echo "::error::Release Control must be dispatched from master. No Android build, Google Play upload, or Render deployment was started."
+            exit 1
+          fi
+          echo "Release Control is running from master."
+
       - name: Require at least one release target
         env:
           RELEASE_ANDROID: ${{ inputs.release_android }}
