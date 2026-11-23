@@ -40,7 +40,7 @@ jobs:
         run: npm run test:cov -- --runInBand
 
       - name: Application dependency-injection smoke test
-        run: npm run test:e2e -- --runInBand
+        run: npm run test:e2e -- --runInBand --detectOpenHandles
 
       - name: Upload backend coverage artifact
         uses: actions/upload-artifact@v4
