@@ -124,6 +124,10 @@ adb install -r build/app/outputs/flutter-apk/app-debug.apk
 adb shell monkey -p com.avijitsamooh.avijitsahyog 1
 sleep 8
 adb exec-out screencap -p > artifacts/installed-app-launch.png
+# The integration_test harness can use a different debug signature from the standalone smoke-test APK.
+# Remove the smoke-test install before the harness installs its own APK to avoid an incompatible in-place update.
+adb uninstall com.avijitsamooh.avijitsahyog
+
 flutter test integration_test -d emulator-5554 --reporter expanded \
   --dart-define=E2E_TEST_MODE=true \
   --dart-define=API_BASE_URL=http://10.0.2.2:3000 2>&1 | tee artifacts/integration-test.log
