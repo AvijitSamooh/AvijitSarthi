@@ -229,23 +229,26 @@ describe('MediaService', () => {
     await expect(service.deleteUserImage('m1', 'u1')).resolves.toEqual({ id: 'm1', deleted: true });
   });
 
-  it('fails closed when a media reference collection cannot be read', async () => {
-    const media: any = { id: 'm1', uploadedById: 'u1', storageKey: 'applications/m1.webp', storageProvider: 'FIREBASE_STORAGE' };
-    firestore.getById.mockResolvedValue(media);
-    firebase.db.collection.mockImplementation((name: string) => ({
-      select: jest.fn(() => ({
-        get: jest.fn().mockImplementation(() => (
-          name === 'beneficiaries'
-            ? Promise.reject(new Error('Firestore unavailable'))
-            : Promise.resolve({ docs: [] })
-        )),
-      })),
-    }));
+  it.each(['organisations', 'beneficiaries', 'helpApplications'])(
+    'fails closed when the %s media reference collection cannot be read',
+    async (failedCollection) => {
+      const media: any = { id: 'm1', uploadedById: 'u1', storageKey: 'applications/m1.webp', storageProvider: 'FIREBASE_STORAGE' };
+      firestore.getById.mockResolvedValue(media);
+      firebase.db.collection.mockImplementation((name: string) => ({
+        select: jest.fn(() => ({
+          get: jest.fn().mockImplementation(() => (
+            name === failedCollection
+              ? Promise.reject(new Error('Firestore unavailable'))
+              : Promise.resolve({ docs: [] })
+          )),
+        })),
+      }));
 
-    await expect(service.deleteUserImage('m1', 'u1')).rejects.toThrow('Firestore unavailable');
-    expect(firebaseStorage.delete).not.toHaveBeenCalled();
-    expect(r2.delete).not.toHaveBeenCalled();
-    expect(firestore.delete).not.toHaveBeenCalled();
-  });
+      await expect(service.deleteUserImage('m1', 'u1')).rejects.toThrow('Firestore unavailable');
+      expect(firebaseStorage.delete).not.toHaveBeenCalled();
+      expect(r2.delete).not.toHaveBeenCalled();
+      expect(firestore.delete).not.toHaveBeenCalled();
+    },
+  );
 
 });
