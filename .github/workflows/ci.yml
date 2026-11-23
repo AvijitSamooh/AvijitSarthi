@@ -20,9 +20,9 @@ jobs:
         working-directory: backend/nestjs
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -43,7 +43,7 @@ jobs:
         run: npm run test:e2e -- --runInBand
 
       - name: Upload backend coverage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-coverage
           path: backend/nestjs/coverage
@@ -56,7 +56,7 @@ jobs:
         working-directory: app/flutter
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: subosito/flutter-action@v2
         with:
@@ -82,7 +82,7 @@ jobs:
         run: xvfb-run -a flutter test integration_test -d linux
 
       - name: Upload Flutter coverage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: flutter-coverage
           path: app/flutter/coverage
